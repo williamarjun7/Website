@@ -1,0 +1,119 @@
+import { useState, useEffect } from 'react';
+import { Save, RefreshCw } from 'lucide-react';
+import { getAllSiteContent, updateSiteContent } from '../../services/contentService';
+
+const CONTENT_KEYS = [
+  { key: 'hero_title', label: 'Hero Title', type: 'text' },
+  { key: 'hero_subtitle', label: 'Hero Subtitle', type: 'text' },
+  { key: 'about_text', label: 'About Us Text', type: 'textarea' },
+  { key: 'contact_address', label: 'Contact Address', type: 'text' },
+  { key: 'contact_phone', label: 'Contact Phone', type: 'text' },
+  { key: 'contact_email', label: 'Contact Email', type: 'text' },
+  { key: 'faq_questions', label: 'FAQ Questions (JSON)', type: 'textarea' },
+  { key: 'footer_text', label: 'Footer Text', type: 'text' },
+];
+
+const ContentEditor = () => {
+  const [contents, setContents] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    setLoading(true);
+    const { data } = await getAllSiteContent();
+    if (data) {
+      const map: Record<string, string> = {};
+      for (const item of data) {
+        map[item.key] = item.value;
+      }
+      for (const c of CONTENT_KEYS) {
+        if (!map[c.key]) map[c.key] = '';
+      }
+      setContents(map);
+    }
+    setLoading(false);
+  };
+
+  const handleSave = async (key: string) => {
+    setSaving(key);
+    const { error } = await updateSiteContent(key, contents[key] || '');
+    setSaving(null);
+    if (error) {
+      setToastMessage('Failed to save: ' + error);
+    } else {
+      setToastMessage('Saved successfully!');
+    }
+    setTimeout(() => setToastMessage(''), 3000);
+  };
+
+  return (
+    <div className="space-y-6">
+      {toastMessage && (
+        <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm animate-fade-in bg-green-50 text-green-700 border border-green-200" role="alert">
+          {toastMessage}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold font-heading text-gray-900">Content Editor</h1>
+          <p className="text-gray-500">Manage text content across the website</p>
+        </div>
+        <button onClick={loadContent} className="btn-secondary flex items-center space-x-2">
+          <RefreshCw size={18} />
+          <span>Refresh</span>
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="spinner" />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {CONTENT_KEYS.map((field) => (
+            <div key={field.key} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">{field.label}</label>
+              {field.type === 'textarea' ? (
+                <textarea
+                  value={contents[field.key] || ''}
+                  onChange={(e) => setContents(prev => ({ ...prev, [field.key]: e.target.value }))}
+                  className="input w-full min-h-[120px] font-mono text-sm"
+                  rows={6}
+                />
+              ) : (
+                <input
+                  type="text"
+                  value={contents[field.key] || ''}
+                  onChange={(e) => setContents(prev => ({ ...prev, [field.key]: e.target.value }))}
+                  className="input w-full"
+                />
+              )}
+              <div className="mt-3 flex justify-end">
+                <button
+                  onClick={() => handleSave(field.key)}
+                  disabled={saving === field.key}
+                  className="btn-primary flex items-center space-x-2 text-sm px-4 py-2"
+                >
+                  {saving === field.key ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  <span>Save</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ContentEditor;

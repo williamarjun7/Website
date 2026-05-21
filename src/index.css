@@ -1,0 +1,139 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  /* Color Palette */
+  --color-primary: #92400E;
+  --color-secondary: #B45309;
+  --color-cta: #F8FAFC;
+  --color-background: #FEF3C7;
+  --color-text: #78350F;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Base Component Styles */
+@layer components {
+  .btn-primary {
+    @apply bg-amber-900 text-white px-8 py-4 rounded-xl font-heading font-bold
+           transition-all duration-300 cursor-pointer shadow-lg
+           hover:shadow-xl hover:-translate-y-1 hover:bg-amber-800 hover:text-white
+           active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed
+           flex items-center justify-center border-none;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-amber-900 border-2 border-amber-900 
+           px-8 py-4 rounded-xl font-heading font-bold transition-all duration-300 
+           cursor-pointer hover:bg-amber-900 hover:text-white shadow-md hover:shadow-lg
+           active:scale-95 disabled:opacity-50 flex items-center justify-center;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl p-8 shadow-md transition-all duration-300 
+           cursor-pointer hover:shadow-2xl hover:-translate-y-2 border border-amber-50;
+  }
+  
+  .input {
+    @apply px-4 py-3 border border-gray-300 rounded-lg text-base 
+           transition-colors duration-200 focus:border-amber-900 
+           focus:outline-none focus:ring-2 focus:ring-amber-900/20;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Global Hover Reset */
+a, button {
+  @apply transition-all duration-300;
+}
+
+a:hover, button:hover {
+  opacity: 1 !important;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid rgba(146, 64, 14, 0.1);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Floating navbar */
+.navbar-floating {
+  @apply fixed top-4 left-4 right-4 z-50 glass rounded-2xl shadow-lg;
+}
+
+/* Sticky booking CTA (mobile) */
+.sticky-cta {
+  @apply fixed bottom-0 left-0 right-0 z-40 bg-white shadow-xl p-4 
+         md:hidden border-t border-gray-200;
+}
