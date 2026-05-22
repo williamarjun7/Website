@@ -5,6 +5,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 const ALLOWED_ORIGINS = [
   "https://highlands-motel.com",
   "https://www.highlands-motel.com",
+  "https://highlandscafemotelinn.netlify.app",
   "https://6aiag3ra.us-east.insforge.app",
 ]
 
