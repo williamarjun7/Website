@@ -6,9 +6,7 @@ import {
     Bed,
     ArrowRight,
     Star,
-    Wifi,
     Wind,
-    Tv,
     Search,
     SlidersHorizontal,
     X

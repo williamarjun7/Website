@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Coffee, MapPin, Users, Star, Wind } from 'lucide-react';
+import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
 
