@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
+import { ArrowRight, Coffee, MapPin, Users, Star, Wind } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
 
@@ -231,16 +231,26 @@ const Home = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {rooms.map((room) => (
                                 <div key={room.id} className="card">
-                                    <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden">
+                                    <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden relative">
                                         <img
                                             src={room.room_images?.[0]?.image_url}
                                             alt={room.name}
                                             className="w-full h-full object-cover"
                                         />
+                                        {room.has_ac !== undefined && (
+                                            <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-sm ${room.has_ac ? 'bg-blue-100/90 text-blue-700' : 'bg-gray-100/90 text-gray-600'}`}>
+                                                {room.has_ac ? 'AC' : 'Non-AC'}
+                                            </div>
+                                        )}
                                     </div>
-                                    <h3 className="font-heading text-xl font-semibold mb-2">
-                                        {room.name}
-                                    </h3>
+                                    <div className="flex items-center space-x-2 mb-1">
+                                        <h3 className="font-heading text-xl font-semibold">
+                                            {room.name}
+                                        </h3>
+                                        {room.room_number && (
+                                            <span className="text-gray-400 text-xs">#{room.room_number}</span>
+                                        )}
+                                    </div>
                                     <p className="text-gray-600 mb-4 line-clamp-2">
                                         {room.description}
                                     </p>

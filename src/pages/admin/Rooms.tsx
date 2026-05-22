@@ -11,7 +11,7 @@ import {
     ChevronDown
 } from 'lucide-react';
 import {
-    getRooms,
+    getAllRoomsForAdmin,
     createRoom,
     updateRoom,
     deleteRoom,
@@ -47,11 +47,17 @@ const Rooms = () => {
         price_per_night: '',
         max_guests: '2',
         room_type: '',
-        amenities: '', // Comma separated for form
+        amenities: '',
         room_size: '',
         bed_type: '',
         policies: '',
-        is_active: true
+        is_active: true,
+        room_number: '',
+        has_ac: false,
+        floor_number: '',
+        featured: false,
+        discount_percent: '0',
+        maintenance: false
     });
 
     useEffect(() => {
@@ -60,7 +66,7 @@ const Rooms = () => {
 
     const loadRooms = async () => {
         setLoading(true);
-        const { data } = await getRooms();
+        const { data } = await getAllRoomsForAdmin();
         if (data) {
             setRooms(data);
         }
@@ -79,7 +85,13 @@ const Rooms = () => {
             room_size: room.room_size || '',
             bed_type: room.bed_type || '',
             policies: room.policies || '',
-            is_active: room.is_active
+            is_active: room.is_active,
+            room_number: room.room_number || '',
+            has_ac: room.has_ac || false,
+            floor_number: room.floor_number ? room.floor_number.toString() : '',
+            featured: room.featured || false,
+            discount_percent: room.discount_percent ? room.discount_percent.toString() : '0',
+            maintenance: room.maintenance || false
         });
         setPendingImages([]);
         setIsModalOpen(true);
@@ -135,7 +147,7 @@ const Rooms = () => {
                 }
             }
             if (editingRoom) {
-                const { data } = await getRooms();
+                const { data } = await getAllRoomsForAdmin();
                 if (data) {
                     setRooms(data);
                     const updated = data.find(r => r.id === editingRoom.id);
@@ -220,9 +232,9 @@ const Rooms = () => {
 
         loadRooms();
         if (imageManageRoom) {
-            const data = await getRooms();
-            if (data.data) {
-                const updated = data.data.find((r: Room) => r.id === roomId);
+            const { data } = await getAllRoomsForAdmin();
+            if (data) {
+                const updated = data.find((r: Room) => r.id === roomId);
                 if (updated) setImageManageRoom(updated);
             }
         }
@@ -232,11 +244,19 @@ const Rooms = () => {
         e.preventDefault();
         setLoading(true);
 
+        const floorNum = formData.room_number
+            ? parseInt(formData.room_number.charAt(0))
+            : formData.floor_number
+                ? Number(formData.floor_number)
+                : undefined;
+
         const roomData = {
             ...formData,
             price_per_night: Number(formData.price_per_night),
             max_guests: Number(formData.max_guests),
-            amenities: formData.amenities.split(',').map(s => s.trim()).filter(Boolean)
+            amenities: formData.amenities.split(',').map(s => s.trim()).filter(Boolean),
+            floor_number: floorNum || undefined,
+            discount_percent: formData.discount_percent ? Number(formData.discount_percent) : 0
         };
 
         let savedRoom: any = null;
@@ -272,7 +292,13 @@ const Rooms = () => {
             room_size: '',
             bed_type: '',
             policies: '',
-            is_active: true
+            is_active: true,
+            room_number: '',
+            has_ac: false,
+            floor_number: '',
+            featured: false,
+            discount_percent: '0',
+            maintenance: false
         });
         loadRooms();
     };
@@ -299,7 +325,13 @@ const Rooms = () => {
                             room_size: '',
                             bed_type: '',
                             policies: '',
-                            is_active: true
+                            is_active: true,
+                            room_number: '',
+                            has_ac: false,
+                            floor_number: '',
+                            featured: false,
+                            discount_percent: '0',
+                            maintenance: false
                         });
                         setIsModalOpen(true);
                     }}
@@ -372,15 +404,33 @@ const Rooms = () => {
                             </div>
 
                             <div className="flex justify-between items-start mb-1">
-                                <h3 className="font-heading text-lg font-bold truncate pr-4">{room.name}</h3>
-                                <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full ${room.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {room.is_active ? 'Active' : 'Hidden'}
-                                </span>
+                                <h3 className="font-heading text-lg font-bold truncate pr-4">
+                                    {room.name}
+                                    {room.room_number && <span className="text-gray-400 font-normal text-sm ml-1">#{room.room_number}</span>}
+                                </h3>
+                                <div className="flex items-center space-x-1">
+                                    {room.maintenance && (
+                                        <span className="px-2 py-0.5 text-[10px] uppercase font-bold rounded-full bg-amber-100 text-amber-700">Maint</span>
+                                    )}
+                                    <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full ${room.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                        {room.is_active ? 'Active' : 'Hidden'}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div className="text-xs text-gray-500 mb-3 flex items-center space-x-2">
+                            <div className="text-xs text-gray-500 mb-3 flex items-center space-x-2 flex-wrap gap-y-1">
                                 <span className="bg-gray-100 px-2 py-0.5 rounded">{room.room_type || 'General'}</span>
+                                {room.has_ac !== undefined && (
+                                    <span className={`px-2 py-0.5 rounded font-medium ${room.has_ac ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                        {room.has_ac ? 'AC' : 'Non-AC'}
+                                    </span>
+                                )}
+                                {room.floor_number && <span className="text-gray-400">• Floor {room.floor_number}</span>}
                                 {room.room_size && <span className="text-gray-400">• {room.room_size}</span>}
+                                {room.featured && <span className="text-amber-500">★ Featured</span>}
+                                {room.discount_percent && room.discount_percent > 0 && (
+                                    <span className="text-green-600 font-bold">{room.discount_percent}% OFF</span>
+                                )}
                             </div>
 
                             <p className="text-gray-500 text-sm mb-4 line-clamp-2 min-h-[40px]">{room.description}</p>
@@ -419,27 +469,44 @@ const Rooms = () => {
                                 {/* Basic Info */}
                                 <div className="space-y-4">
                                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Basic Information</h3>
-                                    <div>
-                                        <label className="block text-sm font-medium mb-1 text-gray-700">Room Name *</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="input w-full"
-                                            placeholder="e.g. Deluxe Mountain View"
-                                        />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-gray-700">Room Name *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="input w-full"
+                                                placeholder="e.g. Room 302"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-gray-700">Room Number *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.room_number}
+                                                onChange={(e) => setFormData({ ...formData, room_number: e.target.value })}
+                                                className="input w-full"
+                                                placeholder="e.g. 302"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium mb-1 text-gray-700">Room Type</label>
-                                            <input
-                                                type="text"
+                                            <select
                                                 value={formData.room_type}
                                                 onChange={(e) => setFormData({ ...formData, room_type: e.target.value })}
                                                 className="input w-full"
-                                                placeholder="Deluxe, Suite, etc."
-                                            />
+                                            >
+                                                <option value="">Select type...</option>
+                                                <option value="Single Room">Single Room</option>
+                                                <option value="Double Room">Double Room</option>
+                                                <option value="Deluxe Room">Deluxe Room</option>
+                                                <option value="Suite">Suite</option>
+                                            </select>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium mb-1 text-gray-700">Room Size (sq ft)</label>
@@ -454,7 +521,7 @@ const Rooms = () => {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium mb-1 text-gray-700">Price / Night *</label>
+                                            <label className="block text-sm font-medium mb-1 text-gray-700">Price / Night (NPR) *</label>
                                             <input
                                                 type="number"
                                                 required
@@ -476,6 +543,20 @@ const Rooms = () => {
                                             />
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
+                                            <input
+                                                type="checkbox"
+                                                id="has_ac"
+                                                checked={formData.has_ac}
+                                                onChange={(e) => setFormData({ ...formData, has_ac: e.target.checked })}
+                                                className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded-lg cursor-pointer"
+                                            />
+                                            <label htmlFor="has_ac" className="text-sm font-bold text-gray-600 cursor-pointer">
+                                                Air Conditioning (AC)
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Details & Amenities */}
@@ -483,13 +564,18 @@ const Rooms = () => {
                                     <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Features & Details</h3>
                                     <div>
                                         <label className="block text-sm font-medium mb-1 text-gray-700">Bed Type</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             value={formData.bed_type}
                                             onChange={(e) => setFormData({ ...formData, bed_type: e.target.value })}
                                             className="input w-full"
-                                            placeholder="King Sized, Twin Bed"
-                                        />
+                                        >
+                                            <option value="">Select bed type...</option>
+                                            <option value="Single Bed">Single Bed</option>
+                                            <option value="Double Bed">Double Bed</option>
+                                            <option value="Queen Bed">Queen Bed</option>
+                                            <option value="King Bed">King Bed</option>
+                                            <option value="Twin Bed">Twin Bed</option>
+                                        </select>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-1 text-gray-700">Amenities (Comma separated)</label>
@@ -510,6 +596,41 @@ const Rooms = () => {
                                             className="input w-full resize-none text-sm"
                                             placeholder="Tell guests about what makes this room special..."
                                         />
+                                    </div>
+                                    <div className="space-y-3 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Room Status & Flags</h4>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <label className="flex items-center space-x-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.featured}
+                                                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                                                    className="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer"
+                                                />
+                                                <span className="text-sm font-medium text-gray-600">Featured Room</span>
+                                            </label>
+                                            <label className="flex items-center space-x-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.maintenance}
+                                                    onChange={(e) => setFormData({ ...formData, maintenance: e.target.checked })}
+                                                    className="w-4 h-4 text-amber-500 focus:ring-amber-500 border-gray-300 rounded cursor-pointer"
+                                                />
+                                                <span className="text-sm font-medium text-gray-600">Under Maintenance</span>
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-gray-600">Discount (%)</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                value={formData.discount_percent}
+                                                onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
+                                                className="input w-full"
+                                                placeholder="0"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -725,7 +846,7 @@ const Rooms = () => {
                                         for (const file of Array.from(files)) {
                                             await handleAddImageToExistingRoom(imageManageRoom.id, file);
                                         }
-                                        const { data } = await getRooms();
+                                        const { data } = await getAllRoomsForAdmin();
                                         if (data) {
                                             setRooms(data);
                                             const updated = data.find((r: Room) => r.id === imageManageRoom.id);

@@ -11,6 +11,8 @@ export interface Booking {
     total_price: number;
     payment_status: 'pending' | 'paid' | 'failed' | 'pay_at_property';
     booking_status: 'confirmed' | 'cancelled' | 'checked_in' | 'checked_out';
+    source: 'website' | 'pos';
+    pos_booking_id?: string;
     created_at: string;
 }
 

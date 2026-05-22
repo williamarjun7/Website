@@ -13,7 +13,9 @@ import {
     Wifi,
     Tv,
     Wind,
-    Coffee
+    Coffee,
+    Hash,
+    Layers
 } from 'lucide-react';
 import { getRoomById, getRooms, Room } from '../services/roomService';
 import RoomCarousel from '../components/RoomCarousel';
@@ -102,16 +104,44 @@ const RoomDetails = () => {
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
                                 <div>
-                                    <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider mb-2">
-                                        {room.room_type || 'Classic Room'}
-                                    </span>
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
+                                            {room.room_type || 'Classic Room'}
+                                        </span>
+                                        {room.has_ac !== undefined && (
+                                            <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${room.has_ac ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                <Wind size={12} />
+                                                <span>{room.has_ac ? 'AC' : 'Non-AC'}</span>
+                                            </span>
+                                        )}
+                                        {room.featured && (
+                                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
+                                                <Star size={12} />
+                                                <span>Featured</span>
+                                            </span>
+                                        )}
+                                    </div>
                                     <h1 className="text-3xl md:text-4xl font-bold font-heading text-gray-900">
                                         {room.name}
                                     </h1>
+                                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-400">
+                                        {room.room_number && (
+                                            <span className="flex items-center space-x-1">
+                                                <Hash size={14} />
+                                                <span>Room #{room.room_number}</span>
+                                            </span>
+                                        )}
+                                        {room.floor_number && (
+                                            <span className="flex items-center space-x-1">
+                                                <Layers size={14} />
+                                                <span>Floor {room.floor_number}</span>
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-3xl font-bold text-primary">NPR {room.price_per_night.toLocaleString()}</div>
-                                    <div className="text-gray-400 text-sm">per adult / night</div>
+                                    <div className="text-gray-400 text-sm">per night</div>
                                 </div>
                             </div>
 
@@ -135,7 +165,9 @@ const RoomDetails = () => {
                                 <div className="flex flex-col items-center text-center p-2 last:border-0">
                                     <ShieldCheck className="text-primary mb-2" size={24} />
                                     <span className="text-xs text-gray-500 font-medium">AVAILABILITY</span>
-                                    <span className="text-sm font-bold text-green-600">Available</span>
+                                    <span className={`text-sm font-bold ${room.availability_status === 'available' ? 'text-green-600' : 'text-amber-600'}`}>
+                                        {room.availability_status === 'available' ? 'Available' : room.availability_status || 'Available'}
+                                    </span>
                                 </div>
                             </div>
 
@@ -149,6 +181,20 @@ const RoomDetails = () => {
                             {/* Amenities */}
                             <div className="mt-10 pt-10 border-t border-gray-100">
                                 <h3 className="text-xl font-bold font-heading mb-6 text-gray-900">Room Amenities</h3>
+                                <div className="mb-6 flex flex-wrap gap-2">
+                                    {room.has_ac !== undefined && (
+                                        <span className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${room.has_ac ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-50 text-gray-500 border border-gray-200'}`}>
+                                            <Wind size={16} />
+                                            <span>{room.has_ac ? 'Air Conditioning (AC)' : 'Non-AC (Standard Room)'}</span>
+                                        </span>
+                                    )}
+                                    {room.floor_number && (
+                                        <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                                            <Layers size={16} />
+                                            <span>Floor {room.floor_number}</span>
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
                                     {room.amenities && room.amenities.length > 0 ? (
                                         room.amenities.map((amenity, idx) => (

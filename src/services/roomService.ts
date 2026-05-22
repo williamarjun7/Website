@@ -12,6 +12,14 @@ export interface Room {
     room_size?: string;
     bed_type?: string;
     policies?: string;
+    room_number?: string;
+    has_ac?: boolean;
+    floor_number?: number;
+    availability_status?: string;
+    featured?: boolean;
+    discount_percent?: number;
+    maintenance?: boolean;
+    seasonal_pricing?: Record<string, any>;
     created_at: string;
     room_images?: RoomImage[];
 }
@@ -24,20 +32,37 @@ export interface RoomImage {
     created_at: string;
 }
 
-// Get all active rooms
+// Get all active rooms (public)
 export const getRooms = async () => {
     try {
         const { data, error } = await insforge.database
             .from('rooms')
             .select('*, room_images(*)')
             .eq('is_active', true)
-            .order('name', { ascending: true })
+            .order('room_number', { ascending: true })
             .order('sort_order', { referencedTable: 'room_images', ascending: true });
 
         if (error) throw error;
         return { data, error: null };
     } catch (error) {
         console.error('Failed to fetch rooms:', error);
+        return handleInsforgeError(error);
+    }
+};
+
+// Admin: Get all rooms (including inactive/hidden)
+export const getAllRoomsForAdmin = async () => {
+    try {
+        const { data, error } = await insforge.database
+            .from('rooms')
+            .select('*, room_images(*)')
+            .order('room_number', { ascending: true })
+            .order('sort_order', { referencedTable: 'room_images', ascending: true });
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        console.error('Failed to fetch all rooms for admin:', error);
         return handleInsforgeError(error);
     }
 };

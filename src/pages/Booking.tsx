@@ -270,11 +270,24 @@ const Booking = () => {
                                                         className="w-32 h-24 object-cover rounded-lg"
                                                     />
                                                     <div className="flex-1">
-                                                        <h4 className="font-heading text-xl font-semibold mb-1">{room.name}</h4>
+                                                        <h4 className="font-heading text-xl font-semibold mb-1">
+                                                            {room.name}
+                                                            {room.room_number && <span className="text-gray-400 text-sm font-normal ml-1">#{room.room_number}</span>}
+                                                        </h4>
                                                         <p className="text-gray-600 text-sm mb-2">{room.description}</p>
-                                                        <div className="flex items-center text-sm text-gray-500">
-                                                            <Users size={16} className="mr-1" />
-                                                            Up to {room.max_guests} guests
+                                                        <div className="flex items-center space-x-3 text-sm text-gray-500">
+                                                            <div className="flex items-center">
+                                                                <Users size={16} className="mr-1" />
+                                                                Up to {room.max_guests} guests
+                                                            </div>
+                                                            {room.has_ac !== undefined && (
+                                                                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${room.has_ac ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                                    {room.has_ac ? 'AC' : 'Non-AC'}
+                                                                </span>
+                                                            )}
+                                                            {room.floor_number && (
+                                                                <span className="text-gray-400">Floor {room.floor_number}</span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                     <div className="text-right">

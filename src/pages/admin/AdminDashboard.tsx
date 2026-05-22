@@ -11,7 +11,7 @@ import {
     BarChart3
 } from 'lucide-react';
 import { getAllBookings, getUpcomingCheckIns, updateBookingStatus } from '../../services/bookingService';
-import { getRooms } from '../../services/roomService';
+import { getAllRoomsForAdmin } from '../../services/roomService';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -35,7 +35,7 @@ const AdminDashboard = () => {
             setLoading(true);
             const [bookingsRes, roomsRes, checkInsRes] = await Promise.all([
                 getAllBookings(),
-                getRooms(),
+                getAllRoomsForAdmin(),
                 getUpcomingCheckIns()
             ]);
 
@@ -131,7 +131,7 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="Total Bookings" value={stats.totalBookings} icon={Calendar} color="bg-blue-500" />
                 <StatCard title="Total Revenue" value={stats.revenue} prefix="NPR " icon={DollarSign} color="bg-green-500" />
-                <StatCard title="Active Rooms" value={stats.activeRooms} icon={Users} color="bg-purple-500" />
+                <StatCard title="Total Rooms" value={stats.activeRooms} icon={Users} color="bg-purple-500" />
                 <StatCard title="Occupancy Rate" value={`${stats.occupancyRate}%`} icon={TrendingUp} color="bg-orange-500" />
             </div>
 
