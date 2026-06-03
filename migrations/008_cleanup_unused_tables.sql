@@ -124,6 +124,17 @@ DROP TYPE IF EXISTS public.payment_status;
 -- ── Drop orphaned sequence ───────────────────────────────────────
 DROP SEQUENCE IF EXISTS public.order_number_seq;
 
+-- ── Drop orphaned functions (triggered on now-dropped tables) ─────
+DROP FUNCTION IF EXISTS public.notify_bill_event;
+DROP FUNCTION IF EXISTS public.notify_low_stock;
+DROP FUNCTION IF EXISTS public.notify_menu_item_event;
+DROP FUNCTION IF EXISTS public.notify_new_order;
+DROP FUNCTION IF EXISTS public.notify_order_status;
+DROP FUNCTION IF EXISTS public.notify_order_status_change;
+DROP FUNCTION IF EXISTS public.notify_room_status;
+DROP FUNCTION IF EXISTS public.test_func;
+DROP FUNCTION IF EXISTS public.test_plpgsql;
+
 -- ── Create missing tables ────────────────────────────────────────
 
 -- Payments (referenced by fonepay-payment edge function)

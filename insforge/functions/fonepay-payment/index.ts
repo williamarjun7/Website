@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS = [
@@ -10,11 +9,14 @@ const ALLOWED_ORIGINS = [
   "http://127.0.0.1:5173",
 ]
 
-const dbUrl = Deno.env.get("INSFORGE_URL") || Deno.env.get("SUPABASE_URL") || Deno.env.get("INSFORGE_BASE_URL") || ""
-const dbKey = Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
-const db = dbUrl && dbKey
-  ? createClient(dbUrl, dbKey)
-  : null
+function toError(e: unknown): Error {
+  if (e instanceof Error) return e
+  if (typeof e === "object" && e !== null) {
+    const msg = (e as Record<string, unknown>).message || (e as Record<string, unknown>).error || JSON.stringify(e)
+    return new Error(String(msg))
+  }
+  return new Error(String(e))
+}
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
@@ -49,7 +51,7 @@ function extractBookingId(prn: string): string | null {
   return afterPrefix.slice(0, idx)
 }
 
-async function logEvent(event: {
+async function logEvent(db: ReturnType<typeof createClient>["database"] | null, event: {
   payment_id?: string
   booking_id: string
   event_type: string
@@ -149,6 +151,13 @@ export default async function handler(req: Request) {
   }
 
   try {
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    if (!baseUrl || !anonKey) {
+      return errorResponse("Database not configured", 500)
+    }
+    const { database: db } = createClient({ baseUrl, anonKey })
+
     let body: unknown
     let action: string
 
@@ -242,7 +251,7 @@ export default async function handler(req: Request) {
         return errorResponse(`QR generation failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
-      await logEvent({
+      await logEvent(db, {
         booking_id: orderId,
         event_type: "payment_initiated",
         payload: { prn, amount, method: "fonepay_qr" },
@@ -296,7 +305,7 @@ export default async function handler(req: Request) {
 
       const paymentUrl = `${baseUrl}/api/merchantRequest?PID=${paymentData.PID}&MD=${paymentData.MD}&PRN=${paymentData.PRN}&AMT=${paymentData.AMT}&CRN=${paymentData.CRN}&DT=${encodeURIComponent(paymentData.DT)}&R1=${encodeURIComponent(paymentData.R1)}&R2=${encodeURIComponent(paymentData.R2)}&DV=${dv}&RU=${encodeURIComponent(paymentData.RU)}`
 
-      await logEvent({
+      await logEvent(db, {
         booking_id: orderId,
         event_type: "payment_initiated",
         payload: { prn, amount, method: "fonepay_web" },
@@ -331,7 +340,7 @@ export default async function handler(req: Request) {
       }
 
       if (fonepayResult.paymentStatus !== "success") {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId,
           event_type: "payment_failed",
           payload: { prn, fonepayResponse: fonepayResult },
@@ -354,7 +363,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (!booking) {
-        await logEvent({ booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
+        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
         return errorResponse("Booking not found", 404)
       }
 
@@ -366,7 +375,7 @@ export default async function handler(req: Request) {
 
       if (existingPayment) {
         if (existingPayment.status === "completed") {
-          await logEvent({ booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
+          await logEvent(db, { booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
           return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           })
@@ -378,7 +387,7 @@ export default async function handler(req: Request) {
 
       const fonepayAmount = parseFloat(String(fonepayResult.amount || fonepayResult.txnAmount || "0"))
       if (fonepayAmount > 0 && Math.abs(fonepayAmount - booking.total_price) > 0.01) {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId, event_type: "amount_mismatch",
           payload: { prn, fonepayAmount, dbAmount: booking.total_price },
         })
@@ -400,7 +409,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (insertError) {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId, event_type: "replay_attempt",
           payload: { prn, error: insertError.message },
         })
@@ -424,7 +433,7 @@ export default async function handler(req: Request) {
         .eq("payment_status", "pending")
 
       if (updateError) {
-        await logEvent({
+        await logEvent(db, {
           payment_id: paymentRecord.id, booking_id: bookingId,
           event_type: "payment_failed",
           payload: { prn, error: "Failed to update booking status" },
@@ -432,7 +441,7 @@ export default async function handler(req: Request) {
         return errorResponse("Failed to confirm payment", 500)
       }
 
-      await logEvent({
+      await logEvent(db, {
         payment_id: paymentRecord.id, booking_id: bookingId,
         event_type: "payment_completed",
         old_status: "pending", new_status: "paid",
@@ -477,7 +486,7 @@ export default async function handler(req: Request) {
       const isSuccess = fonepayResult.success === "true" || fonepayResult.response_code === "successful"
 
       if (!isSuccess) {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId,
           event_type: "payment_failed",
           payload: { prn, fonepayResponse: fonepayResult },
@@ -505,7 +514,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (!booking) {
-        await logEvent({ booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
+        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
         return errorResponse("Booking not found", 404)
       }
 
@@ -517,7 +526,7 @@ export default async function handler(req: Request) {
 
       if (existingPayment) {
         if (existingPayment.status === "completed") {
-          await logEvent({ booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
+          await logEvent(db, { booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
           return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           })
@@ -543,7 +552,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (insertError) {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId, event_type: "replay_attempt",
           payload: { prn, error: insertError.message },
         })
@@ -567,7 +576,7 @@ export default async function handler(req: Request) {
         .eq("payment_status", "pending")
 
       if (updateError) {
-        await logEvent({
+        await logEvent(db, {
           payment_id: paymentRecord.id, booking_id: bookingId,
           event_type: "payment_failed",
           payload: { prn, error: "Failed to update booking status" },
@@ -575,7 +584,7 @@ export default async function handler(req: Request) {
         return errorResponse("Failed to confirm payment", 500)
       }
 
-      await logEvent({
+      await logEvent(db, {
         payment_id: paymentRecord.id, booking_id: bookingId,
         event_type: "payment_completed",
         old_status: "pending", new_status: "paid",
@@ -610,12 +619,12 @@ export default async function handler(req: Request) {
         .single()
 
       if (!booking) {
-        await logEvent({ booking_id: bookingId, event_type: "payment_callback_failed", payload: { prn, reason: "Booking not found" } })
+        await logEvent(db, { booking_id: bookingId, event_type: "payment_callback_failed", payload: { prn, reason: "Booking not found" } })
         return errorResponse("Booking not found", 404)
       }
 
       if (booking.payment_status === "paid") {
-        await logEvent({ booking_id: bookingId, event_type: "callback_idempotency_hit", payload: { prn } })
+        await logEvent(db, { booking_id: bookingId, event_type: "callback_idempotency_hit", payload: { prn } })
         return new Response(JSON.stringify({ success: true, message: "Payment already processed" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
@@ -628,7 +637,7 @@ export default async function handler(req: Request) {
         .maybeSingle()
 
       if (existingPayment?.status === "completed") {
-        await logEvent({ booking_id: bookingId, event_type: "callback_idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
+        await logEvent(db, { booking_id: bookingId, event_type: "callback_idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
         return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
@@ -650,7 +659,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (insertError) {
-        await logEvent({
+        await logEvent(db, {
           booking_id: bookingId, event_type: "callback_replay_attempt",
           payload: { prn, error: insertError.message },
         })
@@ -665,7 +674,7 @@ export default async function handler(req: Request) {
           .eq("payment_status", "pending")
 
         if (updateError) {
-          await logEvent({
+          await logEvent(db, {
             payment_id: paymentRecord.id, booking_id: bookingId,
             event_type: "callback_update_failed",
             payload: { prn, error: updateError.message },
@@ -673,7 +682,7 @@ export default async function handler(req: Request) {
         }
       }
 
-      await logEvent({
+      await logEvent(db, {
         payment_id: paymentRecord.id, booking_id: bookingId,
         event_type: status === "success" || response_code === "successful" ? "payment_callback_completed" : "payment_callback_failed",
         old_status: "pending", new_status: status === "success" || response_code === "successful" ? "paid" : "failed",
