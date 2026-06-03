@@ -4,6 +4,9 @@
 
 -- ── Drop orphaned tables ──────────────────────────────────────────
 
+-- Blocked dates (nothing writes to it; bookings table is source of truth for availability)
+DROP TABLE IF EXISTS public.blocked_dates CASCADE;
+
 -- Sync
 DROP TABLE IF EXISTS public.sync_queue CASCADE;
 DROP TABLE IF EXISTS public.sync_logs CASCADE;

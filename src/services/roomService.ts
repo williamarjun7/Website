@@ -101,18 +101,7 @@ export const checkRoomAvailability = async (
 
         if (bookingError) throw bookingError;
 
-        // Check for blocked dates
-        const { data: blockedDates, error: blockedError } = await insforge.database
-            .from('blocked_dates')
-            .select('*')
-            .eq('room_id', roomId)
-            .lt('start_date', checkOut)
-            .gt('end_date', checkIn);
-
-        if (blockedError) throw blockedError;
-
-        const isAvailable = (!bookings || bookings.length === 0) &&
-            (!blockedDates || blockedDates.length === 0);
+        const isAvailable = (!bookings || bookings.length === 0);
 
         return { data: { isAvailable }, error: null };
     } catch (error) {
@@ -123,8 +112,7 @@ export const checkRoomAvailability = async (
 // Get available rooms for date range (single query batch instead of N+1)
 export const getAvailableRooms = async (checkIn: string, checkOut: string) => {
     try {
-        // Fetch all rooms, conflicting bookings, and blocked dates in parallel
-        const [roomsResult, bookingsResult, blockedResult] = await Promise.all([
+        const [roomsResult, bookingsResult] = await Promise.all([
             getRooms(),
             insforge.database
                 .from('bookings')
@@ -132,24 +120,15 @@ export const getAvailableRooms = async (checkIn: string, checkOut: string) => {
                 .in('booking_status', ['confirmed', 'checked_in'])
                 .lt('check_in', checkOut)
                 .gt('check_out', checkIn),
-            insforge.database
-                .from('blocked_dates')
-                .select('room_id')
-                .lt('start_date', checkOut)
-                .gt('end_date', checkIn),
         ]);
 
         if (roomsResult.error) throw roomsResult.error;
         if (bookingsResult.error) throw bookingsResult.error;
-        if (blockedResult.error) throw blockedResult.error;
 
-        // Collect room IDs that are unavailable
         const unavailableRoomIds = new Set<string>();
         for (const booking of bookingsResult.data || []) {
             unavailableRoomIds.add(booking.room_id);
         }
-        for (const blocked of blockedResult.data || []) {
-            unavailableRoomIds.add(blocked.room_id);
         }
 
         // Filter to only available rooms
