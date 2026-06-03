@@ -129,15 +129,13 @@ export default async function handler(req: Request) {
         return errorResponse("check_in and check_out query parameters are required")
       }
 
-      const [roomsResult, bookingsResult, blockedResult] = await Promise.all([
+      const [roomsResult, bookingsResult] = await Promise.all([
         db.from("rooms").select("*, room_images(*)").eq("is_active", true).order("name", { ascending: true }),
         db.from("bookings").select("room_id, check_in, check_out").in("booking_status", ["confirmed", "checked_in"]).lt("check_in", checkOut).gt("check_out", checkIn),
-        db.from("blocked_dates").select("room_id, start_date, end_date").lt("start_date", checkOut).gt("end_date", checkIn),
       ])
 
       const unavailableRoomIds = new Set<string>()
       for (const b of bookingsResult.data || []) unavailableRoomIds.add(b.room_id)
-      for (const b of blockedResult.data || []) unavailableRoomIds.add(b.room_id)
 
       const rooms = (roomsResult.data || []).map((room: any) => ({
         ...room,

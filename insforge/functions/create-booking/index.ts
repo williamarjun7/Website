@@ -206,23 +206,6 @@ export default async function (req: Request) {
         throw new Error("Room is no longer available for the selected dates")
       }
 
-      // Check blocked dates
-      const { data: blockedDates, error: blockedError } = await db
-        .from("blocked_dates")
-        .select("id")
-        .eq("room_id", room_id)
-        .lt("start_date", check_out)
-        .gt("end_date", check_in)
-        .limit(1)
-
-      if (blockedError && blockedError.code !== "PGRST116") {
-        throw new Error("Error verifying room availability against blocked dates")
-      }
-
-      if (blockedDates && blockedDates.length > 0) {
-        throw new Error("Room is not available for the selected dates (blocked)")
-      }
-
       // Insert booking
       const { data: booking, error: insertError } = await db
         .from("bookings")
