@@ -8,1818 +8,135 @@
       "file_type": "code",
       "source_file": "eslint.config.js",
       "source_location": "L1",
-      "community": 22,
-      "norm_label": "eslint.config.js",
-      "id": "eslint_config_js"
+      "id": "eslint_config_js",
+      "community": 23,
+      "norm_label": "eslint.config.js"
     },
     {
       "label": "postcss.config.js",
       "file_type": "code",
       "source_file": "postcss.config.js",
       "source_location": "L1",
-      "community": 23,
-      "norm_label": "postcss.config.js",
-      "id": "postcss_config_js"
+      "id": "postcss_config_js",
+      "community": 24,
+      "norm_label": "postcss.config.js"
     },
     {
       "label": "tailwind.config.js",
       "file_type": "code",
       "source_file": "tailwind.config.js",
       "source_location": "L1",
-      "community": 24,
-      "norm_label": "tailwind.config.js",
-      "id": "tailwind_config_js"
+      "id": "tailwind_config_js",
+      "community": 25,
+      "norm_label": "tailwind.config.js"
     },
     {
       "label": "vite.config.ts",
       "file_type": "code",
       "source_file": "vite.config.ts",
       "source_location": "L1",
-      "community": 16,
-      "norm_label": "vite.config.ts",
-      "id": "vite_config_ts"
+      "id": "vite_config_ts",
+      "community": 17,
+      "norm_label": "vite.config.ts"
     },
     {
       "label": "manualChunks()",
       "file_type": "code",
       "source_file": "vite.config.ts",
       "source_location": "L19",
-      "community": 16,
-      "norm_label": "manualchunks()",
-      "id": "arjun_vite_config_manualchunks"
+      "id": "arjun_vite_config_manualchunks",
+      "community": 17,
+      "norm_label": "manualchunks()"
     },
     {
       "label": "email.ts",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/email.ts",
       "source_location": "L1",
-      "community": 13,
-      "norm_label": "email.ts",
-      "id": "insforge_functions_create_booking_email_ts"
+      "id": "insforge_functions_create_booking_email_ts",
+      "community": 14,
+      "norm_label": "email.ts"
     },
     {
       "label": "sendEmail()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/email.ts",
       "source_location": "L7",
-      "community": 13,
-      "norm_label": "sendemail()",
-      "id": "create_booking_email_sendemail"
+      "id": "create_booking_email_sendemail",
+      "community": 14,
+      "norm_label": "sendemail()"
     },
     {
       "label": "buildBookingConfirmationHtml()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/email.ts",
       "source_location": "L36",
-      "community": 13,
-      "norm_label": "buildbookingconfirmationhtml()",
-      "id": "create_booking_email_buildbookingconfirmationhtml"
+      "id": "create_booking_email_buildbookingconfirmationhtml",
+      "community": 14,
+      "norm_label": "buildbookingconfirmationhtml()"
     },
     {
       "label": "index.ts",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L1",
-      "community": 10,
-      "norm_label": "index.ts",
-      "id": "insforge_functions_create_booking_index_ts"
+      "id": "insforge_functions_create_booking_index_ts",
+      "community": 11,
+      "norm_label": "index.ts"
     },
     {
       "label": "sendEmail()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L7",
-      "community": 10,
-      "norm_label": "sendemail()",
-      "id": "create_booking_index_sendemail"
+      "id": "create_booking_index_sendemail",
+      "community": 11,
+      "norm_label": "sendemail()"
     },
     {
       "label": "buildBookingConfirmationHtml()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L19",
-      "community": 10,
-      "norm_label": "buildbookingconfirmationhtml()",
-      "id": "create_booking_index_buildbookingconfirmationhtml"
+      "id": "create_booking_index_buildbookingconfirmationhtml",
+      "community": 11,
+      "norm_label": "buildbookingconfirmationhtml()"
     },
     {
       "label": "getCorsHeaders()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L32",
-      "community": 10,
-      "norm_label": "getcorsheaders()",
-      "id": "create_booking_index_getcorsheaders"
+      "id": "create_booking_index_getcorsheaders",
+      "community": 11,
+      "norm_label": "getcorsheaders()"
     },
     {
       "label": "getClientIp()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L53",
-      "community": 10,
-      "norm_label": "getclientip()",
-      "id": "create_booking_index_getclientip"
+      "id": "create_booking_index_getclientip",
+      "community": 11,
+      "norm_label": "getclientip()"
     },
     {
       "label": "checkRateLimit()",
       "file_type": "code",
       "source_file": "insforge/functions/create-booking/index.ts",
       "source_location": "L59",
-      "community": 10,
-      "norm_label": "checkratelimit()",
-      "id": "create_booking_index_checkratelimit"
+      "id": "create_booking_index_checkratelimit",
+      "community": 11,
+      "norm_label": "checkratelimit()"
     },
     {
       "label": "index.ts",
       "file_type": "code",
       "source_file": "insforge/functions/fonepay-payment/index.ts",
       "source_location": "L1",
-      "community": 8,
-      "norm_label": "index.ts",
-      "id": "insforge_functions_fonepay_payment_index_ts"
-    },
-    {
-      "label": "getCorsHeaders()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L21",
-      "community": 8,
-      "norm_label": "getcorsheaders()",
-      "id": "fonepay_payment_index_getcorsheaders"
-    },
-    {
-      "label": "hmacSha512()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L32",
-      "community": 8,
-      "norm_label": "hmacsha512()",
-      "id": "fonepay_payment_index_hmacsha512"
-    },
-    {
-      "label": "extractBookingId()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L45",
-      "community": 8,
-      "norm_label": "extractbookingid()",
-      "id": "fonepay_payment_index_extractbookingid"
-    },
-    {
-      "label": "logEvent()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L54",
-      "community": 8,
-      "norm_label": "logevent()",
-      "id": "fonepay_payment_index_logevent"
-    },
-    {
-      "label": "errorResponse()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L136",
-      "community": 8,
-      "norm_label": "errorresponse()",
-      "id": "fonepay_payment_index_errorresponse"
-    },
-    {
-      "label": "handler()",
-      "file_type": "code",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L144",
-      "community": 8,
-      "norm_label": "handler()",
-      "id": "fonepay_payment_index_handler"
-    },
-    {
-      "label": "index.ts",
-      "file_type": "code",
-      "source_file": "insforge/functions/place-cafe-order/index.ts",
-      "source_location": "L1",
-      "community": 14,
-      "norm_label": "index.ts",
-      "id": "insforge_functions_place_cafe_order_index_ts"
-    },
-    {
-      "label": "getCorsHeaders()",
-      "file_type": "code",
-      "source_file": "insforge/functions/place-cafe-order/index.ts",
-      "source_location": "L12",
-      "community": 14,
-      "norm_label": "getcorsheaders()",
-      "id": "place_cafe_order_index_getcorsheaders"
-    },
-    {
-      "label": "validate()",
-      "file_type": "code",
-      "source_file": "insforge/functions/place-cafe-order/index.ts",
-      "source_location": "L23",
-      "community": 14,
-      "norm_label": "validate()",
-      "id": "place_cafe_order_index_validate"
-    },
-    {
-      "label": "index.ts",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L1",
+      "id": "insforge_functions_fonepay_payment_index_ts",
       "community": 9,
-      "norm_label": "index.ts",
-      "id": "insforge_functions_pos_sync_api_index_ts"
-    },
-    {
-      "label": "getCorsHeaders()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L12",
-      "community": 9,
-      "norm_label": "getcorsheaders()",
-      "id": "pos_sync_api_index_getcorsheaders"
-    },
-    {
-      "label": "verifyPosApiKey()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L23",
-      "community": 9,
-      "norm_label": "verifyposapikey()",
-      "id": "pos_sync_api_index_verifyposapikey"
-    },
-    {
-      "label": "errorResponse()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L33",
-      "community": 9,
-      "norm_label": "errorresponse()",
-      "id": "pos_sync_api_index_errorresponse"
-    },
-    {
-      "label": "verifyHmacSignature()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L40",
-      "community": 9,
-      "norm_label": "verifyhmacsignature()",
-      "id": "pos_sync_api_index_verifyhmacsignature"
-    },
-    {
-      "label": "checkIdempotency()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L52",
-      "community": 9,
-      "norm_label": "checkidempotency()",
-      "id": "pos_sync_api_index_checkidempotency"
-    },
-    {
-      "label": "handler()",
-      "file_type": "code",
-      "source_file": "insforge/functions/pos-sync-api/index.ts",
-      "source_location": "L96",
-      "community": 9,
-      "norm_label": "handler()",
-      "id": "pos_sync_api_index_handler"
-    },
-    {
-      "label": "index.ts",
-      "file_type": "code",
-      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
-      "source_location": "L1",
-      "community": 12,
-      "norm_label": "index.ts",
-      "id": "insforge_functions_sync_webhook_sender_index_ts"
-    },
-    {
-      "label": "handler()",
-      "file_type": "code",
-      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
-      "source_location": "L12",
-      "community": 12,
-      "norm_label": "handler()",
-      "id": "sync_webhook_sender_index_handler"
-    },
-    {
-      "label": "createHmacSignature()",
-      "file_type": "code",
-      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
-      "source_location": "L134",
-      "community": 12,
-      "norm_label": "createhmacsignature()",
-      "id": "sync_webhook_sender_index_createhmacsignature"
-    },
-    {
-      "label": "App.tsx",
-      "file_type": "code",
-      "source_file": "src/App.tsx",
-      "source_location": "L1",
-      "community": 15,
-      "norm_label": "app.tsx",
-      "id": "src_app_tsx"
-    },
-    {
-      "label": "LoadingFallback()",
-      "file_type": "code",
-      "source_file": "src/App.tsx",
-      "source_location": "L35",
-      "community": 15,
-      "norm_label": "loadingfallback()",
-      "id": "src_app_loadingfallback"
-    },
-    {
-      "label": "main.tsx",
-      "file_type": "code",
-      "source_file": "src/main.tsx",
-      "source_location": "L1",
-      "community": 15,
-      "norm_label": "main.tsx",
-      "id": "src_main_tsx"
-    },
-    {
-      "label": "vite-env.d.ts",
-      "file_type": "code",
-      "source_file": "src/vite-env.d.ts",
-      "source_location": "L1",
-      "community": 25,
-      "norm_label": "vite-env.d.ts",
-      "id": "src_vite_env_d_ts"
-    },
-    {
-      "label": "RoomCarousel.tsx",
-      "file_type": "code",
-      "source_file": "src/components/RoomCarousel.tsx",
-      "source_location": "L1",
-      "community": 26,
-      "norm_label": "roomcarousel.tsx",
-      "id": "src_components_roomcarousel_tsx"
-    },
-    {
-      "label": "AdminLayout.tsx",
-      "file_type": "code",
-      "source_file": "src/components/admin/AdminLayout.tsx",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "adminlayout.tsx",
-      "id": "src_components_admin_adminlayout_tsx"
-    },
-    {
-      "label": "handleResize()",
-      "file_type": "code",
-      "source_file": "src/components/admin/AdminLayout.tsx",
-      "source_location": "L24",
-      "community": 0,
-      "norm_label": "handleresize()",
-      "id": "admin_adminlayout_handleresize"
-    },
-    {
-      "label": "handleLogout()",
-      "file_type": "code",
-      "source_file": "src/components/admin/AdminLayout.tsx",
-      "source_location": "L33",
-      "community": 0,
-      "norm_label": "handlelogout()",
-      "id": "admin_adminlayout_handlelogout"
-    },
-    {
-      "label": "ConfirmDialog.tsx",
-      "file_type": "code",
-      "source_file": "src/components/common/ConfirmDialog.tsx",
-      "source_location": "L1",
-      "community": 17,
-      "norm_label": "confirmdialog.tsx",
-      "id": "src_components_common_confirmdialog_tsx"
-    },
-    {
-      "label": "ConfirmDialog()",
-      "file_type": "code",
-      "source_file": "src/components/common/ConfirmDialog.tsx",
-      "source_location": "L14",
-      "community": 17,
-      "norm_label": "confirmdialog()",
-      "id": "common_confirmdialog_confirmdialog"
-    },
-    {
-      "label": "ErrorBoundary.tsx",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L1",
-      "community": 11,
-      "norm_label": "errorboundary.tsx",
-      "id": "src_components_common_errorboundary_tsx"
-    },
-    {
-      "label": "ErrorBoundary",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L13",
-      "community": 11,
-      "norm_label": "errorboundary",
-      "id": "common_errorboundary_errorboundary"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L14",
-      "community": 11,
-      "norm_label": ".constructor()",
-      "id": "common_errorboundary_errorboundary_constructor"
-    },
-    {
-      "label": ".getDerivedStateFromError()",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L19",
-      "community": 11,
-      "norm_label": ".getderivedstatefromerror()",
-      "id": "common_errorboundary_errorboundary_getderivedstatefromerror"
-    },
-    {
-      "label": ".componentDidCatch()",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L23",
-      "community": 11,
-      "norm_label": ".componentdidcatch()",
-      "id": "common_errorboundary_errorboundary_componentdidcatch"
-    },
-    {
-      "label": ".render()",
-      "file_type": "code",
-      "source_file": "src/components/common/ErrorBoundary.tsx",
-      "source_location": "L31",
-      "community": 11,
-      "norm_label": ".render()",
-      "id": "common_errorboundary_errorboundary_render"
-    },
-    {
-      "label": "Footer.tsx",
-      "file_type": "code",
-      "source_file": "src/components/common/Footer.tsx",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "footer.tsx",
-      "id": "src_components_common_footer_tsx"
-    },
-    {
-      "label": "Navbar.tsx",
-      "file_type": "code",
-      "source_file": "src/components/common/Navbar.tsx",
-      "source_location": "L1",
-      "community": 18,
-      "norm_label": "navbar.tsx",
-      "id": "src_components_common_navbar_tsx"
-    },
-    {
-      "label": "Navbar()",
-      "file_type": "code",
-      "source_file": "src/components/common/Navbar.tsx",
-      "source_location": "L7",
-      "community": 18,
-      "norm_label": "navbar()",
-      "id": "common_navbar_navbar"
-    },
-    {
-      "label": "ScrollToTop.tsx",
-      "file_type": "code",
-      "source_file": "src/components/common/ScrollToTop.tsx",
-      "source_location": "L1",
-      "community": 19,
-      "norm_label": "scrolltotop.tsx",
-      "id": "src_components_common_scrolltotop_tsx"
-    },
-    {
-      "label": "ScrollToTop()",
-      "file_type": "code",
-      "source_file": "src/components/common/ScrollToTop.tsx",
-      "source_location": "L4",
-      "community": 19,
-      "norm_label": "scrolltotop()",
-      "id": "common_scrolltotop_scrolltotop"
-    },
-    {
-      "label": "About.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/About.tsx",
-      "source_location": "L1",
-      "community": 28,
-      "norm_label": "about.tsx",
-      "id": "src_pages_about_tsx"
-    },
-    {
-      "label": "Booking.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L1",
-      "community": 2,
-      "norm_label": "booking.tsx",
-      "id": "src_pages_booking_tsx"
-    },
-    {
-      "label": "searchAvailableRooms()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L51",
-      "community": 2,
-      "norm_label": "searchavailablerooms()",
-      "id": "pages_booking_searchavailablerooms"
-    },
-    {
-      "label": "handleRoomSelect()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L84",
-      "community": 2,
-      "norm_label": "handleroomselect()",
-      "id": "pages_booking_handleroomselect"
-    },
-    {
-      "label": "processPayment()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L150",
-      "community": 2,
-      "norm_label": "processpayment()",
-      "id": "pages_booking_processpayment"
-    },
-    {
-      "label": "onSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L204",
-      "community": 2,
-      "norm_label": "onsubmit()",
-      "id": "pages_booking_onsubmit"
-    },
-    {
-      "label": "calculateNights()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L233",
-      "community": 2,
-      "norm_label": "calculatenights()",
-      "id": "pages_booking_calculatenights"
-    },
-    {
-      "label": "getTotalPrice()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L240",
-      "community": 2,
-      "norm_label": "gettotalprice()",
-      "id": "pages_booking_gettotalprice"
-    },
-    {
-      "label": "async()",
-      "file_type": "code",
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L522",
-      "community": 2,
-      "norm_label": "async()",
-      "id": "pages_booking_async"
-    },
-    {
-      "label": "bookingSchema.ts",
-      "file_type": "code",
-      "source_file": "src/pages/bookingSchema.ts",
-      "source_location": "L1",
-      "community": 29,
-      "norm_label": "bookingschema.ts",
-      "id": "src_pages_bookingschema_ts"
-    },
-    {
-      "label": "Cafe.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L1",
-      "community": 6,
-      "norm_label": "cafe.tsx",
-      "id": "src_pages_cafe_tsx"
-    },
-    {
-      "label": "loadMenu()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L46",
-      "community": 6,
-      "norm_label": "loadmenu()",
-      "id": "pages_cafe_loadmenu"
-    },
-    {
-      "label": "getFeaturedItems()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L55",
-      "community": 6,
-      "norm_label": "getfeatureditems()",
-      "id": "pages_cafe_getfeatureditems"
-    },
-    {
-      "label": "addToCart()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L69",
-      "community": 6,
-      "norm_label": "addtocart()",
-      "id": "pages_cafe_addtocart"
-    },
-    {
-      "label": "updateQuantity()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L79",
-      "community": 6,
-      "norm_label": "updatequantity()",
-      "id": "pages_cafe_updatequantity"
-    },
-    {
-      "label": "removeFromCart()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L90",
-      "community": 6,
-      "norm_label": "removefromcart()",
-      "id": "pages_cafe_removefromcart"
-    },
-    {
-      "label": "getItemQuantity()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L94",
-      "community": 6,
-      "norm_label": "getitemquantity()",
-      "id": "pages_cafe_getitemquantity"
-    },
-    {
-      "label": "handlePlaceOrder()",
-      "file_type": "code",
-      "source_file": "src/pages/Cafe.tsx",
-      "source_location": "L98",
-      "community": 6,
-      "norm_label": "handleplaceorder()",
-      "id": "pages_cafe_handleplaceorder"
-    },
-    {
-      "label": "Contact.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Contact.tsx",
-      "source_location": "L1",
-      "community": 20,
-      "norm_label": "contact.tsx",
-      "id": "src_pages_contact_tsx"
-    },
-    {
-      "label": "handleSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/Contact.tsx",
-      "source_location": "L8",
-      "community": 20,
-      "norm_label": "handlesubmit()",
-      "id": "pages_contact_handlesubmit"
-    },
-    {
-      "label": "FAQ.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/FAQ.tsx",
-      "source_location": "L1",
-      "community": 21,
-      "norm_label": "faq.tsx",
-      "id": "src_pages_faq_tsx"
-    },
-    {
-      "label": "toggleItem()",
-      "file_type": "code",
-      "source_file": "src/pages/FAQ.tsx",
-      "source_location": "L113",
-      "community": 21,
-      "norm_label": "toggleitem()",
-      "id": "pages_faq_toggleitem"
-    },
-    {
-      "label": "Home.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Home.tsx",
-      "source_location": "L1",
-      "community": 7,
-      "norm_label": "home.tsx",
-      "id": "src_pages_home_tsx"
-    },
-    {
-      "label": "loadData()",
-      "file_type": "code",
-      "source_file": "src/pages/Home.tsx",
-      "source_location": "L33",
-      "community": 7,
-      "norm_label": "loaddata()",
-      "id": "pages_home_loaddata"
-    },
-    {
-      "label": "PaymentResult.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/PaymentResult.tsx",
-      "source_location": "L1",
-      "community": 2,
-      "norm_label": "paymentresult.tsx",
-      "id": "src_pages_paymentresult_tsx"
-    },
-    {
-      "label": "verify()",
-      "file_type": "code",
-      "source_file": "src/pages/PaymentResult.tsx",
-      "source_location": "L14",
-      "community": 2,
-      "norm_label": "verify()",
-      "id": "pages_paymentresult_verify"
-    },
-    {
-      "label": "Privacy.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Privacy.tsx",
-      "source_location": "L1",
-      "community": 30,
-      "norm_label": "privacy.tsx",
-      "id": "src_pages_privacy_tsx"
-    },
-    {
-      "label": "RoomDetails.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/RoomDetails.tsx",
-      "source_location": "L1",
-      "community": 7,
-      "norm_label": "roomdetails.tsx",
-      "id": "src_pages_roomdetails_tsx"
-    },
-    {
-      "label": "loadRoomData()",
-      "file_type": "code",
-      "source_file": "src/pages/RoomDetails.tsx",
-      "source_location": "L36",
-      "community": 7,
-      "norm_label": "loadroomdata()",
-      "id": "pages_roomdetails_loadroomdata"
-    },
-    {
-      "label": "Rooms.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Rooms.tsx",
-      "source_location": "L1",
-      "community": 7,
-      "norm_label": "rooms.tsx",
-      "id": "src_pages_rooms_tsx"
-    },
-    {
-      "label": "loadRooms()",
-      "file_type": "code",
-      "source_file": "src/pages/Rooms.tsx",
-      "source_location": "L34",
-      "community": 7,
-      "norm_label": "loadrooms()",
-      "id": "pages_rooms_loadrooms"
-    },
-    {
-      "label": "clearFilters()",
-      "file_type": "code",
-      "source_file": "src/pages/Rooms.tsx",
-      "source_location": "L78",
-      "community": 7,
-      "norm_label": "clearfilters()",
-      "id": "pages_rooms_clearfilters"
-    },
-    {
-      "label": "Terms.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/Terms.tsx",
-      "source_location": "L1",
-      "community": 31,
-      "norm_label": "terms.tsx",
-      "id": "src_pages_terms_tsx"
-    },
-    {
-      "label": "AdminDashboard.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminDashboard.tsx",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "admindashboard.tsx",
-      "id": "src_pages_admin_admindashboard_tsx"
-    },
-    {
-      "label": "AdminGate.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminGate.tsx",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "admingate.tsx",
-      "id": "src_pages_admin_admingate_tsx"
-    },
-    {
-      "label": "AdminGate()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminGate.tsx",
-      "source_location": "L5",
-      "community": 0,
-      "norm_label": "admingate()",
-      "id": "admin_admingate_admingate"
-    },
-    {
-      "label": "AdminLogin.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminLogin.tsx",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "adminlogin.tsx",
-      "id": "src_pages_admin_adminlogin_tsx"
-    },
-    {
-      "label": "handleSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminLogin.tsx",
-      "source_location": "L13",
-      "community": 0,
-      "norm_label": "handlesubmit()",
-      "id": "admin_adminlogin_handlesubmit"
-    },
-    {
-      "label": "AdminSignup.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminSignup.tsx",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "adminsignup.tsx",
-      "id": "src_pages_admin_adminsignup_tsx"
-    },
-    {
-      "label": "handleSignup()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminSignup.tsx",
-      "source_location": "L15",
-      "community": 0,
-      "norm_label": "handlesignup()",
-      "id": "admin_adminsignup_handlesignup"
-    },
-    {
-      "label": "AdminVerify.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminVerify.tsx",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "adminverify.tsx",
-      "id": "src_pages_admin_adminverify_tsx"
-    },
-    {
-      "label": "handleVerify()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminVerify.tsx",
-      "source_location": "L27",
-      "community": 0,
-      "norm_label": "handleverify()",
-      "id": "admin_adminverify_handleverify"
-    },
-    {
-      "label": "handleResend()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/AdminVerify.tsx",
-      "source_location": "L54",
-      "community": 0,
-      "norm_label": "handleresend()",
-      "id": "admin_adminverify_handleresend"
-    },
-    {
-      "label": "Bookings.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Bookings.tsx",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "bookings.tsx",
-      "id": "src_pages_admin_bookings_tsx"
-    },
-    {
-      "label": "loadBookings()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Bookings.tsx",
-      "source_location": "L40",
-      "community": 4,
-      "norm_label": "loadbookings()",
-      "id": "admin_bookings_loadbookings"
-    },
-    {
-      "label": "filterBookings()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Bookings.tsx",
-      "source_location": "L49",
-      "community": 4,
-      "norm_label": "filterbookings()",
-      "id": "admin_bookings_filterbookings"
-    },
-    {
-      "label": "handleStatusUpdate()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Bookings.tsx",
-      "source_location": "L78",
-      "community": 4,
-      "norm_label": "handlestatusupdate()",
-      "id": "admin_bookings_handlestatusupdate"
-    },
-    {
-      "label": "getStatusColor()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Bookings.tsx",
-      "source_location": "L91",
-      "community": 4,
-      "norm_label": "getstatuscolor()",
-      "id": "admin_bookings_getstatuscolor"
-    },
-    {
-      "label": "CafeOrders.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/CafeOrders.tsx",
-      "source_location": "L1",
-      "community": 6,
-      "norm_label": "cafeorders.tsx",
-      "id": "src_pages_admin_cafeorders_tsx"
-    },
-    {
-      "label": "loadOrders()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/CafeOrders.tsx",
-      "source_location": "L16",
-      "community": 6,
-      "norm_label": "loadorders()",
-      "id": "admin_cafeorders_loadorders"
-    },
-    {
-      "label": "handleStatusChange()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/CafeOrders.tsx",
-      "source_location": "L23",
-      "community": 6,
-      "norm_label": "handlestatuschange()",
-      "id": "admin_cafeorders_handlestatuschange"
-    },
-    {
-      "label": "ContentEditor.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/ContentEditor.tsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "contenteditor.tsx",
-      "id": "src_pages_admin_contenteditor_tsx"
-    },
-    {
-      "label": "loadContent()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/ContentEditor.tsx",
-      "source_location": "L26",
-      "community": 1,
-      "norm_label": "loadcontent()",
-      "id": "admin_contenteditor_loadcontent"
-    },
-    {
-      "label": "handleSave()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/ContentEditor.tsx",
-      "source_location": "L42",
-      "community": 1,
-      "norm_label": "handlesave()",
-      "id": "admin_contenteditor_handlesave"
-    },
-    {
-      "label": "Images.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Images.tsx",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "images.tsx",
-      "id": "src_pages_admin_images_tsx"
-    },
-    {
-      "label": "loadImages()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Images.tsx",
-      "source_location": "L40",
-      "community": 1,
-      "norm_label": "loadimages()",
-      "id": "admin_images_loadimages"
-    },
-    {
-      "label": "handleImageUpload()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Images.tsx",
-      "source_location": "L49",
-      "community": 1,
-      "norm_label": "handleimageupload()",
-      "id": "admin_images_handleimageupload"
-    },
-    {
-      "label": "handleSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Images.tsx",
-      "source_location": "L79",
-      "community": 1,
-      "norm_label": "handlesubmit()",
-      "id": "admin_images_handlesubmit"
-    },
-    {
-      "label": "handleDelete()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Images.tsx",
-      "source_location": "L103",
-      "community": 1,
-      "norm_label": "handledelete()",
-      "id": "admin_images_handledelete"
-    },
-    {
-      "label": "Menu.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L1",
-      "community": 5,
-      "norm_label": "menu.tsx",
-      "id": "src_pages_admin_menu_tsx"
-    },
-    {
-      "label": "loadMenu()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L58",
-      "community": 5,
-      "norm_label": "loadmenu()",
-      "id": "admin_menu_loadmenu"
-    },
-    {
-      "label": "handleCategorySubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L68",
-      "community": 5,
-      "norm_label": "handlecategorysubmit()",
-      "id": "admin_menu_handlecategorysubmit"
-    },
-    {
-      "label": "handleDeleteCategory()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L81",
-      "community": 5,
-      "norm_label": "handledeletecategory()",
-      "id": "admin_menu_handledeletecategory"
-    },
-    {
-      "label": "handleItemSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L89",
-      "community": 5,
-      "norm_label": "handleitemsubmit()",
-      "id": "admin_menu_handleitemsubmit"
-    },
-    {
-      "label": "handleDeleteItem()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L115",
-      "community": 5,
-      "norm_label": "handledeleteitem()",
-      "id": "admin_menu_handledeleteitem"
-    },
-    {
-      "label": "handleToggleAvailability()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L122",
-      "community": 5,
-      "norm_label": "handletoggleavailability()",
-      "id": "admin_menu_handletoggleavailability"
-    },
-    {
-      "label": "handleImageUpload()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Menu.tsx",
-      "source_location": "L127",
-      "community": 5,
-      "norm_label": "handleimageupload()",
-      "id": "admin_menu_handleimageupload"
-    },
-    {
-      "label": "Rooms.tsx",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L1",
-      "community": 3,
-      "norm_label": "rooms.tsx",
-      "id": "src_pages_admin_rooms_tsx"
-    },
-    {
-      "label": "loadRooms()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L67",
-      "community": 3,
-      "norm_label": "loadrooms()",
-      "id": "admin_rooms_loadrooms"
-    },
-    {
-      "label": "handleEdit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L76",
-      "community": 3,
-      "norm_label": "handleedit()",
-      "id": "admin_rooms_handleedit"
-    },
-    {
-      "label": "handleDelete()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L100",
-      "community": 3,
-      "norm_label": "handledelete()",
-      "id": "admin_rooms_handledelete"
-    },
-    {
-      "label": "confirmDelete()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L104",
-      "community": 3,
-      "norm_label": "confirmdelete()",
-      "id": "admin_rooms_confirmdelete"
-    },
-    {
-      "label": "handleImageUpload()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L116",
-      "community": 3,
-      "norm_label": "handleimageupload()",
-      "id": "admin_rooms_handleimageupload"
-    },
-    {
-      "label": "handleAddImageToExistingRoom()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L165",
-      "community": 3,
-      "norm_label": "handleaddimagetoexistingroom()",
-      "id": "admin_rooms_handleaddimagetoexistingroom"
-    },
-    {
-      "label": "removePendingImage()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L186",
-      "community": 3,
-      "norm_label": "removependingimage()",
-      "id": "admin_rooms_removependingimage"
-    },
-    {
-      "label": "handleRemoveExistingImage()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L190",
-      "community": 3,
-      "norm_label": "handleremoveexistingimage()",
-      "id": "admin_rooms_handleremoveexistingimage"
-    },
-    {
-      "label": "handleReorderImage()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L209",
-      "community": 3,
-      "norm_label": "handlereorderimage()",
-      "id": "admin_rooms_handlereorderimage"
-    },
-    {
-      "label": "handleSubmit()",
-      "file_type": "code",
-      "source_file": "src/pages/admin/Rooms.tsx",
-      "source_location": "L243",
-      "community": 3,
-      "norm_label": "handlesubmit()",
-      "id": "admin_rooms_handlesubmit"
-    },
-    {
-      "label": "authService.ts",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L1",
-      "community": 0,
-      "norm_label": "authservice.ts",
-      "id": "src_services_authservice_ts"
-    },
-    {
-      "label": "adminLogin()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L12",
-      "community": 0,
-      "norm_label": "adminlogin()",
-      "id": "services_authservice_adminlogin"
-    },
-    {
-      "label": "adminSignup()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L28",
-      "community": 0,
-      "norm_label": "adminsignup()",
-      "id": "services_authservice_adminsignup"
-    },
-    {
-      "label": "verifyEmail()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L44",
-      "community": 0,
-      "norm_label": "verifyemail()",
-      "id": "services_authservice_verifyemail"
-    },
-    {
-      "label": "resendVerification()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L60",
-      "community": 0,
-      "norm_label": "resendverification()",
-      "id": "services_authservice_resendverification"
-    },
-    {
-      "label": "adminLogout()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L75",
-      "community": 0,
-      "norm_label": "adminlogout()",
-      "id": "services_authservice_adminlogout"
-    },
-    {
-      "label": "getAdminSession()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L86",
-      "community": 0,
-      "norm_label": "getadminsession()",
-      "id": "services_authservice_getadminsession"
-    },
-    {
-      "label": "getCurrentAdmin()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L97",
-      "community": 0,
-      "norm_label": "getcurrentadmin()",
-      "id": "services_authservice_getcurrentadmin"
-    },
-    {
-      "label": "isAuthenticated()",
-      "file_type": "code",
-      "source_file": "src/services/authService.ts",
-      "source_location": "L108",
-      "community": 0,
-      "norm_label": "isauthenticated()",
-      "id": "services_authservice_isauthenticated"
-    },
-    {
-      "label": "bookingService.ts",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "bookingservice.ts",
-      "id": "src_services_bookingservice_ts"
-    },
-    {
-      "label": "createBooking()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L30",
-      "community": 2,
-      "norm_label": "createbooking()",
-      "id": "services_bookingservice_createbooking"
-    },
-    {
-      "label": "getBookingById()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L49",
-      "community": 4,
-      "norm_label": "getbookingbyid()",
-      "id": "services_bookingservice_getbookingbyid"
-    },
-    {
-      "label": "getBookingsByEmail()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L65",
-      "community": 4,
-      "norm_label": "getbookingsbyemail()",
-      "id": "services_bookingservice_getbookingsbyemail"
-    },
-    {
-      "label": "getAllBookings()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L81",
-      "community": 4,
-      "norm_label": "getallbookings()",
-      "id": "services_bookingservice_getallbookings"
-    },
-    {
-      "label": "updateBookingStatus()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L97",
-      "community": 4,
-      "norm_label": "updatebookingstatus()",
-      "id": "services_bookingservice_updatebookingstatus"
-    },
-    {
-      "label": "cancelBooking()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L117",
-      "community": 4,
-      "norm_label": "cancelbooking()",
-      "id": "services_bookingservice_cancelbooking"
-    },
-    {
-      "label": "getBookingsByDateRange()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L134",
-      "community": 4,
-      "norm_label": "getbookingsbydaterange()",
-      "id": "services_bookingservice_getbookingsbydaterange"
-    },
-    {
-      "label": "getUpcomingCheckIns()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L151",
-      "community": 4,
-      "norm_label": "getupcomingcheckins()",
-      "id": "services_bookingservice_getupcomingcheckins"
-    },
-    {
-      "label": "calculateTotalPrice()",
-      "file_type": "code",
-      "source_file": "src/services/bookingService.ts",
-      "source_location": "L174",
-      "community": 2,
-      "norm_label": "calculatetotalprice()",
-      "id": "services_bookingservice_calculatetotalprice"
-    },
-    {
-      "label": "contentService.ts",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "contentservice.ts",
-      "id": "src_services_contentservice_ts"
-    },
-    {
-      "label": "getSiteContent()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L20",
-      "community": 1,
-      "norm_label": "getsitecontent()",
-      "id": "services_contentservice_getsitecontent"
-    },
-    {
-      "label": "getAllSiteContent()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L36",
-      "community": 1,
-      "norm_label": "getallsitecontent()",
-      "id": "services_contentservice_getallsitecontent"
-    },
-    {
-      "label": "updateSiteContent()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L50",
-      "community": 1,
-      "norm_label": "updatesitecontent()",
-      "id": "services_contentservice_updatesitecontent"
-    },
-    {
-      "label": "getSiteImagesByType()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L66",
-      "community": 7,
-      "norm_label": "getsiteimagesbytype()",
-      "id": "services_contentservice_getsiteimagesbytype"
-    },
-    {
-      "label": "getAllSiteImages()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L83",
-      "community": 1,
-      "norm_label": "getallsiteimages()",
-      "id": "services_contentservice_getallsiteimages"
-    },
-    {
-      "label": "addSiteImage()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L98",
-      "community": 1,
-      "norm_label": "addsiteimage()",
-      "id": "services_contentservice_addsiteimage"
-    },
-    {
-      "label": "deleteSiteImage()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L114",
-      "community": 1,
-      "norm_label": "deletesiteimage()",
-      "id": "services_contentservice_deletesiteimage"
-    },
-    {
-      "label": "toggleImageActive()",
-      "file_type": "code",
-      "source_file": "src/services/contentService.ts",
-      "source_location": "L129",
-      "community": 1,
-      "norm_label": "toggleimageactive()",
-      "id": "services_contentservice_toggleimageactive"
-    },
-    {
-      "label": "fonepayService.ts",
-      "file_type": "code",
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L1",
-      "community": 2,
-      "norm_label": "fonepayservice.ts",
-      "id": "src_services_fonepayservice_ts"
-    },
-    {
-      "label": "generateQrPayment()",
-      "file_type": "code",
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L28",
-      "community": 2,
-      "norm_label": "generateqrpayment()",
-      "id": "services_fonepayservice_generateqrpayment"
-    },
-    {
-      "label": "generateWebPayment()",
-      "file_type": "code",
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L50",
-      "community": 2,
-      "norm_label": "generatewebpayment()",
-      "id": "services_fonepayservice_generatewebpayment"
-    },
-    {
-      "label": "verifyQrPayment()",
-      "file_type": "code",
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L72",
-      "community": 2,
-      "norm_label": "verifyqrpayment()",
-      "id": "services_fonepayservice_verifyqrpayment"
-    },
-    {
-      "label": "verifyWebPayment()",
-      "file_type": "code",
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L112",
-      "community": 2,
-      "norm_label": "verifywebpayment()",
-      "id": "services_fonepayservice_verifywebpayment"
-    },
-    {
-      "label": "insforge.ts",
-      "file_type": "code",
-      "source_file": "src/services/insforge.ts",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "insforge.ts",
-      "id": "src_services_insforge_ts"
-    },
-    {
-      "label": "handleInsforgeError()",
-      "file_type": "code",
-      "source_file": "src/services/insforge.ts",
-      "source_location": "L16",
-      "community": 1,
-      "norm_label": "handleinsforgeerror()",
-      "id": "services_insforge_handleinsforgeerror"
-    },
-    {
-      "label": "menuService.ts",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L1",
-      "community": 5,
-      "norm_label": "menuservice.ts",
-      "id": "src_services_menuservice_ts"
-    },
-    {
-      "label": "getFullMenu()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L22",
-      "community": 5,
-      "norm_label": "getfullmenu()",
-      "id": "services_menuservice_getfullmenu"
-    },
-    {
-      "label": "getMenuItemsByCategory()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L64",
-      "community": 5,
-      "norm_label": "getmenuitemsbycategory()",
-      "id": "services_menuservice_getmenuitemsbycategory"
-    },
-    {
-      "label": "getMenuCategories()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L81",
-      "community": 5,
-      "norm_label": "getmenucategories()",
-      "id": "services_menuservice_getmenucategories"
-    },
-    {
-      "label": "createCategory()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L96",
-      "community": 5,
-      "norm_label": "createcategory()",
-      "id": "services_menuservice_createcategory"
-    },
-    {
-      "label": "updateCategory()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L111",
-      "community": 5,
-      "norm_label": "updatecategory()",
-      "id": "services_menuservice_updatecategory"
-    },
-    {
-      "label": "deleteCategory()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L127",
-      "community": 5,
-      "norm_label": "deletecategory()",
-      "id": "services_menuservice_deletecategory"
-    },
-    {
-      "label": "createMenuItem()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L141",
-      "community": 5,
-      "norm_label": "createmenuitem()",
-      "id": "services_menuservice_createmenuitem"
-    },
-    {
-      "label": "updateMenuItem()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L156",
-      "community": 5,
-      "norm_label": "updatemenuitem()",
-      "id": "services_menuservice_updatemenuitem"
-    },
-    {
-      "label": "deleteMenuItem()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L172",
-      "community": 5,
-      "norm_label": "deletemenuitem()",
-      "id": "services_menuservice_deletemenuitem"
-    },
-    {
-      "label": "toggleItemAvailability()",
-      "file_type": "code",
-      "source_file": "src/services/menuService.ts",
-      "source_location": "L186",
-      "community": 5,
-      "norm_label": "toggleitemavailability()",
-      "id": "services_menuservice_toggleitemavailability"
-    },
-    {
-      "label": "orderService.ts",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L1",
-      "community": 6,
-      "norm_label": "orderservice.ts",
-      "id": "src_services_orderservice_ts"
-    },
-    {
-      "label": "placeOrder()",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L35",
-      "community": 6,
-      "norm_label": "placeorder()",
-      "id": "services_orderservice_placeorder"
-    },
-    {
-      "label": "getOrderByNumber()",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L47",
-      "community": 6,
-      "norm_label": "getorderbynumber()",
-      "id": "services_orderservice_getorderbynumber"
-    },
-    {
-      "label": "getOrdersByPhone()",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L61",
-      "community": 6,
-      "norm_label": "getordersbyphone()",
-      "id": "services_orderservice_getordersbyphone"
-    },
-    {
-      "label": "getAllOrders()",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L75",
-      "community": 6,
-      "norm_label": "getallorders()",
-      "id": "services_orderservice_getallorders"
-    },
-    {
-      "label": "updateOrderStatus()",
-      "file_type": "code",
-      "source_file": "src/services/orderService.ts",
-      "source_location": "L89",
-      "community": 6,
-      "norm_label": "updateorderstatus()",
-      "id": "services_orderservice_updateorderstatus"
-    },
-    {
-      "label": "roomService.ts",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L1",
-      "community": 3,
-      "norm_label": "roomservice.ts",
-      "id": "src_services_roomservice_ts"
-    },
-    {
-      "label": "getRooms()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L36",
-      "community": 7,
-      "norm_label": "getrooms()",
-      "id": "services_roomservice_getrooms"
-    },
-    {
-      "label": "getAllRoomsForAdmin()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L53",
-      "community": 3,
-      "norm_label": "getallroomsforadmin()",
-      "id": "services_roomservice_getallroomsforadmin"
-    },
-    {
-      "label": "getRoomById()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L69",
-      "community": 7,
-      "norm_label": "getroombyid()",
-      "id": "services_roomservice_getroombyid"
-    },
-    {
-      "label": "checkRoomAvailability()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L87",
-      "community": 1,
-      "norm_label": "checkroomavailability()",
-      "id": "services_roomservice_checkroomavailability"
-    },
-    {
-      "label": "getAvailableRooms()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L113",
-      "community": 2,
-      "norm_label": "getavailablerooms()",
-      "id": "services_roomservice_getavailablerooms"
-    },
-    {
-      "label": "createRoom()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L145",
-      "community": 3,
-      "norm_label": "createroom()",
-      "id": "services_roomservice_createroom"
-    },
-    {
-      "label": "updateRoom()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L161",
-      "community": 3,
-      "norm_label": "updateroom()",
-      "id": "services_roomservice_updateroom"
-    },
-    {
-      "label": "deleteRoom()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L178",
-      "community": 3,
-      "norm_label": "deleteroom()",
-      "id": "services_roomservice_deleteroom"
-    },
-    {
-      "label": "addRoomImage()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L193",
-      "community": 3,
-      "norm_label": "addroomimage()",
-      "id": "services_roomservice_addroomimage"
-    },
-    {
-      "label": "deleteRoomImage()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L209",
-      "community": 3,
-      "norm_label": "deleteroomimage()",
-      "id": "services_roomservice_deleteroomimage"
-    },
-    {
-      "label": "updateRoomImageSortOrder()",
-      "file_type": "code",
-      "source_file": "src/services/roomService.ts",
-      "source_location": "L224",
-      "community": 3,
-      "norm_label": "updateroomimagesortorder()",
-      "id": "services_roomservice_updateroomimagesortorder"
-    },
-    {
-      "label": "storageService.ts",
-      "file_type": "code",
-      "source_file": "src/services/storageService.ts",
-      "source_location": "L1",
-      "community": 1,
-      "norm_label": "storageservice.ts",
-      "id": "src_services_storageservice_ts"
-    },
-    {
-      "label": "uploadImage()",
-      "file_type": "code",
-      "source_file": "src/services/storageService.ts",
-      "source_location": "L6",
-      "community": 3,
-      "norm_label": "uploadimage()",
-      "id": "services_storageservice_uploadimage"
-    },
-    {
-      "label": "deleteImage()",
-      "file_type": "code",
-      "source_file": "src/services/storageService.ts",
-      "source_location": "L27",
-      "community": 1,
-      "norm_label": "deleteimage()",
-      "id": "services_storageservice_deleteimage"
-    },
-    {
-      "label": "csv.ts",
-      "file_type": "code",
-      "source_file": "src/utils/csv.ts",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "csv.ts",
-      "id": "src_utils_csv_ts"
-    },
-    {
-      "label": "exportToCsv()",
-      "file_type": "code",
-      "source_file": "src/utils/csv.ts",
-      "source_location": "L1",
-      "community": 4,
-      "norm_label": "exporttocsv()",
-      "id": "utils_csv_exporttocsv"
+      "norm_label": "index.ts"
     },
     {
       "label": "toError()",
@@ -1827,8 +144,161 @@
       "source_file": "insforge/functions/fonepay-payment/index.ts",
       "source_location": "L12",
       "id": "fonepay_payment_index_toerror",
-      "community": 8,
+      "community": 9,
       "norm_label": "toerror()"
+    },
+    {
+      "label": "getCorsHeaders()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L21",
+      "id": "fonepay_payment_index_getcorsheaders",
+      "community": 9,
+      "norm_label": "getcorsheaders()"
+    },
+    {
+      "label": "hmacSha512()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L32",
+      "id": "fonepay_payment_index_hmacsha512",
+      "community": 9,
+      "norm_label": "hmacsha512()"
+    },
+    {
+      "label": "extractBookingId()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L45",
+      "id": "fonepay_payment_index_extractbookingid",
+      "community": 9,
+      "norm_label": "extractbookingid()"
+    },
+    {
+      "label": "logEvent()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L54",
+      "id": "fonepay_payment_index_logevent",
+      "community": 9,
+      "norm_label": "logevent()"
+    },
+    {
+      "label": "errorResponse()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L136",
+      "id": "fonepay_payment_index_errorresponse",
+      "community": 9,
+      "norm_label": "errorresponse()"
+    },
+    {
+      "label": "handler()",
+      "file_type": "code",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L144",
+      "id": "fonepay_payment_index_handler",
+      "community": 9,
+      "norm_label": "handler()"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "insforge/functions/place-cafe-order/index.ts",
+      "source_location": "L1",
+      "id": "insforge_functions_place_cafe_order_index_ts",
+      "community": 15,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "getCorsHeaders()",
+      "file_type": "code",
+      "source_file": "insforge/functions/place-cafe-order/index.ts",
+      "source_location": "L12",
+      "id": "place_cafe_order_index_getcorsheaders",
+      "community": 15,
+      "norm_label": "getcorsheaders()"
+    },
+    {
+      "label": "validate()",
+      "file_type": "code",
+      "source_file": "insforge/functions/place-cafe-order/index.ts",
+      "source_location": "L23",
+      "id": "place_cafe_order_index_validate",
+      "community": 15,
+      "norm_label": "validate()"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L1",
+      "id": "insforge_functions_pos_sync_api_index_ts",
+      "community": 10,
+      "norm_label": "index.ts"
+    },
+    {
+      "label": "getCorsHeaders()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L12",
+      "id": "pos_sync_api_index_getcorsheaders",
+      "community": 10,
+      "norm_label": "getcorsheaders()"
+    },
+    {
+      "label": "verifyPosApiKey()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L23",
+      "id": "pos_sync_api_index_verifyposapikey",
+      "community": 10,
+      "norm_label": "verifyposapikey()"
+    },
+    {
+      "label": "errorResponse()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L33",
+      "id": "pos_sync_api_index_errorresponse",
+      "community": 10,
+      "norm_label": "errorresponse()"
+    },
+    {
+      "label": "verifyHmacSignature()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L40",
+      "id": "pos_sync_api_index_verifyhmacsignature",
+      "community": 10,
+      "norm_label": "verifyhmacsignature()"
+    },
+    {
+      "label": "checkIdempotency()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L52",
+      "id": "pos_sync_api_index_checkidempotency",
+      "community": 10,
+      "norm_label": "checkidempotency()"
+    },
+    {
+      "label": "handler()",
+      "file_type": "code",
+      "source_file": "insforge/functions/pos-sync-api/index.ts",
+      "source_location": "L96",
+      "id": "pos_sync_api_index_handler",
+      "community": 10,
+      "norm_label": "handler()"
+    },
+    {
+      "label": "index.ts",
+      "file_type": "code",
+      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
+      "source_location": "L1",
+      "id": "insforge_functions_sync_webhook_sender_index_ts",
+      "community": 13,
+      "norm_label": "index.ts"
     },
     {
       "label": "toError()",
@@ -1836,17 +306,647 @@
       "source_file": "insforge/functions/sync-webhook-sender/index.ts",
       "source_location": "L3",
       "id": "sync_webhook_sender_index_toerror",
-      "community": 12,
+      "community": 13,
       "norm_label": "toerror()"
+    },
+    {
+      "label": "handler()",
+      "file_type": "code",
+      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
+      "source_location": "L12",
+      "id": "sync_webhook_sender_index_handler",
+      "community": 13,
+      "norm_label": "handler()"
+    },
+    {
+      "label": "createHmacSignature()",
+      "file_type": "code",
+      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
+      "source_location": "L134",
+      "id": "sync_webhook_sender_index_createhmacsignature",
+      "community": 13,
+      "norm_label": "createhmacsignature()"
+    },
+    {
+      "label": "App.tsx",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L1",
+      "id": "src_app_tsx",
+      "community": 16,
+      "norm_label": "app.tsx"
+    },
+    {
+      "label": "LoadingFallback()",
+      "file_type": "code",
+      "source_file": "src/App.tsx",
+      "source_location": "L35",
+      "id": "src_app_loadingfallback",
+      "community": 16,
+      "norm_label": "loadingfallback()"
+    },
+    {
+      "label": "main.tsx",
+      "file_type": "code",
+      "source_file": "src/main.tsx",
+      "source_location": "L1",
+      "id": "src_main_tsx",
+      "community": 16,
+      "norm_label": "main.tsx"
+    },
+    {
+      "label": "vite-env.d.ts",
+      "file_type": "code",
+      "source_file": "src/vite-env.d.ts",
+      "source_location": "L1",
+      "id": "src_vite_env_d_ts",
+      "community": 26,
+      "norm_label": "vite-env.d.ts"
+    },
+    {
+      "label": "RoomCarousel.tsx",
+      "file_type": "code",
+      "source_file": "src/components/RoomCarousel.tsx",
+      "source_location": "L1",
+      "id": "src_components_roomcarousel_tsx",
+      "community": 27,
+      "norm_label": "roomcarousel.tsx"
+    },
+    {
+      "label": "AdminLayout.tsx",
+      "file_type": "code",
+      "source_file": "src/components/admin/AdminLayout.tsx",
+      "source_location": "L1",
+      "id": "src_components_admin_adminlayout_tsx",
+      "community": 1,
+      "norm_label": "adminlayout.tsx"
+    },
+    {
+      "label": "handleResize()",
+      "file_type": "code",
+      "source_file": "src/components/admin/AdminLayout.tsx",
+      "source_location": "L24",
+      "id": "admin_adminlayout_handleresize",
+      "community": 1,
+      "norm_label": "handleresize()"
+    },
+    {
+      "label": "handleLogout()",
+      "file_type": "code",
+      "source_file": "src/components/admin/AdminLayout.tsx",
+      "source_location": "L33",
+      "id": "admin_adminlayout_handlelogout",
+      "community": 1,
+      "norm_label": "handlelogout()"
+    },
+    {
+      "label": "ConfirmDialog.tsx",
+      "file_type": "code",
+      "source_file": "src/components/common/ConfirmDialog.tsx",
+      "source_location": "L1",
+      "id": "src_components_common_confirmdialog_tsx",
+      "community": 18,
+      "norm_label": "confirmdialog.tsx"
+    },
+    {
+      "label": "ConfirmDialog()",
+      "file_type": "code",
+      "source_file": "src/components/common/ConfirmDialog.tsx",
+      "source_location": "L14",
+      "id": "common_confirmdialog_confirmdialog",
+      "community": 18,
+      "norm_label": "confirmdialog()"
+    },
+    {
+      "label": "ErrorBoundary.tsx",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L1",
+      "id": "src_components_common_errorboundary_tsx",
+      "community": 12,
+      "norm_label": "errorboundary.tsx"
+    },
+    {
+      "label": "ErrorBoundary",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L13",
+      "id": "common_errorboundary_errorboundary",
+      "community": 12,
+      "norm_label": "errorboundary"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L14",
+      "id": "common_errorboundary_errorboundary_constructor",
+      "community": 12,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".getDerivedStateFromError()",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L19",
+      "id": "common_errorboundary_errorboundary_getderivedstatefromerror",
+      "community": 12,
+      "norm_label": ".getderivedstatefromerror()"
+    },
+    {
+      "label": ".componentDidCatch()",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L23",
+      "id": "common_errorboundary_errorboundary_componentdidcatch",
+      "community": 12,
+      "norm_label": ".componentdidcatch()"
+    },
+    {
+      "label": ".render()",
+      "file_type": "code",
+      "source_file": "src/components/common/ErrorBoundary.tsx",
+      "source_location": "L31",
+      "id": "common_errorboundary_errorboundary_render",
+      "community": 12,
+      "norm_label": ".render()"
+    },
+    {
+      "label": "Footer.tsx",
+      "file_type": "code",
+      "source_file": "src/components/common/Footer.tsx",
+      "source_location": "L1",
+      "id": "src_components_common_footer_tsx",
+      "community": 28,
+      "norm_label": "footer.tsx"
+    },
+    {
+      "label": "Navbar.tsx",
+      "file_type": "code",
+      "source_file": "src/components/common/Navbar.tsx",
+      "source_location": "L1",
+      "id": "src_components_common_navbar_tsx",
+      "community": 19,
+      "norm_label": "navbar.tsx"
+    },
+    {
+      "label": "Navbar()",
+      "file_type": "code",
+      "source_file": "src/components/common/Navbar.tsx",
+      "source_location": "L7",
+      "id": "common_navbar_navbar",
+      "community": 19,
+      "norm_label": "navbar()"
+    },
+    {
+      "label": "ScrollToTop.tsx",
+      "file_type": "code",
+      "source_file": "src/components/common/ScrollToTop.tsx",
+      "source_location": "L1",
+      "id": "src_components_common_scrolltotop_tsx",
+      "community": 20,
+      "norm_label": "scrolltotop.tsx"
+    },
+    {
+      "label": "ScrollToTop()",
+      "file_type": "code",
+      "source_file": "src/components/common/ScrollToTop.tsx",
+      "source_location": "L4",
+      "id": "common_scrolltotop_scrolltotop",
+      "community": 20,
+      "norm_label": "scrolltotop()"
+    },
+    {
+      "label": "About.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/About.tsx",
+      "source_location": "L1",
+      "id": "src_pages_about_tsx",
+      "community": 29,
+      "norm_label": "about.tsx"
+    },
+    {
+      "label": "Booking.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L1",
+      "id": "src_pages_booking_tsx",
+      "community": 2,
+      "norm_label": "booking.tsx"
+    },
+    {
+      "label": "searchAvailableRooms()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L55",
+      "id": "pages_booking_searchavailablerooms",
+      "community": 2,
+      "norm_label": "searchavailablerooms()"
+    },
+    {
+      "label": "handleRoomSelect()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L88",
+      "id": "pages_booking_handleroomselect",
+      "community": 2,
+      "norm_label": "handleroomselect()"
+    },
+    {
+      "label": "processPayment()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L176",
+      "id": "pages_booking_processpayment",
+      "community": 2,
+      "norm_label": "processpayment()"
+    },
+    {
+      "label": "onSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L229",
+      "id": "pages_booking_onsubmit",
+      "community": 2,
+      "norm_label": "onsubmit()"
+    },
+    {
+      "label": "calculateNights()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L258",
+      "id": "pages_booking_calculatenights",
+      "community": 2,
+      "norm_label": "calculatenights()"
+    },
+    {
+      "label": "getTotalPrice()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L265",
+      "id": "pages_booking_gettotalprice",
+      "community": 2,
+      "norm_label": "gettotalprice()"
     },
     {
       "label": "paymentLoading()",
       "file_type": "code",
       "source_file": "src/pages/Booking.tsx",
-      "source_location": "L631",
+      "source_location": "L656",
       "id": "pages_booking_paymentloading",
       "community": 2,
       "norm_label": "paymentloading()"
+    },
+    {
+      "label": "bookingSchema.ts",
+      "file_type": "code",
+      "source_file": "src/pages/bookingSchema.ts",
+      "source_location": "L1",
+      "id": "src_pages_bookingschema_ts",
+      "community": 30,
+      "norm_label": "bookingschema.ts"
+    },
+    {
+      "label": "Cafe.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L1",
+      "id": "src_pages_cafe_tsx",
+      "community": 8,
+      "norm_label": "cafe.tsx"
+    },
+    {
+      "label": "loadMenu()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L46",
+      "id": "pages_cafe_loadmenu",
+      "community": 8,
+      "norm_label": "loadmenu()"
+    },
+    {
+      "label": "getFeaturedItems()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L55",
+      "id": "pages_cafe_getfeatureditems",
+      "community": 8,
+      "norm_label": "getfeatureditems()"
+    },
+    {
+      "label": "addToCart()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L69",
+      "id": "pages_cafe_addtocart",
+      "community": 8,
+      "norm_label": "addtocart()"
+    },
+    {
+      "label": "updateQuantity()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L79",
+      "id": "pages_cafe_updatequantity",
+      "community": 8,
+      "norm_label": "updatequantity()"
+    },
+    {
+      "label": "removeFromCart()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L90",
+      "id": "pages_cafe_removefromcart",
+      "community": 8,
+      "norm_label": "removefromcart()"
+    },
+    {
+      "label": "getItemQuantity()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L94",
+      "id": "pages_cafe_getitemquantity",
+      "community": 8,
+      "norm_label": "getitemquantity()"
+    },
+    {
+      "label": "handlePlaceOrder()",
+      "file_type": "code",
+      "source_file": "src/pages/Cafe.tsx",
+      "source_location": "L98",
+      "id": "pages_cafe_handleplaceorder",
+      "community": 8,
+      "norm_label": "handleplaceorder()"
+    },
+    {
+      "label": "Contact.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Contact.tsx",
+      "source_location": "L1",
+      "id": "src_pages_contact_tsx",
+      "community": 21,
+      "norm_label": "contact.tsx"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/Contact.tsx",
+      "source_location": "L8",
+      "id": "pages_contact_handlesubmit",
+      "community": 21,
+      "norm_label": "handlesubmit()"
+    },
+    {
+      "label": "FAQ.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/FAQ.tsx",
+      "source_location": "L1",
+      "id": "src_pages_faq_tsx",
+      "community": 22,
+      "norm_label": "faq.tsx"
+    },
+    {
+      "label": "toggleItem()",
+      "file_type": "code",
+      "source_file": "src/pages/FAQ.tsx",
+      "source_location": "L113",
+      "id": "pages_faq_toggleitem",
+      "community": 22,
+      "norm_label": "toggleitem()"
+    },
+    {
+      "label": "Home.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Home.tsx",
+      "source_location": "L1",
+      "id": "src_pages_home_tsx",
+      "community": 7,
+      "norm_label": "home.tsx"
+    },
+    {
+      "label": "loadData()",
+      "file_type": "code",
+      "source_file": "src/pages/Home.tsx",
+      "source_location": "L33",
+      "id": "pages_home_loaddata",
+      "community": 7,
+      "norm_label": "loaddata()"
+    },
+    {
+      "label": "PaymentResult.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/PaymentResult.tsx",
+      "source_location": "L1",
+      "id": "src_pages_paymentresult_tsx",
+      "community": 2,
+      "norm_label": "paymentresult.tsx"
+    },
+    {
+      "label": "verify()",
+      "file_type": "code",
+      "source_file": "src/pages/PaymentResult.tsx",
+      "source_location": "L14",
+      "id": "pages_paymentresult_verify",
+      "community": 2,
+      "norm_label": "verify()"
+    },
+    {
+      "label": "Privacy.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Privacy.tsx",
+      "source_location": "L1",
+      "id": "src_pages_privacy_tsx",
+      "community": 31,
+      "norm_label": "privacy.tsx"
+    },
+    {
+      "label": "RoomDetails.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/RoomDetails.tsx",
+      "source_location": "L1",
+      "id": "src_pages_roomdetails_tsx",
+      "community": 7,
+      "norm_label": "roomdetails.tsx"
+    },
+    {
+      "label": "loadRoomData()",
+      "file_type": "code",
+      "source_file": "src/pages/RoomDetails.tsx",
+      "source_location": "L36",
+      "id": "pages_roomdetails_loadroomdata",
+      "community": 7,
+      "norm_label": "loadroomdata()"
+    },
+    {
+      "label": "Rooms.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Rooms.tsx",
+      "source_location": "L1",
+      "id": "src_pages_rooms_tsx",
+      "community": 7,
+      "norm_label": "rooms.tsx"
+    },
+    {
+      "label": "loadRooms()",
+      "file_type": "code",
+      "source_file": "src/pages/Rooms.tsx",
+      "source_location": "L34",
+      "id": "pages_rooms_loadrooms",
+      "community": 7,
+      "norm_label": "loadrooms()"
+    },
+    {
+      "label": "clearFilters()",
+      "file_type": "code",
+      "source_file": "src/pages/Rooms.tsx",
+      "source_location": "L78",
+      "id": "pages_rooms_clearfilters",
+      "community": 7,
+      "norm_label": "clearfilters()"
+    },
+    {
+      "label": "Terms.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/Terms.tsx",
+      "source_location": "L1",
+      "id": "src_pages_terms_tsx",
+      "community": 32,
+      "norm_label": "terms.tsx"
+    },
+    {
+      "label": "AdminDashboard.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminDashboard.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_admindashboard_tsx",
+      "community": 6,
+      "norm_label": "admindashboard.tsx"
+    },
+    {
+      "label": "AdminGate.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminGate.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_admingate_tsx",
+      "community": 1,
+      "norm_label": "admingate.tsx"
+    },
+    {
+      "label": "AdminGate()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminGate.tsx",
+      "source_location": "L5",
+      "id": "admin_admingate_admingate",
+      "community": 1,
+      "norm_label": "admingate()"
+    },
+    {
+      "label": "AdminLogin.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminLogin.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_adminlogin_tsx",
+      "community": 1,
+      "norm_label": "adminlogin.tsx"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminLogin.tsx",
+      "source_location": "L13",
+      "id": "admin_adminlogin_handlesubmit",
+      "community": 1,
+      "norm_label": "handlesubmit()"
+    },
+    {
+      "label": "AdminSignup.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminSignup.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_adminsignup_tsx",
+      "community": 1,
+      "norm_label": "adminsignup.tsx"
+    },
+    {
+      "label": "handleSignup()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminSignup.tsx",
+      "source_location": "L15",
+      "id": "admin_adminsignup_handlesignup",
+      "community": 1,
+      "norm_label": "handlesignup()"
+    },
+    {
+      "label": "AdminVerify.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminVerify.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_adminverify_tsx",
+      "community": 1,
+      "norm_label": "adminverify.tsx"
+    },
+    {
+      "label": "handleVerify()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminVerify.tsx",
+      "source_location": "L27",
+      "id": "admin_adminverify_handleverify",
+      "community": 1,
+      "norm_label": "handleverify()"
+    },
+    {
+      "label": "handleResend()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/AdminVerify.tsx",
+      "source_location": "L54",
+      "id": "admin_adminverify_handleresend",
+      "community": 1,
+      "norm_label": "handleresend()"
+    },
+    {
+      "label": "Bookings.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Bookings.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_bookings_tsx",
+      "community": 6,
+      "norm_label": "bookings.tsx"
+    },
+    {
+      "label": "loadBookings()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Bookings.tsx",
+      "source_location": "L40",
+      "id": "admin_bookings_loadbookings",
+      "community": 6,
+      "norm_label": "loadbookings()"
+    },
+    {
+      "label": "filterBookings()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Bookings.tsx",
+      "source_location": "L49",
+      "id": "admin_bookings_filterbookings",
+      "community": 6,
+      "norm_label": "filterbookings()"
+    },
+    {
+      "label": "handleStatusUpdate()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Bookings.tsx",
+      "source_location": "L78",
+      "id": "admin_bookings_handlestatusupdate",
+      "community": 6,
+      "norm_label": "handlestatusupdate()"
+    },
+    {
+      "label": "getStatusColor()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Bookings.tsx",
+      "source_location": "L91",
+      "id": "admin_bookings_getstatuscolor",
+      "community": 6,
+      "norm_label": "getstatuscolor()"
     },
     {
       "label": "getPaymentStatusColor()",
@@ -1854,7 +954,7 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L101",
       "id": "admin_bookings_getpaymentstatuscolor",
-      "community": 4,
+      "community": 6,
       "norm_label": "getpaymentstatuscolor()"
     },
     {
@@ -1863,7 +963,7 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L111",
       "id": "admin_bookings_getpaymenticon",
-      "community": 4,
+      "community": 6,
       "norm_label": "getpaymenticon()"
     },
     {
@@ -1872,8 +972,566 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L121",
       "id": "admin_bookings_getpaymentlabel",
-      "community": 4,
+      "community": 6,
       "norm_label": "getpaymentlabel()"
+    },
+    {
+      "label": "CafeOrders.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/CafeOrders.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_cafeorders_tsx",
+      "community": 3,
+      "norm_label": "cafeorders.tsx"
+    },
+    {
+      "label": "loadOrders()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/CafeOrders.tsx",
+      "source_location": "L16",
+      "id": "admin_cafeorders_loadorders",
+      "community": 3,
+      "norm_label": "loadorders()"
+    },
+    {
+      "label": "handleStatusChange()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/CafeOrders.tsx",
+      "source_location": "L23",
+      "id": "admin_cafeorders_handlestatuschange",
+      "community": 3,
+      "norm_label": "handlestatuschange()"
+    },
+    {
+      "label": "ContentEditor.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/ContentEditor.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_contenteditor_tsx",
+      "community": 5,
+      "norm_label": "contenteditor.tsx"
+    },
+    {
+      "label": "loadContent()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/ContentEditor.tsx",
+      "source_location": "L26",
+      "id": "admin_contenteditor_loadcontent",
+      "community": 5,
+      "norm_label": "loadcontent()"
+    },
+    {
+      "label": "handleSave()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/ContentEditor.tsx",
+      "source_location": "L42",
+      "id": "admin_contenteditor_handlesave",
+      "community": 5,
+      "norm_label": "handlesave()"
+    },
+    {
+      "label": "Images.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Images.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_images_tsx",
+      "community": 5,
+      "norm_label": "images.tsx"
+    },
+    {
+      "label": "loadImages()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Images.tsx",
+      "source_location": "L40",
+      "id": "admin_images_loadimages",
+      "community": 5,
+      "norm_label": "loadimages()"
+    },
+    {
+      "label": "handleImageUpload()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Images.tsx",
+      "source_location": "L49",
+      "id": "admin_images_handleimageupload",
+      "community": 0,
+      "norm_label": "handleimageupload()"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Images.tsx",
+      "source_location": "L79",
+      "id": "admin_images_handlesubmit",
+      "community": 5,
+      "norm_label": "handlesubmit()"
+    },
+    {
+      "label": "handleDelete()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Images.tsx",
+      "source_location": "L103",
+      "id": "admin_images_handledelete",
+      "community": 5,
+      "norm_label": "handledelete()"
+    },
+    {
+      "label": "Menu.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_menu_tsx",
+      "community": 4,
+      "norm_label": "menu.tsx"
+    },
+    {
+      "label": "loadMenu()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L58",
+      "id": "admin_menu_loadmenu",
+      "community": 4,
+      "norm_label": "loadmenu()"
+    },
+    {
+      "label": "handleCategorySubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L68",
+      "id": "admin_menu_handlecategorysubmit",
+      "community": 4,
+      "norm_label": "handlecategorysubmit()"
+    },
+    {
+      "label": "handleDeleteCategory()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L81",
+      "id": "admin_menu_handledeletecategory",
+      "community": 4,
+      "norm_label": "handledeletecategory()"
+    },
+    {
+      "label": "handleItemSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L89",
+      "id": "admin_menu_handleitemsubmit",
+      "community": 4,
+      "norm_label": "handleitemsubmit()"
+    },
+    {
+      "label": "handleDeleteItem()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L115",
+      "id": "admin_menu_handledeleteitem",
+      "community": 4,
+      "norm_label": "handledeleteitem()"
+    },
+    {
+      "label": "handleToggleAvailability()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L122",
+      "id": "admin_menu_handletoggleavailability",
+      "community": 4,
+      "norm_label": "handletoggleavailability()"
+    },
+    {
+      "label": "handleImageUpload()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Menu.tsx",
+      "source_location": "L127",
+      "id": "admin_menu_handleimageupload",
+      "community": 0,
+      "norm_label": "handleimageupload()"
+    },
+    {
+      "label": "Rooms.tsx",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L1",
+      "id": "src_pages_admin_rooms_tsx",
+      "community": 0,
+      "norm_label": "rooms.tsx"
+    },
+    {
+      "label": "loadRooms()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L67",
+      "id": "admin_rooms_loadrooms",
+      "community": 0,
+      "norm_label": "loadrooms()"
+    },
+    {
+      "label": "handleEdit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L76",
+      "id": "admin_rooms_handleedit",
+      "community": 0,
+      "norm_label": "handleedit()"
+    },
+    {
+      "label": "handleDelete()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L100",
+      "id": "admin_rooms_handledelete",
+      "community": 0,
+      "norm_label": "handledelete()"
+    },
+    {
+      "label": "confirmDelete()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L104",
+      "id": "admin_rooms_confirmdelete",
+      "community": 0,
+      "norm_label": "confirmdelete()"
+    },
+    {
+      "label": "handleImageUpload()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L116",
+      "id": "admin_rooms_handleimageupload",
+      "community": 0,
+      "norm_label": "handleimageupload()"
+    },
+    {
+      "label": "handleAddImageToExistingRoom()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L165",
+      "id": "admin_rooms_handleaddimagetoexistingroom",
+      "community": 0,
+      "norm_label": "handleaddimagetoexistingroom()"
+    },
+    {
+      "label": "removePendingImage()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L186",
+      "id": "admin_rooms_removependingimage",
+      "community": 0,
+      "norm_label": "removependingimage()"
+    },
+    {
+      "label": "handleRemoveExistingImage()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L190",
+      "id": "admin_rooms_handleremoveexistingimage",
+      "community": 0,
+      "norm_label": "handleremoveexistingimage()"
+    },
+    {
+      "label": "handleReorderImage()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L209",
+      "id": "admin_rooms_handlereorderimage",
+      "community": 0,
+      "norm_label": "handlereorderimage()"
+    },
+    {
+      "label": "handleSubmit()",
+      "file_type": "code",
+      "source_file": "src/pages/admin/Rooms.tsx",
+      "source_location": "L243",
+      "id": "admin_rooms_handlesubmit",
+      "community": 0,
+      "norm_label": "handlesubmit()"
+    },
+    {
+      "label": "authService.ts",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L1",
+      "id": "src_services_authservice_ts",
+      "community": 1,
+      "norm_label": "authservice.ts"
+    },
+    {
+      "label": "adminLogin()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L12",
+      "id": "services_authservice_adminlogin",
+      "community": 1,
+      "norm_label": "adminlogin()"
+    },
+    {
+      "label": "adminSignup()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L28",
+      "id": "services_authservice_adminsignup",
+      "community": 1,
+      "norm_label": "adminsignup()"
+    },
+    {
+      "label": "verifyEmail()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L44",
+      "id": "services_authservice_verifyemail",
+      "community": 1,
+      "norm_label": "verifyemail()"
+    },
+    {
+      "label": "resendVerification()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L60",
+      "id": "services_authservice_resendverification",
+      "community": 1,
+      "norm_label": "resendverification()"
+    },
+    {
+      "label": "adminLogout()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L75",
+      "id": "services_authservice_adminlogout",
+      "community": 1,
+      "norm_label": "adminlogout()"
+    },
+    {
+      "label": "getAdminSession()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L86",
+      "id": "services_authservice_getadminsession",
+      "community": 1,
+      "norm_label": "getadminsession()"
+    },
+    {
+      "label": "getCurrentAdmin()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L97",
+      "id": "services_authservice_getcurrentadmin",
+      "community": 1,
+      "norm_label": "getcurrentadmin()"
+    },
+    {
+      "label": "isAuthenticated()",
+      "file_type": "code",
+      "source_file": "src/services/authService.ts",
+      "source_location": "L108",
+      "id": "services_authservice_isauthenticated",
+      "community": 1,
+      "norm_label": "isauthenticated()"
+    },
+    {
+      "label": "bookingService.ts",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L1",
+      "id": "src_services_bookingservice_ts",
+      "community": 3,
+      "norm_label": "bookingservice.ts"
+    },
+    {
+      "label": "createBooking()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L30",
+      "id": "services_bookingservice_createbooking",
+      "community": 2,
+      "norm_label": "createbooking()"
+    },
+    {
+      "label": "getBookingById()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L49",
+      "id": "services_bookingservice_getbookingbyid",
+      "community": 3,
+      "norm_label": "getbookingbyid()"
+    },
+    {
+      "label": "getBookingsByEmail()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L65",
+      "id": "services_bookingservice_getbookingsbyemail",
+      "community": 3,
+      "norm_label": "getbookingsbyemail()"
+    },
+    {
+      "label": "getAllBookings()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L81",
+      "id": "services_bookingservice_getallbookings",
+      "community": 6,
+      "norm_label": "getallbookings()"
+    },
+    {
+      "label": "updateBookingStatus()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L97",
+      "id": "services_bookingservice_updatebookingstatus",
+      "community": 6,
+      "norm_label": "updatebookingstatus()"
+    },
+    {
+      "label": "cancelBooking()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L117",
+      "id": "services_bookingservice_cancelbooking",
+      "community": 3,
+      "norm_label": "cancelbooking()"
+    },
+    {
+      "label": "getBookingsByDateRange()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L134",
+      "id": "services_bookingservice_getbookingsbydaterange",
+      "community": 3,
+      "norm_label": "getbookingsbydaterange()"
+    },
+    {
+      "label": "getUpcomingCheckIns()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L151",
+      "id": "services_bookingservice_getupcomingcheckins",
+      "community": 3,
+      "norm_label": "getupcomingcheckins()"
+    },
+    {
+      "label": "calculateTotalPrice()",
+      "file_type": "code",
+      "source_file": "src/services/bookingService.ts",
+      "source_location": "L174",
+      "id": "services_bookingservice_calculatetotalprice",
+      "community": 2,
+      "norm_label": "calculatetotalprice()"
+    },
+    {
+      "label": "contentService.ts",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L1",
+      "id": "src_services_contentservice_ts",
+      "community": 5,
+      "norm_label": "contentservice.ts"
+    },
+    {
+      "label": "getSiteContent()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L20",
+      "id": "services_contentservice_getsitecontent",
+      "community": 5,
+      "norm_label": "getsitecontent()"
+    },
+    {
+      "label": "getAllSiteContent()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L36",
+      "id": "services_contentservice_getallsitecontent",
+      "community": 5,
+      "norm_label": "getallsitecontent()"
+    },
+    {
+      "label": "updateSiteContent()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L50",
+      "id": "services_contentservice_updatesitecontent",
+      "community": 5,
+      "norm_label": "updatesitecontent()"
+    },
+    {
+      "label": "getSiteImagesByType()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L66",
+      "id": "services_contentservice_getsiteimagesbytype",
+      "community": 7,
+      "norm_label": "getsiteimagesbytype()"
+    },
+    {
+      "label": "getAllSiteImages()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L83",
+      "id": "services_contentservice_getallsiteimages",
+      "community": 5,
+      "norm_label": "getallsiteimages()"
+    },
+    {
+      "label": "addSiteImage()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L98",
+      "id": "services_contentservice_addsiteimage",
+      "community": 5,
+      "norm_label": "addsiteimage()"
+    },
+    {
+      "label": "deleteSiteImage()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L114",
+      "id": "services_contentservice_deletesiteimage",
+      "community": 5,
+      "norm_label": "deletesiteimage()"
+    },
+    {
+      "label": "toggleImageActive()",
+      "file_type": "code",
+      "source_file": "src/services/contentService.ts",
+      "source_location": "L129",
+      "id": "services_contentservice_toggleimageactive",
+      "community": 5,
+      "norm_label": "toggleimageactive()"
+    },
+    {
+      "label": "fonepayService.ts",
+      "file_type": "code",
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L1",
+      "id": "src_services_fonepayservice_ts",
+      "community": 2,
+      "norm_label": "fonepayservice.ts"
+    },
+    {
+      "label": "generateQrPayment()",
+      "file_type": "code",
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L28",
+      "id": "services_fonepayservice_generateqrpayment",
+      "community": 2,
+      "norm_label": "generateqrpayment()"
+    },
+    {
+      "label": "generateWebPayment()",
+      "file_type": "code",
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L50",
+      "id": "services_fonepayservice_generatewebpayment",
+      "community": 2,
+      "norm_label": "generatewebpayment()"
+    },
+    {
+      "label": "verifyQrPayment()",
+      "file_type": "code",
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L72",
+      "id": "services_fonepayservice_verifyqrpayment",
+      "community": 2,
+      "norm_label": "verifyqrpayment()"
     },
     {
       "label": "postTaxRefund()",
@@ -1883,6 +1541,348 @@
       "id": "services_fonepayservice_posttaxrefund",
       "community": 2,
       "norm_label": "posttaxrefund()"
+    },
+    {
+      "label": "verifyWebPayment()",
+      "file_type": "code",
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L112",
+      "id": "services_fonepayservice_verifywebpayment",
+      "community": 2,
+      "norm_label": "verifywebpayment()"
+    },
+    {
+      "label": "insforge.ts",
+      "file_type": "code",
+      "source_file": "src/services/insforge.ts",
+      "source_location": "L1",
+      "id": "src_services_insforge_ts",
+      "community": 3,
+      "norm_label": "insforge.ts"
+    },
+    {
+      "label": "handleInsforgeError()",
+      "file_type": "code",
+      "source_file": "src/services/insforge.ts",
+      "source_location": "L16",
+      "id": "services_insforge_handleinsforgeerror",
+      "community": 3,
+      "norm_label": "handleinsforgeerror()"
+    },
+    {
+      "label": "menuService.ts",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L1",
+      "id": "src_services_menuservice_ts",
+      "community": 4,
+      "norm_label": "menuservice.ts"
+    },
+    {
+      "label": "getFullMenu()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L22",
+      "id": "services_menuservice_getfullmenu",
+      "community": 4,
+      "norm_label": "getfullmenu()"
+    },
+    {
+      "label": "getMenuItemsByCategory()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L64",
+      "id": "services_menuservice_getmenuitemsbycategory",
+      "community": 4,
+      "norm_label": "getmenuitemsbycategory()"
+    },
+    {
+      "label": "getMenuCategories()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L81",
+      "id": "services_menuservice_getmenucategories",
+      "community": 4,
+      "norm_label": "getmenucategories()"
+    },
+    {
+      "label": "createCategory()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L96",
+      "id": "services_menuservice_createcategory",
+      "community": 4,
+      "norm_label": "createcategory()"
+    },
+    {
+      "label": "updateCategory()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L111",
+      "id": "services_menuservice_updatecategory",
+      "community": 4,
+      "norm_label": "updatecategory()"
+    },
+    {
+      "label": "deleteCategory()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L127",
+      "id": "services_menuservice_deletecategory",
+      "community": 4,
+      "norm_label": "deletecategory()"
+    },
+    {
+      "label": "createMenuItem()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L141",
+      "id": "services_menuservice_createmenuitem",
+      "community": 4,
+      "norm_label": "createmenuitem()"
+    },
+    {
+      "label": "updateMenuItem()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L156",
+      "id": "services_menuservice_updatemenuitem",
+      "community": 4,
+      "norm_label": "updatemenuitem()"
+    },
+    {
+      "label": "deleteMenuItem()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L172",
+      "id": "services_menuservice_deletemenuitem",
+      "community": 4,
+      "norm_label": "deletemenuitem()"
+    },
+    {
+      "label": "toggleItemAvailability()",
+      "file_type": "code",
+      "source_file": "src/services/menuService.ts",
+      "source_location": "L186",
+      "id": "services_menuservice_toggleitemavailability",
+      "community": 4,
+      "norm_label": "toggleitemavailability()"
+    },
+    {
+      "label": "orderService.ts",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L1",
+      "id": "src_services_orderservice_ts",
+      "community": 3,
+      "norm_label": "orderservice.ts"
+    },
+    {
+      "label": "placeOrder()",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L35",
+      "id": "services_orderservice_placeorder",
+      "community": 8,
+      "norm_label": "placeorder()"
+    },
+    {
+      "label": "getOrderByNumber()",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L47",
+      "id": "services_orderservice_getorderbynumber",
+      "community": 3,
+      "norm_label": "getorderbynumber()"
+    },
+    {
+      "label": "getOrdersByPhone()",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L61",
+      "id": "services_orderservice_getordersbyphone",
+      "community": 3,
+      "norm_label": "getordersbyphone()"
+    },
+    {
+      "label": "getAllOrders()",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L75",
+      "id": "services_orderservice_getallorders",
+      "community": 3,
+      "norm_label": "getallorders()"
+    },
+    {
+      "label": "updateOrderStatus()",
+      "file_type": "code",
+      "source_file": "src/services/orderService.ts",
+      "source_location": "L89",
+      "id": "services_orderservice_updateorderstatus",
+      "community": 3,
+      "norm_label": "updateorderstatus()"
+    },
+    {
+      "label": "roomService.ts",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L1",
+      "id": "src_services_roomservice_ts",
+      "community": 0,
+      "norm_label": "roomservice.ts"
+    },
+    {
+      "label": "getRooms()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L36",
+      "id": "services_roomservice_getrooms",
+      "community": 7,
+      "norm_label": "getrooms()"
+    },
+    {
+      "label": "getAllRoomsForAdmin()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L53",
+      "id": "services_roomservice_getallroomsforadmin",
+      "community": 0,
+      "norm_label": "getallroomsforadmin()"
+    },
+    {
+      "label": "getRoomById()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L69",
+      "id": "services_roomservice_getroombyid",
+      "community": 7,
+      "norm_label": "getroombyid()"
+    },
+    {
+      "label": "checkRoomAvailability()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L87",
+      "id": "services_roomservice_checkroomavailability",
+      "community": 3,
+      "norm_label": "checkroomavailability()"
+    },
+    {
+      "label": "getAvailableRooms()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L113",
+      "id": "services_roomservice_getavailablerooms",
+      "community": 2,
+      "norm_label": "getavailablerooms()"
+    },
+    {
+      "label": "createRoom()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L145",
+      "id": "services_roomservice_createroom",
+      "community": 0,
+      "norm_label": "createroom()"
+    },
+    {
+      "label": "updateRoom()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L161",
+      "id": "services_roomservice_updateroom",
+      "community": 0,
+      "norm_label": "updateroom()"
+    },
+    {
+      "label": "deleteRoom()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L178",
+      "id": "services_roomservice_deleteroom",
+      "community": 0,
+      "norm_label": "deleteroom()"
+    },
+    {
+      "label": "addRoomImage()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L193",
+      "id": "services_roomservice_addroomimage",
+      "community": 0,
+      "norm_label": "addroomimage()"
+    },
+    {
+      "label": "deleteRoomImage()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L209",
+      "id": "services_roomservice_deleteroomimage",
+      "community": 0,
+      "norm_label": "deleteroomimage()"
+    },
+    {
+      "label": "updateRoomImageSortOrder()",
+      "file_type": "code",
+      "source_file": "src/services/roomService.ts",
+      "source_location": "L224",
+      "id": "services_roomservice_updateroomimagesortorder",
+      "community": 0,
+      "norm_label": "updateroomimagesortorder()"
+    },
+    {
+      "label": "storageService.ts",
+      "file_type": "code",
+      "source_file": "src/services/storageService.ts",
+      "source_location": "L1",
+      "id": "src_services_storageservice_ts",
+      "community": 3,
+      "norm_label": "storageservice.ts"
+    },
+    {
+      "label": "uploadImage()",
+      "file_type": "code",
+      "source_file": "src/services/storageService.ts",
+      "source_location": "L6",
+      "id": "services_storageservice_uploadimage",
+      "community": 0,
+      "norm_label": "uploadimage()"
+    },
+    {
+      "label": "deleteImage()",
+      "file_type": "code",
+      "source_file": "src/services/storageService.ts",
+      "source_location": "L27",
+      "id": "services_storageservice_deleteimage",
+      "community": 3,
+      "norm_label": "deleteimage()"
+    },
+    {
+      "label": "csv.ts",
+      "file_type": "code",
+      "source_file": "src/utils/csv.ts",
+      "source_location": "L1",
+      "id": "src_utils_csv_ts",
+      "community": 6,
+      "norm_label": "csv.ts"
+    },
+    {
+      "label": "exportToCsv()",
+      "file_type": "code",
+      "source_file": "src/utils/csv.ts",
+      "source_location": "L1",
+      "id": "utils_csv_exporttocsv",
+      "community": 6,
+      "norm_label": "exporttocsv()"
+    },
+    {
+      "label": "async()",
+      "file_type": "code",
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L522",
+      "community": 2,
+      "norm_label": "async()",
+      "id": "pages_booking_async"
     }
   ],
   "links": [
@@ -1970,6 +1970,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "insforge/functions/fonepay-payment/index.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insforge_functions_fonepay_payment_index_ts",
+      "target": "fonepay_payment_index_toerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "insforge/functions/fonepay-payment/index.ts",
       "source_location": "L21",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -2025,16 +2035,6 @@
       "confidence_score": 1.0,
       "source": "insforge_functions_fonepay_payment_index_ts",
       "target": "fonepay_payment_index_handler"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "insforge/functions/fonepay-payment/index.ts",
-      "source_location": "L12",
-      "weight": 1.0,
-      "source": "insforge_functions_fonepay_payment_index_ts",
-      "target": "fonepay_payment_index_toerror",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -2230,6 +2230,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "insforge/functions/sync-webhook-sender/index.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "insforge_functions_sync_webhook_sender_index_ts",
+      "target": "sync_webhook_sender_index_toerror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
       "source_location": "L12",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -2247,14 +2257,15 @@
       "target": "sync_webhook_sender_index_createhmacsignature"
     },
     {
-      "relation": "contains",
+      "relation": "calls",
+      "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "insforge/functions/sync-webhook-sender/index.ts",
-      "source_location": "L3",
+      "source_location": "L39",
       "weight": 1.0,
-      "source": "insforge_functions_sync_webhook_sender_index_ts",
-      "target": "sync_webhook_sender_index_toerror",
-      "confidence_score": 1.0
+      "confidence_score": 1.0,
+      "source": "sync_webhook_sender_index_handler",
+      "target": "sync_webhook_sender_index_toerror"
     },
     {
       "relation": "calls",
@@ -2266,17 +2277,6 @@
       "confidence_score": 1.0,
       "source": "sync_webhook_sender_index_handler",
       "target": "sync_webhook_sender_index_createhmacsignature"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "insforge/functions/sync-webhook-sender/index.ts",
-      "source_location": "L39",
-      "weight": 1.0,
-      "source": "sync_webhook_sender_index_handler",
-      "target": "sync_webhook_sender_index_toerror",
-      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -2551,21 +2551,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/pages/Booking.tsx",
-      "source_location": "L522",
+      "source_location": "L631",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_pages_booking_tsx",
-      "target": "pages_booking_async"
+      "target": "pages_booking_paymentloading"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/pages/Booking.tsx",
-      "source_location": "L631",
+      "source_location": "L522",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_pages_booking_tsx",
-      "target": "pages_booking_paymentloading",
-      "confidence_score": 1.0
+      "target": "pages_booking_async"
     },
     {
       "relation": "calls",
@@ -2632,17 +2632,6 @@
       "weight": 1.0,
       "source": "pages_booking_gettotalprice",
       "target": "services_bookingservice_calculatetotalprice"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/pages/Booking.tsx",
-      "source_location": "L524",
-      "weight": 1.0,
-      "source": "pages_booking_async",
-      "target": "services_fonepayservice_verifyqrpayment"
     },
     {
       "relation": "imports",
@@ -3232,9 +3221,9 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L101",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_pages_admin_bookings_tsx",
-      "target": "admin_bookings_getpaymentstatuscolor",
-      "confidence_score": 1.0
+      "target": "admin_bookings_getpaymentstatuscolor"
     },
     {
       "relation": "contains",
@@ -3242,9 +3231,9 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_pages_admin_bookings_tsx",
-      "target": "admin_bookings_getpaymenticon",
-      "confidence_score": 1.0
+      "target": "admin_bookings_getpaymenticon"
     },
     {
       "relation": "contains",
@@ -3252,9 +3241,9 @@
       "source_file": "src/pages/admin/Bookings.tsx",
       "source_location": "L121",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_pages_admin_bookings_tsx",
-      "target": "admin_bookings_getpaymentlabel",
-      "confidence_score": 1.0
+      "target": "admin_bookings_getpaymentlabel"
     },
     {
       "relation": "calls",
@@ -4868,21 +4857,21 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/fonepayService.ts",
-      "source_location": "L112",
+      "source_location": "L96",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_services_fonepayservice_ts",
-      "target": "services_fonepayservice_verifywebpayment"
+      "target": "services_fonepayservice_posttaxrefund"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/fonepayService.ts",
-      "source_location": "L96",
+      "source_location": "L112",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_services_fonepayservice_ts",
-      "target": "services_fonepayservice_posttaxrefund",
-      "confidence_score": 1.0
+      "target": "services_fonepayservice_verifywebpayment"
     },
     {
       "relation": "calls",
@@ -4915,6 +4904,28 @@
       "source_location": "L84",
       "weight": 1.0,
       "source": "services_fonepayservice_verifyqrpayment",
+      "target": "services_insforge_handleinsforgeerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/pages/Booking.tsx",
+      "source_location": "L524",
+      "weight": 1.0,
+      "source": "pages_booking_async",
+      "target": "services_fonepayservice_verifyqrpayment"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/services/fonepayService.ts",
+      "source_location": "L108",
+      "weight": 1.0,
+      "source": "services_fonepayservice_posttaxrefund",
       "target": "services_insforge_handleinsforgeerror"
     },
     {
@@ -5291,17 +5302,6 @@
       "target": "services_insforge_handleinsforgeerror"
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "src/services/fonepayService.ts",
-      "source_location": "L108",
-      "weight": 1.0,
-      "source": "services_fonepayservice_posttaxrefund",
-      "target": "services_insforge_handleinsforgeerror"
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/services/menuService.ts",
@@ -5604,5 +5604,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "0f8c70a7adfd5c3b5f0deb5ad5c0de1dc5cdf1bd"
+  "built_at_commit": "186c719dcac0d1aea9d5a99e37078a166ce4b6db"
 }

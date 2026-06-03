@@ -30,8 +30,12 @@ const Booking = () => {
     const [paymentPrn, setPaymentPrn] = useState('');
     const [toastMessage, setToastMessage] = useState('');
     const [pollingActive, setPollingActive] = useState(false);
+    const [qrError, setQrError] = useState('');
     const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
     const wsRef = useRef<WebSocket | null>(null);
+    const wsReconnectCount = useRef(0);
+    const wsReconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const wsUrlRef = useRef('');
 
     const {
         register,
@@ -103,39 +107,58 @@ const Booking = () => {
         if (wsRef.current) {
             wsRef.current.close();
         }
-        setWsStatus('connecting');
-        try {
-            const ws = new WebSocket(url);
-            wsRef.current = ws;
-
-            ws.onopen = () => {
-                setWsStatus('connected');
-            };
-
-            ws.onmessage = (event) => {
-                try {
-                    const msg = JSON.parse(event.data);
-                    if (msg.status === 'success' || msg.paymentStatus === 'success' || msg.response_code === 'successful') {
-                        onPaymentReceived(prn);
-                    }
-                } catch {
-                    if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
-                        onPaymentReceived(prn);
-                    }
-                }
-            };
-
-            ws.onerror = () => {
-                setWsStatus('disconnected');
-            };
-
-            ws.onclose = () => {
-                setWsStatus('disconnected');
-                wsRef.current = null;
-            };
-        } catch {
-            setWsStatus('disconnected');
+        if (wsReconnectTimer.current) {
+            clearTimeout(wsReconnectTimer.current);
+            wsReconnectTimer.current = null;
         }
+        wsReconnectCount.current = 0;
+        wsUrlRef.current = url;
+        setWsStatus('connecting');
+
+        const doConnect = (wsUrl: string) => {
+            try {
+                const ws = new WebSocket(wsUrl);
+                wsRef.current = ws;
+
+                ws.onopen = () => {
+                    setWsStatus('connected');
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.status === 'success' || msg.paymentStatus === 'success' || msg.response_code === 'successful') {
+                            onPaymentReceived(prn);
+                        }
+                    } catch {
+                        if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
+                            onPaymentReceived(prn);
+                        }
+                    }
+                };
+
+                ws.onerror = () => {
+                    setWsStatus('disconnected');
+                };
+
+                ws.onclose = () => {
+                    setWsStatus('disconnected');
+                    wsRef.current = null;
+                    if (wsReconnectCount.current < 3) {
+                        wsReconnectCount.current += 1;
+                        wsReconnectTimer.current = setTimeout(() => doConnect(wsUrl), 2000);
+                    }
+                };
+            } catch {
+                setWsStatus('disconnected');
+                if (wsReconnectCount.current < 3) {
+                    wsReconnectCount.current += 1;
+                    wsReconnectTimer.current = setTimeout(() => doConnect(wsUrl), 2000);
+                }
+            }
+        };
+
+        doConnect(url);
     }, [onPaymentReceived]);
 
     useEffect(() => {
@@ -144,13 +167,17 @@ const Booking = () => {
                 wsRef.current.close();
                 wsRef.current = null;
             }
+            if (wsReconnectTimer.current) {
+                clearTimeout(wsReconnectTimer.current);
+            }
         };
     }, []);
 
     const processPayment = async (bookingId: string, method: string) => {
+        setQrError('');
         if (method === 'fonepay_qr') {
             setPaymentLoading(true);
-            const { data: qrResult, error: qrError } = await generateQrPayment(
+            const { data: qrResult, error: qrErr } = await generateQrPayment(
                 bookingId,
                 'Room Booking',
                 `Booking ${bookingId}`
@@ -175,9 +202,8 @@ const Booking = () => {
                 }
                 setStep(3);
             } else {
-                setToastMessage(qrError || 'Failed to generate QR code. Your booking is saved, pay at property.');
-                setTimeout(() => setToastMessage(''), 8000);
-                setStep(4);
+                setQrError(qrErr || 'Failed to generate QR code. Please try again or choose a different payment method.');
+                setStep(3);
             }
         } else if (method === 'fonepay_web') {
             setPaymentLoading(true);
@@ -192,9 +218,8 @@ const Booking = () => {
                 sessionStorage.setItem('pendingBookingId', bookingId);
                 window.location.href = webResult.paymentUrl;
             } else {
-                setToastMessage(webError || 'Failed to generate payment link. Your booking is saved, pay at property.');
-                setTimeout(() => setToastMessage(''), 8000);
-                setStep(4);
+                setQrError(webError || 'Failed to generate payment link. Please try again.');
+                setStep(3);
             }
         } else {
             setStep(4);
@@ -639,6 +664,31 @@ const Booking = () => {
                                 className="btn-secondary w-full"
                             >
                                 Cancel & Return Home
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 3: QR Error / Retry */}
+                {step === 3 && !paymentLoading && qrCodeDataUrl === null && qrError && (
+                    <div className="card text-center">
+                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <QrCode className="text-red-500" size={40} />
+                        </div>
+                        <h2 className="font-heading text-2xl font-bold mb-2">Payment Error</h2>
+                        <p className="text-gray-600 mb-6">{qrError}</p>
+                        <div className="space-y-3">
+                            <button
+                                onClick={() => setStep(2)}
+                                className="btn-primary w-full flex items-center justify-center space-x-2"
+                            >
+                                <span>Try Again</span>
+                            </button>
+                            <button
+                                onClick={() => navigate('/')}
+                                className="btn-secondary w-full"
+                            >
+                                Return Home
                             </button>
                         </div>
                     </div>
