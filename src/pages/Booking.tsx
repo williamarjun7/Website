@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Users, Check, QrCode, ExternalLink } from 'lucide-react';
 import { getAvailableRooms, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice } from '../services/bookingService';
-import { generateQrPayment, generateWebPayment } from '../services/fonepayService';
+import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
 
 const Booking = () => {
@@ -28,6 +28,7 @@ const Booking = () => {
     const [qrCodeData, setQrCodeData] = useState<string | { qrImage?: string } | null>(null);
     const [paymentPrn, setPaymentPrn] = useState('');
     const [toastMessage, setToastMessage] = useState('');
+    const [pollingActive, setPollingActive] = useState(false);
 
     const {
         register,
@@ -62,17 +63,31 @@ const Booking = () => {
         }
     }, [checkIn, checkOut]);
 
+    // Auto-poll for QR payment confirmation
+    useEffect(() => {
+        if (!pollingActive || !paymentPrn || step !== 4) return;
+        const interval = setInterval(async () => {
+            const { data } = await verifyQrPayment(paymentPrn);
+            if (data?.success) {
+                setPollingActive(false);
+                setQrCodeData(null);
+                setPaymentPrn('');
+                setStep(3);
+            }
+        }, 8000);
+        return () => clearInterval(interval);
+    }, [pollingActive, paymentPrn, step]);
+
     const handleRoomSelect = (room: Room) => {
         setSelectedRoom(room);
         setStep(2);
     };
 
-    const processPayment = async (bookingId: string, totalPrice: number, method: string) => {
+    const processPayment = async (bookingId: string, method: string) => {
         if (method === 'fonepay_qr') {
             setPaymentLoading(true);
             const { data: qrResult, error: qrError } = await generateQrPayment(
                 bookingId,
-                totalPrice,
                 'Room Booking',
                 `Booking ${bookingId}`
             );
@@ -81,6 +96,7 @@ const Booking = () => {
             if (qrResult) {
                 setQrCodeData(qrResult.qrCode);
                 setPaymentPrn(qrResult.prn);
+                setPollingActive(true);
                 setStep(4);
             } else {
                 setToastMessage(qrError || 'Failed to generate QR code. Your booking is saved, pay at property.');
@@ -91,13 +107,13 @@ const Booking = () => {
             setPaymentLoading(true);
             const { data: webResult, error: webError } = await generateWebPayment(
                 bookingId,
-                totalPrice,
                 'Room Booking',
                 `Booking ${bookingId}`
             );
             setPaymentLoading(false);
 
             if (webResult?.paymentUrl) {
+                sessionStorage.setItem('pendingBookingId', bookingId);
                 window.location.href = webResult.paymentUrl;
             } else {
                 setToastMessage(webError || 'Failed to generate payment link. Your booking is saved, pay at property.');
@@ -131,7 +147,7 @@ const Booking = () => {
         if (bookingData) {
             setBookingId(bookingData.id);
             setConfirmedEmail(data.guest_email);
-            await processPayment(bookingData.id, getTotalPrice(), data.paymentMethod);
+            await processPayment(bookingData.id, data.paymentMethod);
         } else {
             setToastMessage(error || 'Booking failed. Please try again.');
             setTimeout(() => setToastMessage(''), 5000);
@@ -490,6 +506,11 @@ const Booking = () => {
                         <p className="text-sm text-gray-500 mb-6">
                             Amount: NPR {getTotalPrice().toLocaleString()}
                         </p>
+                        {pollingActive && (
+                            <p className="text-xs text-amber-600 mb-4 animate-pulse">
+                                Auto-verifying payment every 8 seconds...
+                            </p>
+                        )}
                         <div className="space-y-3">
                             <button
                                 onClick={() => navigate('/')}
@@ -498,14 +519,24 @@ const Booking = () => {
                                 Return to Home
                             </button>
                             <button
-                                onClick={() => {
-                                    setQrCodeData(null);
-                                    setPaymentPrn('');
-                                    setStep(3);
+                                onClick={async () => {
+                                    setPaymentLoading(true);
+                                    const { data, error } = await verifyQrPayment(paymentPrn);
+                                    if (data?.success) {
+                                        setQrCodeData(null);
+                                        setPaymentPrn('');
+                                        setStep(3);
+                                    } else {
+                                        setPollingActive(false);
+                                        setToastMessage(error || 'Payment not confirmed yet. Try again or pay at property.');
+                                        setTimeout(() => setToastMessage(''), 8000);
+                                    }
+                                    setPaymentLoading(false);
                                 }}
+                                disabled={paymentLoading}
                                 className="btn-secondary w-full"
                             >
-                                I've Paid - Verify Payment
+                                {paymentLoading ? 'Verifying...' : "I've Paid - Verify Payment"}
                             </button>
                         </div>
                     </div>

@@ -26,7 +26,6 @@ export interface VerifyResult {
 
 export const generateQrPayment = async (
   orderId: string,
-  amount: number,
   remarks1 = 'Payment',
   remarks2 = ''
 ) => {
@@ -35,7 +34,6 @@ export const generateQrPayment = async (
       body: {
         action: 'generate-qr',
         orderId,
-        amount,
         remarks1,
         remarks2,
       }
@@ -50,7 +48,6 @@ export const generateQrPayment = async (
 
 export const generateWebPayment = async (
   orderId: string,
-  amount: number,
   remarks1 = 'Payment',
   remarks2 = ''
 ) => {
@@ -59,7 +56,6 @@ export const generateWebPayment = async (
       body: {
         action: 'generate-web',
         orderId,
-        amount,
         remarks1,
         remarks2,
       }

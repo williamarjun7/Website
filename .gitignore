@@ -1,48 +1,26 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
 node_modules
 dist
 dist-ssr
 *.local
 
-# Environment variables
 .env
 .env.local
-keys-template.txt
-nul
+.pdf
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+logs
+*.log
+
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
+.vscode/
+.idea
 *.sw?
 
-# InsForge & AI agent skills
 .insforge
-.agent
-.agents
-.augment
-.claude
-.cline
-.github/copilot*
-.kilocode
-.qoder
-.qwen
-.roo
-.trae
-.windsurf
-
-# Local Netlify folder
 .netlify
+.github/copilot*
+
+# Graphify intermediates
+.graphify_*.json
+.graphify_python
+graphify-out/cache/
+/src/assets/nul

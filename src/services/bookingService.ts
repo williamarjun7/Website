@@ -113,26 +113,6 @@ export const updateBookingStatus = async (
     }
 };
 
-// Admin: Update payment status
-export const updatePaymentStatus = async (
-    id: string,
-    status: Booking['payment_status']
-) => {
-    try {
-        const { data, error } = await insforge.database
-            .from('bookings')
-            .update({ payment_status: status })
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        return handleInsforgeError(error);
-    }
-};
-
 // Admin: Cancel booking
 export const cancelBooking = async (id: string) => {
     try {
