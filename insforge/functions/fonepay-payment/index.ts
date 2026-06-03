@@ -234,11 +234,11 @@ export default async function handler(req: Request) {
 
       const amount = booking.total_price
       const prn = `HIGHLANDS_${orderId}_${Date.now()}`
-      const dataToHash = `${amount},${prn},${merchantCode},${remarks1},${remarks2}`
+      const dataToHash = `${String(amount)},${prn},${merchantCode},${remarks1},${remarks2}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
 
       const payload = {
-        amount,
+        amount: String(amount),
         remarks1,
         remarks2,
         prn,
