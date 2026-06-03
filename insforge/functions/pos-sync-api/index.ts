@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS = [
@@ -50,7 +49,7 @@ async function verifyHmacSignature(request: Request, rawBody: string): Promise<b
   return computed === signature
 }
 
-async function checkIdempotency(db: ReturnType<typeof createClient>, idempotencyKey: string): Promise<boolean> {
+async function checkIdempotency(db: any, idempotencyKey: string): Promise<boolean> {
   const { data } = await db
     .from("bookings")
     .select("id")
@@ -112,14 +111,14 @@ export default async function handler(req: Request) {
   const path = url.pathname.replace(/^\/functions\/pos-sync-api/, "").replace(/^\/api\/pos-sync/, "").replace(/^\/pos-sync/, "")
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("INSFORGE_URL") || Deno.env.get("INSFORGE_BASE_URL") || ""
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!baseUrl || !anonKey) {
       return errorResponse("Server configuration error", 500)
     }
 
-    const db = createClient(supabaseUrl, supabaseKey)
+    const { database: db } = createClient({ baseUrl, anonKey })
 
     // ── GET /availability?check_in=...&check_out=... ───────────────────
     if (req.method === "GET" && path === "/availability") {
