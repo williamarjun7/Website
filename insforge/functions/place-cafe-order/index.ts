@@ -5,6 +5,8 @@ const ALLOWED_ORIGINS = [
   "https://highlands-motel.com",
   "https://www.highlands-motel.com",
   "https://6aiag3ra.us-east.insforge.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
 ]
 
 function getCorsHeaders(request: Request): Record<string, string> {

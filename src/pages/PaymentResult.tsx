@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Check, X, Loader } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
-import { updatePaymentStatus } from '../services/bookingService';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
@@ -28,11 +27,6 @@ const PaymentResult = () => {
       const { data, error } = await verifyWebPayment(prn, uid, amount, pid, bc);
 
       if (data?.success && (data.response_code === 'successful' || data.status === 'success')) {
-        const parts = prn.split('_');
-        if (parts.length >= 2) {
-          const bookingId = parts[1];
-          await updatePaymentStatus(bookingId, 'paid');
-        }
         setStatus('success');
         setMessage('Payment successful! Your booking is confirmed.');
       } else {
