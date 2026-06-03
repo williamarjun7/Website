@@ -10,7 +10,8 @@ import {
     Calendar,
     LogOut,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    Banknote
 } from 'lucide-react';
 import { getAllBookings, updateBookingStatus } from '../../services/bookingService';
 import { exportToCsv } from '../../utils/csv';
@@ -58,8 +59,10 @@ const Bookings = () => {
             );
         }
 
-        // Status filter
-        if (statusFilter !== 'all') {
+        // Status filter (booking_status or payment_status)
+        if (statusFilter === 'paid' || statusFilter === 'pending' || statusFilter === 'failed' || statusFilter === 'pay_at_property') {
+            result = result.filter(b => b.payment_status === statusFilter);
+        } else if (statusFilter !== 'all') {
             result = result.filter(b => b.booking_status === statusFilter);
         }
 
@@ -92,6 +95,36 @@ const Bookings = () => {
             case 'checked_out': return 'bg-gray-100 text-gray-800';
             case 'cancelled': return 'bg-red-100 text-red-800';
             default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPaymentStatusColor = (status: string) => {
+        switch (status) {
+            case 'paid': return 'bg-green-100 text-green-800';
+            case 'pending': return 'bg-amber-100 text-amber-800';
+            case 'failed': return 'bg-red-100 text-red-800';
+            case 'pay_at_property': return 'bg-blue-100 text-blue-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+
+    const getPaymentIcon = (status: string) => {
+        switch (status) {
+            case 'paid': return CheckCircle;
+            case 'pending': return Clock;
+            case 'failed': return XCircle;
+            case 'pay_at_property': return Banknote;
+            default: return Clock;
+        }
+    };
+
+    const getPaymentLabel = (status: string) => {
+        switch (status) {
+            case 'paid': return 'Paid';
+            case 'pending': return 'Pending';
+            case 'failed': return 'Failed';
+            case 'pay_at_property': return 'Pay at Property';
+            default: return status;
         }
     };
 
@@ -164,6 +197,11 @@ const Bookings = () => {
                         <option value="checked_in">Checked In</option>
                         <option value="checked_out">Checked Out</option>
                         <option value="cancelled">Cancelled</option>
+                        <option disabled>── Payment ──</option>
+                        <option value="paid">Paid</option>
+                        <option value="pending">Pending</option>
+                        <option value="failed">Failed</option>
+                        <option value="pay_at_property">Pay at Property</option>
                     </select>
                 </div>
             </div>
@@ -178,20 +216,21 @@ const Bookings = () => {
                                 <th className="px-6 py-4 font-semibold text-gray-900">Room</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900">Dates</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900">Status</th>
+                                <th className="px-6 py-4 font-semibold text-gray-900">Payment</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900 text-right">Amount</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center">
-                                        <div className="spinner mx-auto" />
-                                    </td>
-                                </tr>
-                            ) : filteredBookings.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-8 text-center">
+                                            <div className="spinner mx-auto" />
+                                        </td>
+                                    </tr>
+                                ) : filteredBookings.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                                         No bookings found matching your filters.
                                     </td>
                                 </tr>
@@ -218,6 +257,12 @@ const Bookings = () => {
                                                 {booking.booking_status === 'cancelled' && <XCircle size={12} className="mr-1" />}
                                                 {booking.booking_status === 'checked_in' && <Clock size={12} className="mr-1" />}
                                                 {booking.booking_status.replace('_', ' ')}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(booking.payment_status)}`}>
+                                                {(() => { const Icon = getPaymentIcon(booking.payment_status); return <Icon size={12} className="mr-1" />; })()}
+                                                {getPaymentLabel(booking.payment_status)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-gray-900">

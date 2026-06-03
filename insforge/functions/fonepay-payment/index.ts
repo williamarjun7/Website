@@ -113,12 +113,22 @@ const CallbackSchema = z.object({
   signature: z.string().optional(),
 })
 
+const PostTaxRefundSchema = z.object({
+  action: z.literal("post-tax-refund"),
+  prn: z.string(),
+  fonepayTraceId: z.union([z.string(), z.number()]),
+  invoiceNumber: z.string(),
+  invoiceDate: z.string(),
+  transactionAmount: z.union([z.string(), z.number()]),
+})
+
 const RequestSchema = z.discriminatedUnion("action", [
   GenerateQrSchema,
   GenerateWebSchema,
   VerifyQrSchema,
   VerifyWebSchema,
   CallbackSchema,
+  PostTaxRefundSchema,
 ])
 
 type AppError = { error: string }
@@ -251,13 +261,21 @@ export default async function handler(req: Request) {
         return errorResponse(`QR generation failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
+      const qrResponse = qrData as Record<string, unknown>
+
       await logEvent(db, {
         booking_id: orderId,
         event_type: "payment_initiated",
         payload: { prn, amount, method: "fonepay_qr" },
       })
 
-      return new Response(JSON.stringify({ success: true, prn, qrCode: qrData, amount }), {
+      return new Response(JSON.stringify({
+        success: true,
+        prn,
+        qrMessage: qrResponse.qrMessage || "",
+        thirdpartyQrWebSocketUrl: qrResponse.thirdpartyQrWebSocketUrl || "",
+        amount,
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
@@ -599,6 +617,64 @@ export default async function handler(req: Request) {
         uniqueId: fonepayResult.uniqueId || "",
         response_code: fonepayResult.response_code || "",
       }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    }
+
+    if (action === "post-tax-refund") {
+      if (!db) return errorResponse("Database not configured", 500)
+
+      const { prn, fonepayTraceId, invoiceNumber, invoiceDate, transactionAmount } = actionData
+
+      const { data: payment } = await db
+        .from("payments")
+        .select("id, booking_id, status")
+        .eq("prn", prn)
+        .single()
+
+      if (!payment) {
+        return errorResponse("Payment not found", 404)
+      }
+      if (payment.status !== "completed") {
+        return errorResponse("Payment not completed", 400)
+      }
+
+      const dataToHash = `${fonepayTraceId},${prn},${invoiceNumber},${invoiceDate},${transactionAmount},${merchantCode}`
+      const dataValidation = await hmacSha512(merchantSecret, dataToHash)
+
+      const payload = {
+        fonepayTraceId: String(fonepayTraceId),
+        merchantPRN: prn,
+        invoiceNumber,
+        invoiceDate,
+        transactionAmount: String(transactionAmount),
+        merchantCode,
+        dataValidation,
+        username,
+        password,
+      }
+
+      let result: Record<string, unknown>
+      try {
+        const res = await fetch(`${dynamicQrUrl}/thirdPartyPostTaxRefund`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error(`Fonepay tax refund API error: ${res.status}`)
+        result = await res.json()
+      } catch (e) {
+        return errorResponse(`Tax refund failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+      }
+
+      await logEvent(db, {
+        payment_id: payment.id,
+        booking_id: payment.booking_id,
+        event_type: result.success ? "payment_completed" : "payment_failed",
+        payload: { prn, fonepayTraceId, invoiceNumber, fonepayResponse: result },
+      })
+
+      return new Response(JSON.stringify({ success: true, fonepayResponse: result }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }

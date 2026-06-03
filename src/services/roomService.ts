@@ -129,7 +129,6 @@ export const getAvailableRooms = async (checkIn: string, checkOut: string) => {
         for (const booking of bookingsResult.data || []) {
             unavailableRoomIds.add(booking.room_id);
         }
-        }
 
         // Filter to only available rooms
         const availableRooms = (roomsResult.data || []).filter(
