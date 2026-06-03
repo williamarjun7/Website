@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Users, Check, QrCode, ExternalLink } from 'lucide-react';
+import { Users, Check, QrCode, ExternalLink, Wifi, WifiOff, Smartphone, Clock, Loader } from 'lucide-react';
+import QRCode from 'qrcode';
 import { getAvailableRooms, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice } from '../services/bookingService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
@@ -25,10 +26,12 @@ const Booking = () => {
 
     const [confirmedEmail, setConfirmedEmail] = useState('');
     const [paymentLoading, setPaymentLoading] = useState(false);
-    const [qrCodeData, setQrCodeData] = useState<string | { qrImage?: string } | null>(null);
+    const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
     const [paymentPrn, setPaymentPrn] = useState('');
     const [toastMessage, setToastMessage] = useState('');
     const [pollingActive, setPollingActive] = useState(false);
+    const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
+    const wsRef = useRef<WebSocket | null>(null);
 
     const {
         register,
@@ -65,14 +68,14 @@ const Booking = () => {
 
     // Auto-poll for QR payment confirmation
     useEffect(() => {
-        if (!pollingActive || !paymentPrn || step !== 4) return;
+        if (!pollingActive || !paymentPrn || step !== 3) return;
         const interval = setInterval(async () => {
             const { data } = await verifyQrPayment(paymentPrn);
             if (data?.success) {
                 setPollingActive(false);
-                setQrCodeData(null);
+                setQrCodeDataUrl(null);
                 setPaymentPrn('');
-                setStep(3);
+                setStep(4);
             }
         }, 8000);
         return () => clearInterval(interval);
@@ -82,6 +85,67 @@ const Booking = () => {
         setSelectedRoom(room);
         setStep(2);
     };
+
+    const onPaymentReceived = useCallback(async (prn: string) => {
+        setPollingActive(false);
+        setWsStatus('disconnected');
+        const { data } = await verifyQrPayment(prn);
+        if (data?.success) {
+            setQrCodeDataUrl(null);
+            setPaymentPrn('');
+            setStep(4);
+        } else {
+            setPollingActive(true);
+        }
+    }, []);
+
+    const connectWebSocket = useCallback((url: string, prn: string) => {
+        if (wsRef.current) {
+            wsRef.current.close();
+        }
+        setWsStatus('connecting');
+        try {
+            const ws = new WebSocket(url);
+            wsRef.current = ws;
+
+            ws.onopen = () => {
+                setWsStatus('connected');
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const msg = JSON.parse(event.data);
+                    if (msg.status === 'success' || msg.paymentStatus === 'success' || msg.response_code === 'successful') {
+                        onPaymentReceived(prn);
+                    }
+                } catch {
+                    if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
+                        onPaymentReceived(prn);
+                    }
+                }
+            };
+
+            ws.onerror = () => {
+                setWsStatus('disconnected');
+            };
+
+            ws.onclose = () => {
+                setWsStatus('disconnected');
+                wsRef.current = null;
+            };
+        } catch {
+            setWsStatus('disconnected');
+        }
+    }, [onPaymentReceived]);
+
+    useEffect(() => {
+        return () => {
+            if (wsRef.current) {
+                wsRef.current.close();
+                wsRef.current = null;
+            }
+        };
+    }, []);
 
     const processPayment = async (bookingId: string, method: string) => {
         if (method === 'fonepay_qr') {
@@ -93,15 +157,27 @@ const Booking = () => {
             );
             setPaymentLoading(false);
 
-            if (qrResult) {
-                setQrCodeData(qrResult.qrCode);
+            if (qrResult?.qrMessage) {
+                try {
+                    const dataUrl = await QRCode.toDataURL(qrResult.qrMessage, {
+                        width: 300,
+                        margin: 2,
+                        color: { dark: '#1a1a1a', light: '#ffffff' },
+                    });
+                    setQrCodeDataUrl(dataUrl);
+                } catch {
+                    setQrCodeDataUrl('');
+                }
                 setPaymentPrn(qrResult.prn);
                 setPollingActive(true);
-                setStep(4);
+                if (qrResult.thirdpartyQrWebSocketUrl) {
+                    connectWebSocket(qrResult.thirdpartyQrWebSocketUrl, qrResult.prn);
+                }
+                setStep(3);
             } else {
                 setToastMessage(qrError || 'Failed to generate QR code. Your booking is saved, pay at property.');
                 setTimeout(() => setToastMessage(''), 8000);
-                setStep(3);
+                setStep(4);
             }
         } else if (method === 'fonepay_web') {
             setPaymentLoading(true);
@@ -118,10 +194,10 @@ const Booking = () => {
             } else {
                 setToastMessage(webError || 'Failed to generate payment link. Your booking is saved, pay at property.');
                 setTimeout(() => setToastMessage(''), 8000);
-                setStep(3);
+                setStep(4);
             }
         } else {
-            setStep(3);
+            setStep(4);
         }
     };
 
@@ -187,27 +263,35 @@ const Booking = () => {
                 <div className="flex items-center justify-center mb-12">
                     <div className="flex items-center space-x-4">
                         <div className={`flex items-center ${step >= 1 ? 'text-primary' : 'text-gray-400'}`}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200'
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 1 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
                                 }`}>
                                 1
                             </div>
-                            <span className="ml-2 font-medium hidden sm:inline">Select Dates</span>
+                            <span className="ml-2 font-medium hidden sm:inline">Dates</span>
                         </div>
-                        <div className="w-12 h-0.5 bg-gray-300" />
+                        <div className={`w-12 h-0.5 ${step >= 2 ? 'bg-primary' : 'bg-gray-300'}`} />
                         <div className={`flex items-center ${step >= 2 ? 'text-primary' : 'text-gray-400'}`}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200'
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 2 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
                                 }`}>
                                 2
                             </div>
-                            <span className="ml-2 font-medium hidden sm:inline">Guest Info</span>
+                            <span className="ml-2 font-medium hidden sm:inline">Details</span>
                         </div>
-                        <div className="w-12 h-0.5 bg-gray-300" />
+                        <div className={`w-12 h-0.5 ${step >= 3 ? 'bg-primary' : 'bg-gray-300'}`} />
                         <div className={`flex items-center ${step >= 3 ? 'text-primary' : 'text-gray-400'}`}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200'
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 3 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
                                 }`}>
                                 3
                             </div>
-                            <span className="ml-2 font-medium hidden sm:inline">Confirmation</span>
+                            <span className="ml-2 font-medium hidden sm:inline">Payment</span>
+                        </div>
+                        <div className={`w-12 h-0.5 ${step >= 4 ? 'bg-primary' : 'bg-gray-300'}`} />
+                        <div className={`flex items-center ${step >= 4 ? 'text-primary' : 'text-gray-400'}`}>
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${step >= 4 ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
+                                }`}>
+                                4
+                            </div>
+                            <span className="ml-2 font-medium hidden sm:inline">Confirmed</span>
                         </div>
                     </div>
                 </div>
@@ -446,7 +530,7 @@ const Booking = () => {
                     </div>
                 )}
 
-                {/* Step 3: Confirmation */}
+                {/* Step 3: Payment Screen (QR or Processing) */}
                 {step === 3 && paymentLoading && (
                     <div className="card text-center">
                         <div className="animate-spin w-12 h-12 border-4 border-amber-600 border-t-transparent rounded-full mx-auto mb-4" />
@@ -455,7 +539,113 @@ const Booking = () => {
                     </div>
                 )}
 
-                {step === 3 && !paymentLoading && (
+                {/* Step 3: QR Payment Display */}
+                {step === 3 && !paymentLoading && qrCodeDataUrl !== null && (
+                    <div className="card text-center">
+                        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <QrCode className="text-amber-600" size={40} />
+                        </div>
+                        <h2 className="font-heading text-3xl font-bold mb-2">Scan to Pay</h2>
+                        <p className="text-gray-600 mb-6">
+                            Open your <strong>Fonepay</strong> app and scan the QR code below to complete payment.
+                        </p>
+
+                        {/* QR Code with animated border */}
+                        <div className="relative inline-block mb-4">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 via-amber-600 to-amber-400 rounded-xl opacity-75 animate-pulse" />
+                            <div className="relative bg-white rounded-lg p-4">
+                                {qrCodeDataUrl ? (
+                                    <img
+                                        src={qrCodeDataUrl}
+                                        alt="Fonepay QR Code"
+                                        className="w-64 h-64 object-contain"
+                                    />
+                                ) : (
+                                    <div className="w-64 h-64 flex items-center justify-center text-gray-400">
+                                        <Smartphone size={48} />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Amount & Reference */}
+                        <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500">Amount</span>
+                                <span className="font-bold text-lg text-gray-900">NPR {getTotalPrice().toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-gray-500">Reference</span>
+                                <span className="font-mono text-xs text-gray-700">{paymentPrn}</span>
+                            </div>
+                        </div>
+
+                        {/* WebSocket Status */}
+                        <div className="flex items-center justify-center space-x-2 mb-3">
+                            {wsStatus === 'connected' ? (
+                                <>
+                                    <Wifi size={14} className="text-green-500" />
+                                    <span className="text-xs text-green-600">Real-time monitoring active</span>
+                                </>
+                            ) : wsStatus === 'connecting' ? (
+                                <>
+                                    <Loader size={14} className="text-amber-500 animate-spin" />
+                                    <span className="text-xs text-amber-600">Connecting to payment monitor...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <WifiOff size={14} className="text-gray-400" />
+                                    <span className="text-xs text-gray-500">Using periodic verification</span>
+                                </>
+                            )}
+                        </div>
+
+                        {pollingActive && wsStatus !== 'connected' && (
+                            <div className="flex items-center justify-center space-x-2 mb-6">
+                                <Clock size={14} className="text-amber-500" />
+                                <span className="text-xs text-amber-600 animate-pulse">
+                                    Auto-checking every 8 seconds...
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="space-y-3">
+                            <button
+                                onClick={async () => {
+                                    setPaymentLoading(true);
+                                    const { data, error } = await verifyQrPayment(paymentPrn);
+                                    if (data?.success) {
+                                        setQrCodeDataUrl(null);
+                                        setPaymentPrn('');
+                                        setStep(4);
+                                    } else {
+                                        setPollingActive(true);
+                                        setToastMessage(error || 'Payment not confirmed yet.');
+                                        setTimeout(() => setToastMessage(''), 8000);
+                                    }
+                                    setPaymentLoading(false);
+                                }}
+                                disabled={paymentLoading}
+                                className="btn-primary w-full flex items-center justify-center space-x-2"
+                            >
+                                {paymentLoading ? (
+                                    <><Loader size={18} className="animate-spin" /><span>Verifying...</span></>
+                                ) : (
+                                    <><Check size={18} /><span>I've Paid - Verify</span></>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => navigate('/')}
+                                className="btn-secondary w-full"
+                            >
+                                Cancel & Return Home
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Step 4: Confirmation */}
+                {step === 4 && !paymentLoading && (
                     <div className="card text-center">
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
                             <Check className="text-green-600" size={40} />
@@ -464,8 +654,8 @@ const Booking = () => {
                         <p className="text-gray-600 mb-6">
                             Your booking has been successfully confirmed. We've sent a confirmation email to {confirmedEmail}.
                         </p>
-                        <div className="bg-gray-50 rounded-lg p-6 mb-6">
-                            <p className="text-sm text-gray-500 mb-2">Booking ID</p>
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mb-6">
+                            <p className="text-sm text-amber-700 mb-2">Booking Reference</p>
                             <p className="font-mono text-xl font-bold text-primary">{bookingId}</p>
                         </div>
                         <div className="space-y-4">
@@ -480,63 +670,6 @@ const Booking = () => {
                                 className="btn-secondary w-full"
                             >
                                 Print Confirmation
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 4: QR Payment Display */}
-                {step === 4 && qrCodeData && (
-                    <div className="card text-center">
-                        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <QrCode className="text-amber-600" size={40} />
-                        </div>
-                        <h2 className="font-heading text-3xl font-bold mb-2">Scan to Pay</h2>
-                        <p className="text-gray-600 mb-4">
-                            Scan the QR code below with your Fonepay app to complete payment.
-                        </p>
-                        <div className="bg-white border rounded-lg p-4 mb-4 inline-block">
-                            <img
-                                src={typeof qrCodeData === 'string' ? qrCodeData : (qrCodeData as { qrImage?: string })?.qrImage}
-                                alt="Fonepay QR Code"
-                                className="w-64 h-64 object-contain"
-                            />
-                        </div>
-                        <p className="text-sm text-gray-500 mb-2">Payment Reference: {paymentPrn}</p>
-                        <p className="text-sm text-gray-500 mb-6">
-                            Amount: NPR {getTotalPrice().toLocaleString()}
-                        </p>
-                        {pollingActive && (
-                            <p className="text-xs text-amber-600 mb-4 animate-pulse">
-                                Auto-verifying payment every 8 seconds...
-                            </p>
-                        )}
-                        <div className="space-y-3">
-                            <button
-                                onClick={() => navigate('/')}
-                                className="btn-primary w-full"
-                            >
-                                Return to Home
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    setPaymentLoading(true);
-                                    const { data, error } = await verifyQrPayment(paymentPrn);
-                                    if (data?.success) {
-                                        setQrCodeData(null);
-                                        setPaymentPrn('');
-                                        setStep(3);
-                                    } else {
-                                        setPollingActive(false);
-                                        setToastMessage(error || 'Payment not confirmed yet. Try again or pay at property.');
-                                        setTimeout(() => setToastMessage(''), 8000);
-                                    }
-                                    setPaymentLoading(false);
-                                }}
-                                disabled={paymentLoading}
-                                className="btn-secondary w-full"
-                            >
-                                {paymentLoading ? 'Verifying...' : "I've Paid - Verify Payment"}
                             </button>
                         </div>
                     </div>

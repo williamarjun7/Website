@@ -3,7 +3,8 @@ import { insforge, handleInsforgeError } from './insforge';
 export interface GenerateQrResult {
   success: boolean;
   prn: string;
-  qrCode: string | Record<string, unknown>;
+  qrMessage: string;
+  thirdpartyQrWebSocketUrl: string;
   amount: number;
 }
 
@@ -80,6 +81,30 @@ export const verifyQrPayment = async (prn: string) => {
     return { data: data as VerifyResult, error: null };
   } catch (error) {
     console.error('QR payment verification failed:', error);
+    return handleInsforgeError(error);
+  }
+};
+
+export interface PostTaxRefundData {
+  prn: string;
+  fonepayTraceId: string | number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  transactionAmount: string | number;
+}
+
+export const postTaxRefund = async (refundData: PostTaxRefundData) => {
+  try {
+    const { data, error } = await insforge.functions.invoke('fonepay-payment', {
+      body: {
+        action: 'post-tax-refund',
+        ...refundData,
+      }
+    });
+    if (error) throw error;
+    return { data: data as { success: boolean; fonepayResponse: Record<string, unknown> }, error: null };
+  } catch (error) {
+    console.error('Tax refund submission failed:', error);
     return handleInsforgeError(error);
   }
 };
