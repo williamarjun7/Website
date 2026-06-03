@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
 // ─── Email Module (inlined) ─────────────────────────────────────────────
@@ -155,15 +154,15 @@ export default async function (req: Request) {
       throw new Error("check_out must be after check_in")
     }
 
-    // ── Initialize Supabase/InsForge client ────────────────────────────
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("INSFORGE_URL") || Deno.env.get("INSFORGE_BASE_URL") || ""
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    // ── Initialize InsForge client ─────────────────────────────────────
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!baseUrl || !anonKey) {
       throw new Error("Server configuration error")
     }
 
-    const db = createClient(supabaseUrl, supabaseKey)
+    const { database: db } = createClient({ baseUrl, anonKey })
 
     // ── Fetch room price (trusted source) ─────────────────────────────
     const { data: room, error: roomError } = await db

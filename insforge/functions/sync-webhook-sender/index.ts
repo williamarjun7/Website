@@ -1,17 +1,25 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { createClient } from "npm:@insforge/sdk"
+
+function toError(e: unknown): Error {
+  if (e instanceof Error) return e
+  if (typeof e === "object" && e !== null) {
+    const msg = (e as Record<string, unknown>).message || (e as Record<string, unknown>).error || JSON.stringify(e)
+    return new Error(String(msg))
+  }
+  return new Error(String(e))
+}
 
 export default async function handler(req: Request) {
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || Deno.env.get("INSFORGE_URL") || Deno.env.get("INSFORGE_BASE_URL") || ""
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("INSFORGE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
-    if (!supabaseUrl || !supabaseKey) {
+    if (!baseUrl || !anonKey) {
       console.error("sync-webhook-sender: Database URL or key not configured")
       return new Response(JSON.stringify({ error: "Server config error" }), { status: 500 })
     }
 
-    const db = createClient(supabaseUrl, supabaseKey)
+    const { database: db } = createClient({ baseUrl, anonKey })
 
     const webhookUrl = Deno.env.get("POS_WEBHOOK_URL")
     if (!webhookUrl) {
@@ -28,7 +36,7 @@ export default async function handler(req: Request) {
       .order("created_at", { ascending: true })
       .limit(50)
 
-    if (error) throw error
+    if (error) throw toError(error)
     if (!events || events.length === 0) {
       return new Response(JSON.stringify({ message: "No pending events" }))
     }
@@ -96,7 +104,7 @@ export default async function handler(req: Request) {
           failed++
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error"
+        const msg = toError(err).message
         console.error(`Webhook delivery error for event ${event.id}: ${msg}`)
         await db
           .from("sync_events")
@@ -115,7 +123,7 @@ export default async function handler(req: Request) {
       headers: { "Content-Type": "application/json" },
     })
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error"
+    const message = toError(error).message
     return new Response(JSON.stringify({ error: message }), {
       headers: { "Content-Type": "application/json" },
       status: 500,
