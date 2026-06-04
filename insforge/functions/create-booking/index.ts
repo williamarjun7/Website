@@ -7,7 +7,7 @@ interface EmailData { to: string; subject: string; html: string }
 async function sendEmail(data: EmailData): Promise<void> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@6aiag3ra.insforge.site>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlandsmotelinn.netlify.app>"
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -23,6 +23,7 @@ function buildBookingConfirmationHtml(params: { guestName: string; roomName: str
 // ─── Allowed Origins (CORS) ───────────────────────────────────────────────
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
+  "https://highlandsmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
