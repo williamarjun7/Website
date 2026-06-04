@@ -441,6 +441,9 @@ export default async function handler(req: Request) {
       }
 
       const qrResponse = qrData as Record<string, unknown>
+      if (!qrResponse.qrMessage) {
+        return errorResponse("Fonepay rejected the request. Verify merchant credentials.", 502)
+      }
 
       // Create payment record in pending state (for PRN uniqueness + reconciliation)
       const { error: payInsertErr } = await db
