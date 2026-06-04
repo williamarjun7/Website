@@ -262,7 +262,6 @@ export default async function (req: Request) {
         // Send confirmation email for pay_at_property bookings (after advance payment)
         // Online payment bookings get their email after payment verification
         // Note: pay_at_property now goes through payment flow for the 60% advance
-      }
 
         return new Response(JSON.stringify(booking), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
