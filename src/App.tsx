@@ -31,6 +31,7 @@ const Menu = lazy(() => import('./pages/admin/Menu'));
 const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
 const CafeOrders = lazy(() => import('./pages/admin/CafeOrders'));
+const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -85,6 +86,7 @@ function App() {
               <Route path="orders" element={<CafeOrders />} />
               <Route path="images" element={<Images />} />
               <Route path="content" element={<ContentEditor />} />
+              <Route path="payment-recovery" element={<PaymentRecovery />} />
             </Route>
           </Route>
         </Routes>

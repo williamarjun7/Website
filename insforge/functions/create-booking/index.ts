@@ -7,7 +7,7 @@ interface EmailData { to: string; subject: string; html: string }
 async function sendEmail(data: EmailData): Promise<void> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlands-motel.com>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@6aiag3ra.insforge.site>"
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -21,17 +21,19 @@ function buildBookingConfirmationHtml(params: { guestName: string; roomName: str
 }
 
 // ─── Allowed Origins (CORS) ───────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
-  "https://highlands-motel.com",
-  "https://www.highlands-motel.com",
-  "https://6aiag3ra.us-east.insforge.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
+const ALLOWED_ORIGINS: (string | RegExp)[] = [
+  "https://6aiag3ra.insforge.site",
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
+
+function isOriginAllowed(origin: string): boolean {
+  return ALLOWED_ORIGINS.some(a => typeof a === "string" ? a === origin : a.test(origin))
+}
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
-  const allowed = ALLOWED_ORIGINS.includes(origin)
+  const allowed = isOriginAllowed(origin)
   return {
     "Access-Control-Allow-Origin": allowed ? origin : "",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -193,7 +195,7 @@ export default async function (req: Request) {
         .from("bookings")
         .select("id")
         .eq("room_id", room_id)
-        .in("booking_status", ["confirmed", "checked_in"])
+        .in("booking_status", ["pending_payment", "confirmed", "checked_in"])
         .lt("check_in", check_out)
         .gt("check_out", check_in)
         .limit(1)
@@ -205,6 +207,15 @@ export default async function (req: Request) {
       if (conflictingBookings && conflictingBookings.length > 0) {
         throw new Error("Room is no longer available for the selected dates")
       }
+
+      // Determine booking status based on payment method
+      // payment_status = "pay_at_property" → confirmed immediately
+      // payment_status = "pending" → online payment → pending_payment with hold
+      const isOnlinePayment = payment_status === "pending"
+      const bookingStatus = isOnlinePayment ? "pending_payment" : "confirmed"
+      const holdExpiresAt = isOnlinePayment
+        ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
+        : null
 
       // Insert booking
       const { data: booking, error: insertError } = await db
@@ -218,37 +229,41 @@ export default async function (req: Request) {
           guest_email,
           guest_phone,
           payment_status: payment_status || "pending",
-          booking_status: "confirmed",
+          booking_status: bookingStatus,
+          hold_expires_at: holdExpiresAt,
           source: "website",
         })
         .select()
         .single()
 
       if (!insertError && booking) {
-        // Fire-and-forget email notification
-        (async () => {
-          try {
-            const { data: room } = await db
-              .from("rooms")
-              .select("name")
-              .eq("id", room_id)
-              .single()
-            const roomName = room?.name || "Selected Room"
-            await sendEmail({
-              to: guest_email,
-              subject: "Booking Confirmed — Highlands Motel & Cafe",
-              html: buildBookingConfirmationHtml({
-                guestName: guest_name,
-                roomName,
-                checkIn: check_in,
-                checkOut: check_out,
-                totalPrice: total_price,
-                bookingId: booking.id,
-              }),
-            })
-          } catch {
-          }
-        })()
+        // Only send confirmation email for pay_at_property bookings
+        // Online payment bookings get their email after payment verification
+        if (!isOnlinePayment) {
+          (async () => {
+            try {
+              const { data: room } = await db
+                .from("rooms")
+                .select("name")
+                .eq("id", room_id)
+                .single()
+              const roomName = room?.name || "Selected Room"
+              await sendEmail({
+                to: guest_email,
+                subject: "Booking Confirmed — Highlands Motel & Cafe",
+                html: buildBookingConfirmationHtml({
+                  guestName: guest_name,
+                  roomName,
+                  checkIn: check_in,
+                  checkOut: check_out,
+                  totalPrice: total_price,
+                  bookingId: booking.id,
+                }),
+              })
+            } catch {
+            }
+          })()
+        }
 
         return new Response(JSON.stringify(booking), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

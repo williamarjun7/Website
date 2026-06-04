@@ -42,7 +42,6 @@ export const generateQrPayment = async (
     if (error) throw error;
     return { data: data as GenerateQrResult, error: null };
   } catch (error) {
-    console.error('QR payment generation failed:', error);
     return handleInsforgeError(error);
   }
 };
@@ -64,7 +63,6 @@ export const generateWebPayment = async (
     if (error) throw error;
     return { data: data as GenerateWebResult, error: null };
   } catch (error) {
-    console.error('Web payment generation failed:', error);
     return handleInsforgeError(error);
   }
 };
@@ -80,31 +78,6 @@ export const verifyQrPayment = async (prn: string) => {
     if (error) throw error;
     return { data: data as VerifyResult, error: null };
   } catch (error) {
-    console.error('QR payment verification failed:', error);
-    return handleInsforgeError(error);
-  }
-};
-
-export interface PostTaxRefundData {
-  prn: string;
-  fonepayTraceId: string | number;
-  invoiceNumber: string;
-  invoiceDate: string;
-  transactionAmount: string | number;
-}
-
-export const postTaxRefund = async (refundData: PostTaxRefundData) => {
-  try {
-    const { data, error } = await insforge.functions.invoke('fonepay-payment', {
-      body: {
-        action: 'post-tax-refund',
-        ...refundData,
-      }
-    });
-    if (error) throw error;
-    return { data: data as { success: boolean; fonepayResponse: Record<string, unknown> }, error: null };
-  } catch (error) {
-    console.error('Tax refund submission failed:', error);
     return handleInsforgeError(error);
   }
 };
@@ -130,7 +103,29 @@ export const verifyWebPayment = async (
     if (error) throw error;
     return { data: data as VerifyResult, error: null };
   } catch (error) {
-    console.error('Web payment verification failed:', error);
+    return handleInsforgeError(error);
+  }
+};
+
+export interface PostTaxRefundData {
+  prn: string;
+  fonepayTraceId: string | number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  transactionAmount: string | number;
+}
+
+export const postTaxRefund = async (refundData: PostTaxRefundData) => {
+  try {
+    const { data, error } = await insforge.functions.invoke('fonepay-payment', {
+      body: {
+        action: 'post-tax-refund',
+        ...refundData,
+      }
+    });
+    if (error) throw error;
+    return { data: data as { success: boolean; fonepayResponse: Record<string, unknown> }, error: null };
+  } catch (error) {
     return handleInsforgeError(error);
   }
 };
