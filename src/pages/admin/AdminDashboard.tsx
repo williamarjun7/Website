@@ -44,8 +44,13 @@ const AdminDashboard = () => {
             const checkIns = checkInsRes.data || [];
 
             const totalRevenue = bookings
-                .filter((b: any) => b.payment_status === 'paid' || b.booking_status === 'checked_out')
-                .reduce((sum: number, b: any) => sum + Number(b.total_price), 0);
+                .filter((b: any) => b.payment_status === 'paid' || b.booking_status === 'checked_out' || b.payment_status === 'pay_at_property')
+                .reduce((sum: number, b: any) => {
+                    if (b.payment_status === 'pay_at_property') {
+                        return sum + Number(b.advance_amount || Math.round(Number(b.total_price) * 60) / 100);
+                    }
+                    return sum + Number(b.total_price);
+                }, 0);
 
             const activeBookings = bookings.filter((b: any) =>
                 ['confirmed', 'checked_in'].includes(b.booking_status)

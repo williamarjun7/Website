@@ -1,4 +1,4 @@
-import { Calendar, CreditCard, Shield, Users, AlertCircle, FileText } from 'lucide-react';
+import { Calendar, CreditCard, Shield, Users, AlertCircle, FileText, RefreshCw } from 'lucide-react';
 
 const Terms = () => {
 
@@ -64,19 +64,22 @@ const Terms = () => {
                                 <ul className="space-y-2 text-gray-700">
                                     <li>• Valid government-issued ID required at check-in</li>
                                     <li>• Guests must be 18 years or older to book independently</li>
-                                    <li>• 50% deposit required to confirm reservation</li>
-                                    <li>• Full payment due upon check-in</li>
+                                    <li>• Full payment due upon check-in for standard bookings</li>
                                 </ul>
                             </div>
 
                             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-                                <h3 className="font-bold text-lg mb-3">Cancellation Policy</h3>
-                                <ul className="space-y-2 text-gray-700">
-                                    <li>• Free cancellation up to 48 hours before check-in</li>
-                                    <li>• Cancellations within 48 hours: charge one night</li>
-                                    <li>• No-show: charge full stay</li>
-                                    <li>• Peak season may have different policies</li>
-                                </ul>
+                                <h3 className="font-bold text-lg mb-3">Advance Payment Requirement</h3>
+                                <p className="text-gray-700 mb-3">
+                                    To secure and confirm a reservation, guests choosing the "Pay at Property" option must pay 60% of the total booking amount in advance through the online payment gateway. The remaining 40% shall be payable at the property.
+                                </p>
+                            </div>
+
+                            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                                <h3 className="font-bold text-lg mb-3">Reservation Confirmation</h3>
+                                <p className="text-gray-700 mb-3">
+                                    Bookings are confirmed only after successful receipt of the advance payment. Failure to complete the payment may result in automatic cancellation of the reservation.
+                                </p>
                             </div>
                         </div>
                     </section>
@@ -109,6 +112,24 @@ const Terms = () => {
                                     <li>• Confirmed bookings are price-locked</li>
                                 </ul>
                             </div>
+                        </div>
+                    </section>
+
+                    {/* Cancellation & Refund Policy */}
+                    <section className="mb-12">
+                        <h2 className="font-heading text-2xl font-bold mb-6 text-amber-900 flex items-center">
+                            <RefreshCw size={24} className="mr-3 text-amber-700" />
+                            Cancellation & Refund Policy
+                        </h2>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <ul className="space-y-3 text-gray-700">
+                                <li>• Guests may cancel their reservation and receive a refund of the advance payment if cancellation is requested at least <strong>12 hours before</strong> the scheduled check-in time.</li>
+                                <li>• For bookings under the Pay at Property option, the <strong>60% advance payment will be refunded</strong> if cancellation is made 12 or more hours before check-in.</li>
+                                <li>• The remaining 40% balance is not charged online and therefore is not subject to refund.</li>
+                                <li>• If cancellation is requested <strong>less than 12 hours before</strong> check-in, the advance payment becomes <strong>non-refundable</strong>.</li>
+                                <li>• No-shows are considered late cancellations and are not eligible for any refund.</li>
+                            </ul>
                         </div>
                     </section>
 
