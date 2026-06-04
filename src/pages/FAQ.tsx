@@ -20,14 +20,14 @@ const FAQ = () => {
             icon: Calendar
         },
         {
-            question: 'What is your cancellation policy?',
-            answer: 'Free cancellation up to 48 hours before check-in. Cancellations made within 48 hours will incur a charge of one night\'s stay. During peak season, different policies may apply.',
+            question: 'What is your cancellation and refund policy?',
+            answer: 'You may cancel your reservation and receive a full refund of your advance payment if you cancel at least 12 hours before your scheduled check-in time. For Pay at Property bookings, the 60% advance payment is refundable if cancelled 12+ hours before check-in. Cancellations made less than 12 hours before check-in are non-refundable. No-shows are not eligible for any refund.',
             category: 'Booking & Reservations',
             icon: CreditCard
         },
         {
             question: 'Do I need to pay a deposit?',
-            answer: 'Yes, we require a 50% deposit to confirm your reservation. The remaining balance is due upon check-in. We accept credit cards, debit cards, and cash payments.',
+            answer: 'Yes, when choosing the Pay at Property option, we require a 60% advance payment online to confirm your reservation. The remaining 40% balance is due at the property during check-in or check-out. You can also choose to pay the full amount online via Fonepay QR or Fonepay Web Payment.',
             category: 'Booking & Reservations',
             icon: CreditCard
         },

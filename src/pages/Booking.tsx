@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Users, Check, QrCode, ExternalLink, Wifi, WifiOff, Smartphone, Clock, Loader } from 'lucide-react';
 import QRCode from 'qrcode';
 import { getAvailableRooms, Room } from '../services/roomService';
-import { createBooking, calculateTotalPrice } from '../services/bookingService';
+import { createBooking, calculateTotalPrice, calculateAdvanceAmount, calculateBalanceAmount } from '../services/bookingService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
 
@@ -40,6 +40,7 @@ const Booking = () => {
     const {
         register,
         handleSubmit,
+        watch,
         formState: { errors, isSubmitting },
     } = useForm<BookingFormData>({
         resolver: zodResolver(bookingSchema),
@@ -47,6 +48,8 @@ const Booking = () => {
             paymentMethod: 'pay_at_property'
         }
     });
+
+    const selectedPaymentMethod = watch('paymentMethod');
 
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
@@ -549,6 +552,36 @@ const Booking = () => {
                                 </div>
                             </div>
 
+                            {/* Payment Breakdown & Policy Notice — shown only for Pay at Property */}
+                            {selectedPaymentMethod === 'pay_at_property' && (
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-3">
+                                    <h4 className="font-semibold text-sm text-amber-900">Payment Breakdown</h4>
+                                    <div className="text-sm space-y-2">
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Total Booking Amount</span>
+                                            <span className="font-medium">NPR {getTotalPrice().toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700">
+                                            <span>Advance Payment Required Now (60%)</span>
+                                            <span className="font-medium text-amber-700">NPR {calculateAdvanceAmount(getTotalPrice()).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-700 border-t border-amber-200 pt-2">
+                                            <span>Remaining Balance at Property (40%)</span>
+                                            <span className="font-medium text-green-700">NPR {calculateBalanceAmount(getTotalPrice()).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    <div className="bg-amber-100 rounded-lg p-3 text-xs text-amber-800 space-y-1">
+                                        <p className="font-semibold">Pay at Property Policy</p>
+                                        <p>• 60% advance payment is required to confirm your reservation.</p>
+                                        <p>• Remaining 40% can be paid at the property.</p>
+                                        <p>• Reservations are not guaranteed until the advance payment is successfully completed.</p>
+                                        <p className="mt-2 pt-2 border-t border-amber-200 text-amber-700">
+                                            By proceeding with this booking, you agree to pay a non-refundable 60% advance deposit if cancellation occurs within 12 hours of check-in. Cancellations made at least 12 hours before check-in are eligible for a refund of the advance payment.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="flex space-x-4">
                                 <button
                                     type="button"
@@ -722,6 +755,28 @@ const Booking = () => {
                             <p className="text-sm text-amber-700 mb-2">Booking Reference</p>
                             <p className="font-mono text-xl font-bold text-primary">{bookingId}</p>
                         </div>
+                        {(() => {
+                            const total = getTotalPrice();
+                            const advance = calculateAdvanceAmount(total);
+                            const balance = calculateBalanceAmount(total);
+                            return (
+                                <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left text-sm space-y-2">
+                                    <p className="font-semibold text-gray-900 mb-2">Payment Summary</p>
+                                    <div className="flex justify-between text-gray-700">
+                                        <span>Total Booking Amount</span>
+                                        <span className="font-medium">NPR {total.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-amber-700">
+                                        <span>Advance Payment (60%)</span>
+                                        <span className="font-medium">NPR {advance.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-green-700 border-t border-gray-200 pt-2">
+                                        <span>Balance at Property (40%)</span>
+                                        <span className="font-medium">NPR {balance.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            );
+                        })()}
                         <div className="space-y-4">
                             <button
                                 onClick={() => navigate('/')}

@@ -3,12 +3,14 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Check, X, Loader } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
+import { getBookingById } from '../services/bookingService';
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [message, setMessage] = useState('');
+  const [bookingInfo, setBookingInfo] = useState<{ total: number; advance: number; balance: number } | null>(null);
 
   useEffect(() => {
     const verify = async () => {
@@ -28,6 +30,17 @@ const PaymentResult = () => {
 
       if (data?.success && (data.response_code === 'successful' || data.status === 'success')) {
         setStatus('success');
+        const bookingId = sessionStorage.getItem('pendingBookingId');
+        if (bookingId) {
+          const { data: booking } = await getBookingById(bookingId);
+          if (booking) {
+            const total = Number(booking.total_price);
+            const advance = booking.advance_amount ? Number(booking.advance_amount) : total;
+            const balance = booking.balance_amount ? Number(booking.balance_amount) : 0;
+            setBookingInfo({ total, advance, balance });
+          }
+          sessionStorage.removeItem('pendingBookingId');
+        }
         setMessage('Payment successful! Your booking is confirmed.');
       } else {
         setStatus('failed');
@@ -58,6 +71,25 @@ const PaymentResult = () => {
             </div>
             <h2 className="font-heading text-2xl font-bold mb-2">Payment Successful</h2>
             <p className="text-gray-600 mb-6">{message}</p>
+            {bookingInfo && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left text-sm space-y-2">
+                <p className="font-semibold text-gray-900 mb-2">Payment Summary</p>
+                <div className="flex justify-between text-gray-700">
+                  <span>Total Booking Amount</span>
+                  <span className="font-medium">NPR {bookingInfo.total.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-amber-700">
+                  <span>Advance Paid (60%)</span>
+                  <span className="font-medium">NPR {bookingInfo.advance.toLocaleString()}</span>
+                </div>
+                {bookingInfo.balance > 0 && (
+                  <div className="flex justify-between text-green-700 border-t border-gray-200 pt-2">
+                    <span>Balance at Property (40%)</span>
+                    <span className="font-medium">NPR {bookingInfo.balance.toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            )}
             <button onClick={() => navigate('/booking')} className="btn-primary w-full">
               View My Booking
             </button>

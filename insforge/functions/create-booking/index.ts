@@ -16,8 +16,11 @@ async function sendEmail(data: EmailData): Promise<void> {
   if (!res.ok) console.error(`Email send failed: ${res.status} ${await res.text().catch(() => "")}`)
 }
 
-function buildBookingConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; bookingId: string }): string {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${params.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${params.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
+function buildBookingConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
+  const advance = params.advanceAmount ?? params.totalPrice
+  const balance = params.balanceAmount ?? 0
+  const isPartial = !!params.advanceAmount
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${params.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${params.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
 }
 
 // ─── Allowed Origins (CORS) ───────────────────────────────────────────────
@@ -99,6 +102,8 @@ const CreateBookingSchema = z.object({
   guest_email: z.string().email({ message: "guest_email must be a valid email" }),
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/, { message: "guest_phone is invalid" }),
   payment_status: z.enum(["pending", "paid", "failed", "pay_at_property"]).optional(),
+  advance_amount: z.number().positive().optional(),
+  balance_amount: z.number().min(0).optional(),
 })
 
 type CreateBookingInput = z.infer<typeof CreateBookingSchema>
@@ -145,7 +150,7 @@ export default async function (req: Request) {
       throw new Error(`Validation failed: ${messages}`)
     }
 
-    const { room_id, check_in, check_out, guest_name, guest_email, guest_phone, payment_status } = parseResult.data
+    const { room_id, check_in, check_out, guest_name, guest_email, guest_phone, payment_status, advance_amount, balance_amount } = parseResult.data
 
     // Validate date logic
     const checkInDate = new Date(check_in)
@@ -185,6 +190,20 @@ export default async function (req: Request) {
     }
     const total_price = nights * room.price_per_night
 
+    // Calculate advance (60%) and balance (40%) for pay_at_property
+    const isPayAtProperty = payment_status === "pay_at_property"
+    const advAmount = isPayAtProperty ? Math.round(total_price * 60) / 100 : (advance_amount || total_price)
+    const balAmount = isPayAtProperty ? total_price - advAmount : (balance_amount || 0)
+
+    // ── Auto-expire stale holds ──────────────────────────────────────
+    const now = new Date().toISOString()
+    await db
+      .from("bookings")
+      .update({ booking_status: "expired", payment_status: "failed" })
+      .eq("room_id", room_id)
+      .eq("booking_status", "pending_payment")
+      .lt("hold_expires_at", now)
+
     // ── Check for conflicting bookings (with retry for TOCTOU) ───────
     let attempts = 0
     const maxAttempts = 3
@@ -210,11 +229,11 @@ export default async function (req: Request) {
       }
 
       // Determine booking status based on payment method
-      // payment_status = "pay_at_property" → confirmed immediately
+      // payment_status = "pay_at_property" → still pending_payment (needs 60% advance)
       // payment_status = "pending" → online payment → pending_payment with hold
-      const isOnlinePayment = payment_status === "pending"
-      const bookingStatus = isOnlinePayment ? "pending_payment" : "confirmed"
-      const holdExpiresAt = isOnlinePayment
+      const needsPayment = payment_status === "pending" || payment_status === "pay_at_property"
+      const bookingStatus = needsPayment ? "pending_payment" : "confirmed"
+      const holdExpiresAt = needsPayment
         ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
         : null
 
@@ -226,6 +245,8 @@ export default async function (req: Request) {
           check_in,
           check_out,
           total_price,
+          advance_amount: isPayAtProperty ? advAmount : null,
+          balance_amount: isPayAtProperty ? balAmount : null,
           guest_name,
           guest_email,
           guest_phone,
@@ -238,33 +259,10 @@ export default async function (req: Request) {
         .single()
 
       if (!insertError && booking) {
-        // Only send confirmation email for pay_at_property bookings
+        // Send confirmation email for pay_at_property bookings (after advance payment)
         // Online payment bookings get their email after payment verification
-        if (!isOnlinePayment) {
-          (async () => {
-            try {
-              const { data: room } = await db
-                .from("rooms")
-                .select("name")
-                .eq("id", room_id)
-                .single()
-              const roomName = room?.name || "Selected Room"
-              await sendEmail({
-                to: guest_email,
-                subject: "Booking Confirmed — Highlands Motel & Cafe",
-                html: buildBookingConfirmationHtml({
-                  guestName: guest_name,
-                  roomName,
-                  checkIn: check_in,
-                  checkOut: check_out,
-                  totalPrice: total_price,
-                  bookingId: booking.id,
-                }),
-              })
-            } catch {
-            }
-          })()
-        }
+        // Note: pay_at_property now goes through payment flow for the 60% advance
+      }
 
         return new Response(JSON.stringify(booking), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

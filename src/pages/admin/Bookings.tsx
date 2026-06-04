@@ -161,6 +161,8 @@ const Bookings = () => {
                                 'Check Out': new Date(b.check_out).toLocaleDateString(),
                                 'Status': b.booking_status,
                                 'Total (NPR)': b.total_price,
+                                'Advance Paid (NPR)': b.advance_amount || (b.payment_status === 'pay_at_property' ? b.total_price * 0.6 : b.total_price),
+                                'Balance at Property (NPR)': b.balance_amount || 0,
                                 'Payment Status': b.payment_status,
                                 'Created': new Date(b.created_at).toLocaleDateString(),
                             })),
@@ -217,20 +219,22 @@ const Bookings = () => {
                                 <th className="px-6 py-4 font-semibold text-gray-900">Dates</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900">Status</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900">Payment</th>
-                                <th className="px-6 py-4 font-semibold text-gray-900 text-right">Amount</th>
+                                <th className="px-6 py-4 font-semibold text-gray-900 text-right">Total</th>
+                                <th className="px-6 py-4 font-semibold text-gray-900 text-right">Advance Paid</th>
+                                <th className="px-6 py-4 font-semibold text-gray-900 text-right">Balance Due</th>
                                 <th className="px-6 py-4 font-semibold text-gray-900 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-8 text-center">
+                                        <td colSpan={9} className="px-6 py-8 text-center">
                                             <div className="spinner mx-auto" />
                                         </td>
                                     </tr>
                                 ) : filteredBookings.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                                        <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
                                         No bookings found matching your filters.
                                     </td>
                                 </tr>
@@ -267,6 +271,20 @@ const Bookings = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-gray-900">
                                             NPR {booking.total_price.toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-medium text-amber-700">
+                                            {booking.advance_amount
+                                                ? `NPR ${booking.advance_amount.toLocaleString()}`
+                                                : booking.payment_status === 'pay_at_property'
+                                                    ? `NPR ${Math.round(booking.total_price * 60 / 100).toLocaleString()}`
+                                                    : '—'}
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-medium text-green-700">
+                                            {booking.balance_amount
+                                                ? `NPR ${booking.balance_amount.toLocaleString()}`
+                                                : booking.payment_status === 'pay_at_property'
+                                                    ? `NPR ${Math.round(booking.total_price * 40 / 100).toLocaleString()}`
+                                                    : '—'}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end space-x-2">

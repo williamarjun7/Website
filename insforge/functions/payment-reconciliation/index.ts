@@ -52,8 +52,11 @@ async function sendEmail(data: EmailData): Promise<void> {
   } catch (e) { console.error("Reconciliation email error:", e) }
 }
 
-function buildConfirmationHtml(p: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; bookingId: string }): string {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${p.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${p.totalPrice.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${p.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
+function buildConfirmationHtml(p: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
+  const advance = p.advanceAmount ?? p.totalPrice
+  const balance = p.balanceAmount ?? 0
+  const isPartial = !!p.advanceAmount
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${p.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${p.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${p.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${p.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
 }
 
 function errorResponse(message: string, status = 400): Response {
@@ -93,7 +96,7 @@ export default async function handler(req: Request) {
     // Find all expired hold bookings (pending_payment with hold_expires_at in past)
     const { data: expiredBookings, error: fetchError } = await db
       .from("bookings")
-      .select("id, active_prn, hold_expires_at, total_price, guest_name, guest_email, check_in, check_out, room_id, payment_status")
+      .select("id, active_prn, hold_expires_at, total_price, advance_amount, balance_amount, guest_name, guest_email, check_in, check_out, room_id, payment_status")
       .eq("booking_status", "pending_payment")
       .lt("hold_expires_at", now)
       .limit(MAX_BATCH)
@@ -181,26 +184,28 @@ export default async function handler(req: Request) {
 
             const success = rpcResult && (rpcResult as Record<string, unknown>)?.success === true
 
-            if (success) {
-              results.recovered++
-              // Send confirmation email
-              (async () => {
-                try {
-                  const { data: room } = await db.from("rooms").select("name").eq("id", booking.room_id).single()
-                  await sendEmail({
-                    to: booking.guest_email,
-                    subject: "Booking Confirmed — Highlands Motel & Cafe",
-                    html: buildConfirmationHtml({
-                      guestName: booking.guest_name,
-                      roomName: room?.name || "Selected Room",
-                      checkIn: booking.check_in,
-                      checkOut: booking.check_out,
-                      totalPrice: booking.total_price,
-                      bookingId: booking.id,
-                    }),
-                  })
-                } catch { /* best-effort */ }
-              })()
+              if (success) {
+                results.recovered++
+                // Send confirmation email
+                (async () => {
+                  try {
+                    const { data: room } = await db.from("rooms").select("name").eq("id", booking.room_id).single()
+                    await sendEmail({
+                      to: booking.guest_email,
+                      subject: "Booking Confirmed — Highlands Motel & Cafe",
+                      html: buildConfirmationHtml({
+                        guestName: booking.guest_name,
+                        roomName: room?.name || "Selected Room",
+                        checkIn: booking.check_in,
+                        checkOut: booking.check_out,
+                        totalPrice: booking.total_price,
+                        advanceAmount: booking.advance_amount || undefined,
+                        balanceAmount: booking.balance_amount || undefined,
+                        bookingId: booking.id,
+                      }),
+                    })
+                  } catch { /* best-effort */ }
+                })()
             } else {
               // Stored procedure returned false — likely idempotent or conflict
               results.recovered++ // Still count as handled
@@ -231,7 +236,10 @@ export default async function handler(req: Request) {
                       html: buildConfirmationHtml({
                         guestName: booking.guest_name, roomName: room?.name || "Selected Room",
                         checkIn: booking.check_in, checkOut: booking.check_out,
-                        totalPrice: booking.total_price, bookingId: booking.id,
+                        totalPrice: booking.total_price,
+                        advanceAmount: booking.advance_amount || undefined,
+                        balanceAmount: booking.balance_amount || undefined,
+                        bookingId: booking.id,
                       }),
                     })
                   } catch { /* best-effort */ }

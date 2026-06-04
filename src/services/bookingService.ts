@@ -9,6 +9,8 @@ export interface Booking {
     check_in: string;
     check_out: string;
     total_price: number;
+    advance_amount?: number;
+    balance_amount?: number;
     payment_status: 'pending' | 'paid' | 'failed' | 'pay_at_property';
     booking_status: 'pending_payment' | 'confirmed' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'checked_in' | 'checked_out';
     source: 'website' | 'pos';
@@ -26,7 +28,12 @@ export interface CreateBookingData {
     check_in: string;
     check_out: string;
     payment_status?: 'pending' | 'paid' | 'failed' | 'pay_at_property';
+    advance_amount?: number;
+    balance_amount?: number;
 }
+
+export const calculateAdvanceAmount = (total: number): number => Math.round(total * 60) / 100;
+export const calculateBalanceAmount = (total: number): number => total - calculateAdvanceAmount(total);
 
 // Create a new booking
 export const createBooking = async (bookingData: CreateBookingData) => {
