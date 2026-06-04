@@ -1,17 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@insforge/sdk"
 
-const ALLOWED_ORIGINS = [
-  "https://highlands-motel.com",
-  "https://www.highlands-motel.com",
-  "https://6aiag3ra.us-east.insforge.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
+const ALLOWED_ORIGINS: (string | RegExp)[] = [
+  "https://6aiag3ra.insforge.site",
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
+
+function isOriginAllowed(origin: string): boolean {
+  return ALLOWED_ORIGINS.some(a => typeof a === "string" ? a === origin : a.test(origin))
+}
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
-  const allowed = ALLOWED_ORIGINS.includes(origin)
+  const allowed = isOriginAllowed(origin)
   return {
     "Access-Control-Allow-Origin": allowed ? origin : "",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",

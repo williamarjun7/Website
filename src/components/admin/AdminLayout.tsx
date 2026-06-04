@@ -10,7 +10,8 @@ import {
     FileText,
     LogOut,
     Menu,
-    X
+    X,
+    ShieldAlert
 } from 'lucide-react';
 import { adminLogout } from '../../services/authService';
 
@@ -43,6 +44,7 @@ const AdminLayout = () => {
         { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
         { name: 'Site Images', path: '/admin/images', icon: ImageIcon },
         { name: 'Content', path: '/admin/content', icon: FileText },
+        { name: 'Payment Recovery', path: '/admin/payment-recovery', icon: ShieldAlert },
     ];
 
     return (

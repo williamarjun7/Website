@@ -70,15 +70,29 @@ const Booking = () => {
         }
     }, [checkIn, checkOut]);
 
-    // Auto-poll for QR payment confirmation
+    // Auto-poll for QR payment confirmation (max 15 min)
+    const pollingStartRef = useRef<number | null>(null);
+    const POLLING_TIMEOUT_MS = 15 * 60 * 1000;
+
     useEffect(() => {
         if (!pollingActive || !paymentPrn || step !== 3) return;
+        if (!pollingStartRef.current) pollingStartRef.current = Date.now();
+
         const interval = setInterval(async () => {
+            // Stop polling after timeout
+            if (pollingStartRef.current && Date.now() - pollingStartRef.current > POLLING_TIMEOUT_MS) {
+                setPollingActive(false);
+                setToastMessage('Payment session expired. Please try booking again.');
+                setTimeout(() => setToastMessage(''), 8000);
+                return;
+            }
+
             const { data } = await verifyQrPayment(paymentPrn);
             if (data?.success) {
                 setPollingActive(false);
                 setQrCodeDataUrl(null);
                 setPaymentPrn('');
+                pollingStartRef.current = null;
                 setStep(4);
             }
         }, 8000);

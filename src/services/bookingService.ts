@@ -10,10 +10,12 @@ export interface Booking {
     check_out: string;
     total_price: number;
     payment_status: 'pending' | 'paid' | 'failed' | 'pay_at_property';
-    booking_status: 'confirmed' | 'cancelled' | 'checked_in' | 'checked_out';
+    booking_status: 'pending_payment' | 'confirmed' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'checked_in' | 'checked_out';
     source: 'website' | 'pos';
     pos_booking_id?: string;
     created_at: string;
+    hold_expires_at?: string;
+    active_prn?: string;
 }
 
 export interface CreateBookingData {
@@ -32,7 +34,6 @@ export const createBooking = async (bookingData: CreateBookingData) => {
         const { data, error } = await insforge.functions.invoke('create-booking', {
             body: {
                 ...bookingData,
-                booking_status: 'confirmed',
                 payment_status: bookingData.payment_status || 'pending'
             }
         });
@@ -40,7 +41,6 @@ export const createBooking = async (bookingData: CreateBookingData) => {
         if (error) throw error;
         return { data, error: null };
     } catch (error) {
-        console.error('Booking creation failed:', error);
         return handleInsforgeError(error);
     }
 };

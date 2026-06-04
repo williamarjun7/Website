@@ -1,13 +1,18 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
-const ALLOWED_ORIGINS = [
-  "https://highlands-motel.com",
-  "https://www.highlands-motel.com",
-  "https://6aiag3ra.us-east.insforge.app",
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
+const ALLOWED_ORIGINS: (string | RegExp)[] = [
+  "https://6aiag3ra.insforge.site",
+  /^https?:\/\/localhost(:\d+)?$/,
+  /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
+
+function isOriginAllowed(origin: string): boolean {
+  return ALLOWED_ORIGINS.some(a => typeof a === "string" ? a === origin : a.test(origin))
+}
+
+const FETCH_TIMEOUT_MS = 15_000
+const HOLD_DURATION_MS = 15 * 60 * 1000
 
 function toError(e: unknown): Error {
   if (e instanceof Error) return e
@@ -20,12 +25,24 @@ function toError(e: unknown): Error {
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
-  const allowed = ALLOWED_ORIGINS.includes(origin)
+  const allowed = isOriginAllowed(origin)
   return {
     "Access-Control-Allow-Origin": allowed ? origin : "",
     "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS, GET",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
+  }
+}
+
+async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: number } = {}): Promise<Response> {
+  const { timeout = FETCH_TIMEOUT_MS, ...fetchOptions } = options
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeout)
+  try {
+    const res = await fetch(url, { ...fetchOptions, signal: controller.signal })
+    return res
+  } finally {
+    clearTimeout(timer)
   }
 }
 
@@ -42,11 +59,17 @@ async function hmacSha512(secret: string, data: string): Promise<string> {
     .join("")
 }
 
+function generateSecurePrn(bookingId: string): string {
+  const ts = Date.now()
+  const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 12)
+  return `HIGHLANDS_${bookingId}_${ts}_${rand}`
+}
+
 function extractBookingId(prn: string): string | null {
   const prefix = "HIGHLANDS_"
   if (!prn.startsWith(prefix)) return null
   const afterPrefix = prn.slice(prefix.length)
-  const idx = afterPrefix.lastIndexOf("_")
+  const idx = afterPrefix.indexOf("_")
   if (idx <= 0) return null
   return afterPrefix.slice(0, idx)
 }
@@ -73,6 +96,30 @@ async function logEvent(db: ReturnType<typeof createClient>["database"] | null, 
     // best-effort audit; never fail the request
   }
 }
+
+interface EmailData { to: string; subject: string; html: string }
+
+async function sendEmail(data: EmailData): Promise<void> {
+  const apiKey = Deno.env.get("RESEND_API_KEY")
+  if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@6aiag3ra.insforge.site>"
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: data.to, subject: data.subject, html: data.html }),
+    })
+    if (!res.ok) console.error(`Email send failed: ${res.status} ${await res.text().catch(() => "")}`)
+  } catch (e) {
+    console.error("Email send error:", e)
+  }
+}
+
+function buildConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; bookingId: string }): string {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${params.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${params.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
+}
+
+// ─── Zod Schemas ──────────────────────────────────────────────────────────
 
 const GenerateQrSchema = z.object({
   action: z.literal("generate-qr"),
@@ -102,17 +149,6 @@ const VerifyWebSchema = z.object({
   bankCode: z.string().optional().default(""),
 })
 
-const CallbackSchema = z.object({
-  action: z.literal("handle-callback"),
-  prn: z.string(),
-  amount: z.string().optional(),
-  txnId: z.string().optional(),
-  uid: z.string().optional(),
-  status: z.string().optional(),
-  response_code: z.string().optional(),
-  signature: z.string().optional(),
-})
-
 const PostTaxRefundSchema = z.object({
   action: z.literal("post-tax-refund"),
   prn: z.string(),
@@ -122,12 +158,16 @@ const PostTaxRefundSchema = z.object({
   transactionAmount: z.union([z.string(), z.number()]),
 })
 
+// NOTE: handle-callback action has been REMOVED for security.
+// The Fonepay web payment redirect is handled by the frontend at /payment-result
+// which calls the verify-web action. The GET handler (which allowed
+// unauthenticated payment forgery) has also been removed.
+
 const RequestSchema = z.discriminatedUnion("action", [
   GenerateQrSchema,
   GenerateWebSchema,
   VerifyQrSchema,
   VerifyWebSchema,
-  CallbackSchema,
   PostTaxRefundSchema,
 ])
 
@@ -141,11 +181,159 @@ function errorResponse(message: string, status = 400): Response {
   })
 }
 
+// ─── Rate Limiting ───────────────────────────────────────────────────────
+interface RateLimitEntry { count: number; expires: number }
+const rateLimitStore = new Map<string, RateLimitEntry>()
+const RATE_LIMIT_MAX = 20
+const RATE_LIMIT_WINDOW = 60_000
+
+function getClientIp(request: Request): string {
+  return request.headers.get("x-forwarded-for")
+    || request.headers.get("x-real-ip")
+    || "unknown"
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+  if (entry && entry.expires < now) rateLimitStore.delete(ip)
+  if (!entry || entry.expires < now) {
+    rateLimitStore.set(ip, { count: 1, expires: now + RATE_LIMIT_WINDOW })
+    return { allowed: true }
+  }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.expires - now) / 1000) }
+  }
+  entry.count++
+  return { allowed: true }
+}
+
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of rateLimitStore.entries()) {
+    if (val.expires < now) rateLimitStore.delete(key)
+  }
+}, 300_000)
+
+// ─── Payment confirmation helper (uses atomic DB function) ────────────────
+
+async function confirmPayment(
+  db: ReturnType<typeof createClient>["database"],
+  paymentRecord: { id: string; status: string },
+  bookingId: string,
+  prn: string,
+  amount: number,
+  fonepayTraceId: string | null,
+  corsHeaders: Record<string, string>
+): Promise<Response> {
+  if (paymentRecord.status === "completed") {
+    await logEvent(db, { booking_id: bookingId, event_type: "idempotency_hit", payment_id: paymentRecord.id, payload: { prn } })
+    return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
+
+  // Use atomic stored procedure (transaction-safe)
+  const { data: result, error: rpcError } = await db.rpc("confirm_booking_payment", {
+    p_payment_id: paymentRecord.id,
+    p_booking_id: bookingId,
+    p_prn: prn,
+    p_amount: amount,
+    p_fonepay_trace_id: fonepayTraceId || "",
+  }).single()
+
+  if (rpcError) {
+    await logEvent(db, {
+      booking_id: bookingId, event_type: "payment_failed",
+      payment_id: paymentRecord.id, payload: { prn, error: "RPC call failed: " + rpcError.message },
+    })
+    return errorResponse("Payment confirmation failed", 500)
+  }
+
+  const rpcResult = result as Record<string, unknown>
+
+  if (!rpcResult.success) {
+    const code = String(rpcResult.code || "")
+    if (code === "IDEMPOTENT") {
+      return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    }
+    await logEvent(db, {
+      booking_id: bookingId, event_type: "payment_failed",
+      payment_id: paymentRecord.id, payload: { prn, reason: String(rpcResult.message || "Unknown"), code },
+    })
+    return errorResponse(String(rpcResult.message || "Payment processing failed"), 409)
+  }
+
+  await logEvent(db, {
+    payment_id: paymentRecord.id, booking_id: bookingId,
+    event_type: "payment_completed",
+    old_status: "pending", new_status: "paid",
+    payload: { prn, amount },
+  })
+
+  // Fire-and-forget confirmation email
+  (async () => {
+    try {
+      const { data: booking } = await db
+        .from("bookings")
+        .select("id, guest_name, guest_email, check_in, check_out, room_id")
+        .eq("id", bookingId)
+        .single()
+      if (!booking) return
+      const { data: room } = await db
+        .from("rooms")
+        .select("name")
+        .eq("id", booking.room_id)
+        .single()
+      const roomName = room?.name || "Selected Room"
+      await sendEmail({
+        to: booking.guest_email,
+        subject: "Booking Confirmed — Highlands Motel & Cafe",
+        html: buildConfirmationHtml({
+          guestName: booking.guest_name,
+          roomName,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          totalPrice: amount,
+          bookingId: booking.id,
+        }),
+      })
+    } catch { /* best-effort */ }
+  })()
+
+  return new Response(JSON.stringify({ success: true, message: "Payment verified successfully" }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  })
+}
+
+// ─── Main Handler ──────────────────────────────────────────────────────────
+
 export default async function handler(req: Request) {
   const corsHeaders = getCorsHeaders(req)
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
+  }
+
+  // POST only. GET is not supported (removed for security).
+  if (req.method !== "POST") {
+    const url = new URL(req.url)
+    if (req.method === "GET" && url.searchParams.has("PRN")) {
+      return errorResponse("Callback endpoint removed. Use POST verify-web instead.", 410)
+    }
+    return errorResponse("Method not allowed", 405)
+  }
+
+  // Rate limiting
+  const clientIp = getClientIp(req)
+  const rateCheck = checkRateLimit(clientIp)
+  if (!rateCheck.allowed) {
+    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rateCheck.retryAfter) },
+      status: 429,
+    })
   }
 
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
@@ -161,38 +349,24 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+    const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
-    if (!baseUrl || !anonKey) {
+    if (!insforgeUrl || !anonKey) {
       return errorResponse("Database not configured", 500)
     }
-    const { database: db } = createClient({ baseUrl, anonKey })
+    const { database: db } = createClient({ baseUrl: insforgeUrl, anonKey })
 
     let body: unknown
-    let action: string
-
-    if (req.method === "GET") {
-      const url = new URL(req.url)
-      const prn = url.searchParams.get("PRN")
-      const pid = url.searchParams.get("PID")
-      const amt = url.searchParams.get("AMT")
-      const uid = url.searchParams.get("UID")
-      const dv = url.searchParams.get("DV")
-      if (prn) {
-        body = { action: "handle-callback", prn, amount: amt || "", uid: uid || "", response_code: dv ? "successful" : "", status: dv ? "success" : "" }
-      }
-    } else {
-      try { body = await req.json() } catch {
-        try {
-          const formData = await req.formData()
-          const entries: Record<string, string> = {}
-          for (const [k, v] of formData.entries()) {
-            entries[k] = String(v)
-          }
-          body = entries
-        } catch {
-          return errorResponse("Invalid request body")
+    try { body = await req.json() } catch {
+      try {
+        const formData = await req.formData()
+        const entries: Record<string, string> = {}
+        for (const [k, v] of formData.entries()) {
+          entries[k] = String(v)
         }
+        body = entries
+      } catch {
+        return errorResponse("Invalid request body")
       }
     }
 
@@ -200,12 +374,12 @@ export default async function handler(req: Request) {
       return errorResponse("Invalid request")
     }
 
-    action = (body as Record<string, unknown>)?.action as string || "handle-callback"
+    const action = (body as Record<string, unknown>)?.action as string
+    if (!action) {
+      return errorResponse("Missing action field")
+    }
 
-    const parsed = action === "handle-callback"
-      ? CallbackSchema.safeParse({ ...(body as Record<string, unknown>), action: "handle-callback" })
-      : RequestSchema.safeParse(body)
-
+    const parsed = RequestSchema.safeParse(body)
     if (!parsed.success) {
       return errorResponse("Invalid request: " + parsed.error.errors.map(
         e => `${e.path.join(".")}: ${e.message}`
@@ -214,6 +388,7 @@ export default async function handler(req: Request) {
 
     const { data: actionData } = parsed
 
+    // ─── Generate QR ──────────────────────────────────────────────────────
     if (action === "generate-qr") {
       if (!db) return errorResponse("Database not configured", 500)
 
@@ -221,7 +396,7 @@ export default async function handler(req: Request) {
 
       const { data: booking, error: fetchError } = await db
         .from("bookings")
-        .select("id, total_price, payment_status")
+        .select("id, total_price, payment_status, booking_status")
         .eq("id", orderId)
         .single()
 
@@ -231,9 +406,12 @@ export default async function handler(req: Request) {
       if (booking.payment_status === "paid") {
         return errorResponse("Booking already paid", 409)
       }
+      if (booking.booking_status !== "pending_payment") {
+        return errorResponse("Booking is not in pending payment state", 409)
+      }
 
       const amount = booking.total_price
-      const prn = `HIGHLANDS_${orderId}_${Date.now()}`
+      const prn = generateSecurePrn(orderId)
       const dataToHash = `${String(amount)},${prn},${merchantCode},${remarks1},${remarks2}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
 
@@ -250,7 +428,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetch(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -262,6 +440,36 @@ export default async function handler(req: Request) {
       }
 
       const qrResponse = qrData as Record<string, unknown>
+
+      // Create payment record in pending state (for PRN uniqueness + reconciliation)
+      const { error: payInsertErr } = await db
+        .from("payments")
+        .insert({
+          booking_id: orderId,
+          prn,
+          amount,
+          payment_method: "fonepay_qr",
+          status: "pending",
+        })
+        .select()
+        .single()
+
+      // PRN uniqueness is enforced at DB level — if another QR was generated
+      // with the same PRN (extremely unlikely with crypto UUID), this fails.
+      if (payInsertErr) {
+        // PRN collision or other DB error — let caller retry
+        await logEvent(db, {
+          booking_id: orderId, event_type: "payment_failed",
+          payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
+        })
+        return errorResponse("Failed to initiate payment, please try again", 500)
+      }
+
+      // Refresh hold on the booking
+      const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS).toISOString()
+      await db.from("bookings")
+        .update({ hold_expires_at: holdExpiresAt, active_prn: prn })
+        .eq("id", orderId)
 
       await logEvent(db, {
         booking_id: orderId,
@@ -280,6 +488,7 @@ export default async function handler(req: Request) {
       })
     }
 
+    // ─── Generate Web ─────────────────────────────────────────────────────
     if (action === "generate-web") {
       if (!db) return errorResponse("Database not configured", 500)
 
@@ -287,7 +496,7 @@ export default async function handler(req: Request) {
 
       const { data: booking, error: fetchError } = await db
         .from("bookings")
-        .select("id, total_price, payment_status")
+        .select("id, total_price, payment_status, booking_status")
         .eq("id", orderId)
         .single()
 
@@ -297,9 +506,12 @@ export default async function handler(req: Request) {
       if (booking.payment_status === "paid") {
         return errorResponse("Booking already paid", 409)
       }
+      if (booking.booking_status !== "pending_payment") {
+        return errorResponse("Booking is not in pending payment state", 409)
+      }
 
       const amount = booking.total_price
-      const prn = `HIGHLANDS_${orderId}_${Date.now()}`
+      const prn = generateSecurePrn(orderId)
 
       const today = new Date()
       const month = String(today.getMonth() + 1).padStart(2, "0")
@@ -323,6 +535,33 @@ export default async function handler(req: Request) {
 
       const paymentUrl = `${baseUrl}/api/merchantRequest?PID=${paymentData.PID}&MD=${paymentData.MD}&PRN=${paymentData.PRN}&AMT=${paymentData.AMT}&CRN=${paymentData.CRN}&DT=${encodeURIComponent(paymentData.DT)}&R1=${encodeURIComponent(paymentData.R1)}&R2=${encodeURIComponent(paymentData.R2)}&DV=${dv}&RU=${encodeURIComponent(paymentData.RU)}`
 
+      // Create payment record in pending state
+      const { error: payInsertErr } = await db
+        .from("payments")
+        .insert({
+          booking_id: orderId,
+          prn,
+          amount,
+          payment_method: "fonepay_web",
+          status: "pending",
+        })
+        .select()
+        .single()
+
+      if (payInsertErr) {
+        await logEvent(db, {
+          booking_id: orderId, event_type: "payment_failed",
+          payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
+        })
+        return errorResponse("Failed to initiate payment, please try again", 500)
+      }
+
+      // Refresh hold
+      const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS).toISOString()
+      await db.from("bookings")
+        .update({ hold_expires_at: holdExpiresAt, active_prn: prn })
+        .eq("id", orderId)
+
       await logEvent(db, {
         booking_id: orderId,
         event_type: "payment_initiated",
@@ -334,6 +573,7 @@ export default async function handler(req: Request) {
       })
     }
 
+    // ─── Verify QR ────────────────────────────────────────────────────────
     if (action === "verify-qr") {
       const { prn } = actionData
       const bookingId = extractBookingId(prn)
@@ -346,7 +586,7 @@ export default async function handler(req: Request) {
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetch(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
@@ -357,6 +597,7 @@ export default async function handler(req: Request) {
         return errorResponse(`QR verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
+      // Payment not yet successful on Fonepay side
       if (fonepayResult.paymentStatus !== "success") {
         await logEvent(db, {
           booking_id: bookingId,
@@ -372,11 +613,14 @@ export default async function handler(req: Request) {
         })
       }
 
+      // ── Payment status = success. Now verify integrity ──
+
       if (!db) return errorResponse("Database not configured", 500)
 
+      // Fetch booking to verify amount
       const { data: booking } = await db
         .from("bookings")
-        .select("id, total_price, payment_status")
+        .select("id, total_price, payment_status, booking_status")
         .eq("id", bookingId)
         .single()
 
@@ -385,92 +629,35 @@ export default async function handler(req: Request) {
         return errorResponse("Booking not found", 404)
       }
 
-      const { data: existingPayment } = await db
-        .from("payments")
-        .select("id, status")
-        .eq("prn", prn)
-        .maybeSingle()
-
-      if (existingPayment) {
-        if (existingPayment.status === "completed") {
-          await logEvent(db, { booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
-          return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          })
-        }
-        return new Response(JSON.stringify({ success: false, message: "Payment is still being processed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-
+      // ⚠️ Amount integrity check — REJECT mismatch
       const fonepayAmount = parseFloat(String(fonepayResult.amount || fonepayResult.txnAmount || "0"))
       if (fonepayAmount > 0 && Math.abs(fonepayAmount - booking.total_price) > 0.01) {
         await logEvent(db, {
           booking_id: bookingId, event_type: "amount_mismatch",
           payload: { prn, fonepayAmount, dbAmount: booking.total_price },
         })
+        return errorResponse("Payment amount mismatch. Contact support.", 409)
       }
 
-      const { data: paymentRecord, error: insertError } = await db
+      // Find existing payment record (created at QR generation time)
+      const { data: existingPayment } = await db
         .from("payments")
-        .insert({
-          booking_id: bookingId,
-          prn,
-          amount: booking.total_price,
-          payment_method: "fonepay_qr",
-          status: "completed",
-          response_code: String(fonepayResult.responseCode || fonepayResult.paymentStatus || ""),
-          response_msg: String(fonepayResult.message || ""),
-          verified_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
+        .select("id, status")
+        .eq("prn", prn)
+        .maybeSingle()
 
-      if (insertError) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "replay_attempt",
-          payload: { prn, error: insertError.message },
-        })
-        const { data: fallbackPayment } = await db
-          .from("payments")
-          .select("id, status")
-          .eq("prn", prn)
-          .single()
-        if (fallbackPayment?.status === "completed") {
-          return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          })
-        }
-        return errorResponse("Payment processing conflict", 409)
+      if (!existingPayment) {
+        // Should not happen — payment record was created at QR generation time
+        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
+        return errorResponse("Payment session not found", 404)
       }
 
-      const { error: updateError } = await db
-        .from("bookings")
-        .update({ payment_status: "paid" })
-        .eq("id", bookingId)
-        .eq("payment_status", "pending")
+      const fonepayTraceId = String(fonepayResult.fonepayTraceId || fonepayResult.fonepayTraceId === 0 ? fonepayResult.fonepayTraceId : "")
 
-      if (updateError) {
-        await logEvent(db, {
-          payment_id: paymentRecord.id, booking_id: bookingId,
-          event_type: "payment_failed",
-          payload: { prn, error: "Failed to update booking status" },
-        })
-        return errorResponse("Failed to confirm payment", 500)
-      }
-
-      await logEvent(db, {
-        payment_id: paymentRecord.id, booking_id: bookingId,
-        event_type: "payment_completed",
-        old_status: "pending", new_status: "paid",
-        payload: { prn, amount: booking.total_price },
-      })
-
-      return new Response(JSON.stringify({ success: true, message: "Payment verified successfully" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
+      return await confirmPayment(db, existingPayment, bookingId, prn, booking.total_price, fonepayTraceId || null, corsHeaders)
     }
 
+    // ─── Verify Web ───────────────────────────────────────────────────────
     if (action === "verify-web") {
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
       const bookingId = extractBookingId(prn)
@@ -489,7 +676,7 @@ export default async function handler(req: Request) {
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetch(verificationUrl, {
+        const res = await fetchWithTimeout(verificationUrl, {
           headers: { "Content-Type": "application/json", "User-Agent": "PaymentGateway/1.0" },
         })
         if (!res.ok) throw new Error(`Verification API error: ${res.status}`)
@@ -525,9 +712,10 @@ export default async function handler(req: Request) {
 
       if (!db) return errorResponse("Database not configured", 500)
 
+      // Fetch booking to verify amount
       const { data: booking } = await db
         .from("bookings")
-        .select("id, total_price, payment_status")
+        .select("id, total_price, payment_status, booking_status")
         .eq("id", bookingId)
         .single()
 
@@ -536,91 +724,34 @@ export default async function handler(req: Request) {
         return errorResponse("Booking not found", 404)
       }
 
+      // Amount integrity check
+      const webAmount = parseFloat(callbackAmount)
+      if (webAmount > 0 && Math.abs(webAmount - booking.total_price) > 0.01) {
+        await logEvent(db, {
+          booking_id: bookingId, event_type: "amount_mismatch",
+          payload: { prn, webAmount, dbAmount: booking.total_price },
+        })
+        return errorResponse("Payment amount mismatch. Contact support.", 409)
+      }
+
+      // Find existing payment record
       const { data: existingPayment } = await db
         .from("payments")
         .select("id, status")
         .eq("prn", prn)
         .maybeSingle()
 
-      if (existingPayment) {
-        if (existingPayment.status === "completed") {
-          await logEvent(db, { booking_id: bookingId, event_type: "idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
-          return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          })
-        }
-        return new Response(JSON.stringify({ success: false, message: "Payment is still being processed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
+      if (!existingPayment) {
+        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
+        return errorResponse("Payment session not found", 404)
       }
 
-      const { data: paymentRecord, error: insertError } = await db
-        .from("payments")
-        .insert({
-          booking_id: bookingId,
-          prn,
-          amount: booking.total_price,
-          payment_method: "fonepay_web",
-          status: "completed",
-          response_code: String(fonepayResult.response_code || ""),
-          response_msg: String(fonepayResult.message || ""),
-          verified_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
+      const fonepayTraceId = String(fonepayResult.uniqueId || "")
 
-      if (insertError) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "replay_attempt",
-          payload: { prn, error: insertError.message },
-        })
-        const { data: fallbackPayment } = await db
-          .from("payments")
-          .select("id, status")
-          .eq("prn", prn)
-          .single()
-        if (fallbackPayment?.status === "completed") {
-          return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          })
-        }
-        return errorResponse("Payment processing conflict", 409)
-      }
-
-      const { error: updateError } = await db
-        .from("bookings")
-        .update({ payment_status: "paid" })
-        .eq("id", bookingId)
-        .eq("payment_status", "pending")
-
-      if (updateError) {
-        await logEvent(db, {
-          payment_id: paymentRecord.id, booking_id: bookingId,
-          event_type: "payment_failed",
-          payload: { prn, error: "Failed to update booking status" },
-        })
-        return errorResponse("Failed to confirm payment", 500)
-      }
-
-      await logEvent(db, {
-        payment_id: paymentRecord.id, booking_id: bookingId,
-        event_type: "payment_completed",
-        old_status: "pending", new_status: "paid",
-        payload: { prn, amount: booking.total_price },
-      })
-
-      return new Response(JSON.stringify({
-        success: true,
-        message: "Payment verified successfully",
-        amount: booking.total_price,
-        txnAmount: parseFloat(fonepayResult.txnAmount as string) || 0,
-        uniqueId: fonepayResult.uniqueId || "",
-        response_code: fonepayResult.response_code || "",
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
+      return await confirmPayment(db, existingPayment, bookingId, prn, booking.total_price, fonepayTraceId || null, corsHeaders)
     }
 
+    // ─── Post Tax Refund ──────────────────────────────────────────────────
     if (action === "post-tax-refund") {
       if (!db) return errorResponse("Database not configured", 500)
 
@@ -656,7 +787,7 @@ export default async function handler(req: Request) {
 
       let result: Record<string, unknown>
       try {
-        const res = await fetch(`${dynamicQrUrl}/thirdPartyPostTaxRefund`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyPostTaxRefund`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -675,97 +806,6 @@ export default async function handler(req: Request) {
       })
 
       return new Response(JSON.stringify({ success: true, fonepayResponse: result }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
-    }
-
-    if (action === "handle-callback") {
-      const { prn, amount: callbackAmount, txnId, uid, status, response_code, signature } = actionData
-      const bookingId = extractBookingId(prn)
-      if (!bookingId) {
-        return errorResponse("Invalid PRN format", 400)
-      }
-
-      if (!db) return errorResponse("Database not configured", 500)
-
-      const { data: booking } = await db
-        .from("bookings")
-        .select("id, total_price, payment_status")
-        .eq("id", bookingId)
-        .single()
-
-      if (!booking) {
-        await logEvent(db, { booking_id: bookingId, event_type: "payment_callback_failed", payload: { prn, reason: "Booking not found" } })
-        return errorResponse("Booking not found", 404)
-      }
-
-      if (booking.payment_status === "paid") {
-        await logEvent(db, { booking_id: bookingId, event_type: "callback_idempotency_hit", payload: { prn } })
-        return new Response(JSON.stringify({ success: true, message: "Payment already processed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-
-      const { data: existingPayment } = await db
-        .from("payments")
-        .select("id, status")
-        .eq("prn", prn)
-        .maybeSingle()
-
-      if (existingPayment?.status === "completed") {
-        await logEvent(db, { booking_id: bookingId, event_type: "callback_idempotency_hit", payment_id: existingPayment.id, payload: { prn } })
-        return new Response(JSON.stringify({ success: true, message: "Payment already verified" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-
-      const { data: paymentRecord, error: insertError } = await db
-        .from("payments")
-        .insert({
-          booking_id: bookingId,
-          prn,
-          amount: callbackAmount ? parseFloat(callbackAmount) : booking.total_price,
-          payment_method: "fonepay_qr",
-          status: status === "success" || response_code === "successful" ? "completed" : "failed",
-          response_code: response_code || status || "",
-          response_msg: status || "",
-          verified_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
-
-      if (insertError) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "callback_replay_attempt",
-          payload: { prn, error: insertError.message },
-        })
-        return errorResponse("Payment processing conflict", 409)
-      }
-
-      if (status === "success" || response_code === "successful") {
-        const { error: updateError } = await db
-          .from("bookings")
-          .update({ payment_status: "paid" })
-          .eq("id", bookingId)
-          .eq("payment_status", "pending")
-
-        if (updateError) {
-          await logEvent(db, {
-            payment_id: paymentRecord.id, booking_id: bookingId,
-            event_type: "callback_update_failed",
-            payload: { prn, error: updateError.message },
-          })
-        }
-      }
-
-      await logEvent(db, {
-        payment_id: paymentRecord.id, booking_id: bookingId,
-        event_type: status === "success" || response_code === "successful" ? "payment_callback_completed" : "payment_callback_failed",
-        old_status: "pending", new_status: status === "success" || response_code === "successful" ? "paid" : "failed",
-        payload: { prn, amount: booking.total_price, callbackData: { amount: callbackAmount, txnId, uid, status, response_code } },
-      })
-
-      return new Response(JSON.stringify({ success: true, message: "Callback processed" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
