@@ -3,7 +3,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
-  "https://highlandsmotelinn.netlify.app",
+  "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -52,7 +52,7 @@ async function verifyHmacSignature(request: Request, rawBody: string): Promise<b
   return computed === signature
 }
 
-async function checkIdempotency(db: any, idempotencyKey: string): Promise<boolean> {
+async function checkIdempotency(db: ReturnType<typeof createClient>["database"], idempotencyKey: string): Promise<boolean> {
   const { data } = await db
     .from("bookings")
     .select("id")
@@ -60,20 +60,6 @@ async function checkIdempotency(db: any, idempotencyKey: string): Promise<boolea
     .limit(1)
   return data && data.length > 0
 }
-
-const UpsertRoomSchema = z.object({
-  id: z.string().uuid().optional(),
-  name: z.string().min(1).max(200),
-  description: z.string().optional(),
-  price_per_night: z.number().positive(),
-  max_guests: z.number().int().positive().default(2),
-  is_active: z.boolean().default(true),
-  room_type: z.string().optional(),
-  amenities: z.array(z.string()).optional(),
-  room_size: z.string().optional(),
-  bed_type: z.string().optional(),
-  policies: z.string().optional(),
-})
 
 const CreateBookingSchema = z.object({
   room_id: z.string().uuid(),
@@ -140,7 +126,7 @@ export default async function handler(req: Request) {
       const unavailableRoomIds = new Set<string>()
       for (const b of bookingsResult.data || []) unavailableRoomIds.add(b.room_id)
 
-      const rooms = (roomsResult.data || []).map((room: any) => ({
+      const rooms = (roomsResult.data || []).map((room: Record<string, unknown>) => ({
         ...room,
         is_available: !unavailableRoomIds.has(room.id),
       }))

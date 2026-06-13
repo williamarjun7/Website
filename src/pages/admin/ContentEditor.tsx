@@ -19,10 +19,6 @@ const ContentEditor = () => {
   const [saving, setSaving] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
 
-  useEffect(() => {
-    loadContent();
-  }, []);
-
   const loadContent = async () => {
     setLoading(true);
     const { data } = await getAllSiteContent();
@@ -38,6 +34,10 @@ const ContentEditor = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadContent();
+  }, []);
 
   const handleSave = async (key: string) => {
     setSaving(key);

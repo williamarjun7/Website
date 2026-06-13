@@ -47,8 +47,8 @@ const AdminSignup = () => {
                     navigate('/admin/verify', { state: { email } });
                 }, 2000);
             }
-        } catch (err: any) {
-            setError(err.message || 'Failed to create account. Please try again.');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
         } finally {
             setLoading(false);
         }

@@ -44,8 +44,8 @@ const AdminVerify = () => {
                     navigate('/admin/dashboard');
                 }, 2000);
             }
-        } catch (err: any) {
-            setError(err.message || 'Invalid verification code. Please try again.');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Invalid verification code. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -60,8 +60,8 @@ const AdminVerify = () => {
             const { error } = await resendVerification(email);
             if (error) throw new Error(error);
             setSuccess('Verification code resent! Please check your email.');
-        } catch (err: any) {
-            setError(err.message || 'Failed to resend code. Please try again.');
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to resend code. Please try again.');
         } finally {
             setResending(false);
         }

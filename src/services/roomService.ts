@@ -19,7 +19,7 @@ export interface Room {
     featured?: boolean;
     discount_percent?: number;
     maintenance?: boolean;
-    seasonal_pricing?: Record<string, any>;
+    seasonal_pricing?: Record<string, unknown>;
     created_at: string;
     room_images?: RoomImage[];
 }

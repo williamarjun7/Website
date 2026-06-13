@@ -11,17 +11,33 @@ import {
 import {
     getAllSiteImages,
     addSiteImage,
-    deleteSiteImage
+    deleteSiteImage,
+    type SiteImage
 } from '../../services/contentService';
 import { uploadImage } from '../../services/storageService';
 
+interface SiteImageData {
+    id: string;
+    image_url: string;
+    type: string;
+    title?: string;
+    is_active: boolean;
+}
+
+interface ImageFormData {
+    image_url: string;
+    type: SiteImage['type'];
+    title: string;
+    is_active: boolean;
+}
+
 const SiteImages = () => {
-    const [images, setImages] = useState<any[]>([]);
+    const [images, setImages] = useState<SiteImageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Form data
-    const [formData, setFormData] = useState<any>({
+    const [formData, setFormData] = useState<ImageFormData>({
         image_url: '',
         type: 'gallery',
         title: '',
@@ -66,10 +82,10 @@ const SiteImages = () => {
             if (error) throw error;
 
             if (data) {
-                setFormData((prev: any) => ({ ...prev, image_url: data.url }));
+                setFormData((prev) => ({ ...prev, image_url: data.url }));
             }
-        } catch (err: any) {
-            setUploadError(err.message || 'Upload failed');
+        } catch (err: unknown) {
+            setUploadError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -212,7 +228,7 @@ const SiteImages = () => {
                                 <label className="block text-sm font-medium mb-1.5 text-gray-700">Display Section</label>
                                 <select
                                     value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as SiteImage['type'] })}
                                     className="input w-full"
                                 >
                                     {sections.map(s => (
@@ -249,7 +265,7 @@ const SiteImages = () => {
                                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <button
                                                 type="button"
-                                                onClick={() => setFormData((prev: any) => ({ ...prev, image_url: '' }))}
+                                                onClick={() => setFormData((prev) => ({ ...prev, image_url: '' }))}
                                                 className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
                                             >
                                                 <Trash2 size={20} />

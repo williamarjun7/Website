@@ -9,26 +9,10 @@ import { getSiteImagesByType, SiteImage } from '../services/contentService';
 
 const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
-    const [heroSlides, setHeroSlides] = useState<any[]>([]);
+    const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        if (!heroSlides || heroSlides.length === 0) return;
-
-        intervalRef.current = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-        }, 5000);
-
-        return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
-    }, [heroSlides]);
 
     const loadData = async () => {
         setLoading(true);
@@ -75,10 +59,21 @@ const Home = () => {
         }
     };
 
-    // Use effect for interval to avoid closure staleness if needed, but the above logic inside loadData is tricky with return
-    // Better to separate loading and interval
+    useEffect(() => {
+        loadData();
+    }, []);
 
-    // ... actually, let's rewrite the component body logic properly in the ReplacementContent
+    useEffect(() => {
+        if (!heroSlides || heroSlides.length === 0) return;
+
+        intervalRef.current = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        }, 5000);
+
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [heroSlides]);
 
     return (
         <div className="min-h-screen">

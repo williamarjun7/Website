@@ -39,10 +39,6 @@ const Cafe = () => {
     const [form, setForm] = useState({ customer_name: '', phone_number: '', address: '', area: '', order_notes: '' });
     const [formError, setFormError] = useState('');
 
-    useEffect(() => {
-        loadMenu();
-    }, []);
-
     const loadMenu = async () => {
         setLoading(true);
         const { data } = await getFullMenu();
@@ -51,6 +47,10 @@ const Cafe = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadMenu();
+    }, []);
 
     const getFeaturedItems = () => {
         if (!menu.length) return [];

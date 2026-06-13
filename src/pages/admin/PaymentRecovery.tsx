@@ -83,8 +83,8 @@ const PaymentRecovery = () => {
     }
   };
 
-  const getHoldAge = (holdExpiresAt: string) => {
-    const diff = Date.now() - new Date(holdExpiresAt).getTime();
+  const getHoldAge = (holdExpiresAt: string, now: number) => {
+    const diff = now - new Date(holdExpiresAt).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);
@@ -127,7 +127,7 @@ const PaymentRecovery = () => {
               <p><span className="text-gray-500">Guest:</span> <strong>{confirmDialog.booking.guest_name}</strong></p>
               <p><span className="text-gray-500">Room:</span> <strong>{confirmDialog.booking.rooms?.name || 'Unknown'}</strong></p>
               <p><span className="text-gray-500">Amount:</span> <strong>NPR {confirmDialog.booking.total_price.toLocaleString()}</strong></p>
-              <p><span className="text-gray-500">Hold expired:</span> <strong className="text-red-600">{getHoldAge(confirmDialog.booking.hold_expires_at)}</strong></p>
+              <p><span className="text-gray-500">Hold expired:</span> <strong className="text-red-600">{getHoldAge(confirmDialog.booking.hold_expires_at, Date.now())}</strong></p>
             </div>
 
             {confirmDialog.action === 'confirm' && (
@@ -353,7 +353,7 @@ const PaymentRecovery = () => {
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                         <Clock size={12} className="mr-1" />
-                        {getHoldAge(booking.hold_expires_at)}
+                        {getHoldAge(booking.hold_expires_at, Date.now())}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-medium">

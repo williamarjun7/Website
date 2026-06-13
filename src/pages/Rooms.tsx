@@ -27,10 +27,6 @@ const Rooms = () => {
         searchQuery: ''
     });
 
-    useEffect(() => {
-        loadRooms();
-    }, []);
-
     const loadRooms = async () => {
         setLoading(true);
         const { data } = await getRooms();
@@ -39,6 +35,10 @@ const Rooms = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadRooms();
+    }, []);
 
     const filteredRooms = useMemo(() => {
         let result = [...rooms];

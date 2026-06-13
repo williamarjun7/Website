@@ -4,14 +4,24 @@ import { Clock, Search } from 'lucide-react';
 
 const ORDER_STATUSES = ['Order Placed', 'Preparing', 'Ready', 'Delivered', 'Cancelled'];
 
+interface CafeOrderData {
+    id: string;
+    order_number: string;
+    customer_name: string;
+    phone_number: string;
+    delivery_address?: string;
+    delivery_area?: string | null;
+    total: number | string;
+    status: string;
+    created_at: string;
+    order_notes?: string | null;
+    order_items?: { id: string; name: string; qty: number; price: number | string }[];
+}
+
 const CafeOrders = () => {
-    const [orders, setOrders] = useState<any[]>([]);
+    const [orders, setOrders] = useState<CafeOrderData[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-
-    useEffect(() => {
-        loadOrders();
-    }, []);
 
     const loadOrders = async () => {
         setLoading(true);
@@ -19,6 +29,10 @@ const CafeOrders = () => {
         if (data) setOrders(data);
         setLoading(false);
     };
+
+    useEffect(() => {
+        loadOrders();
+    }, []);
 
     const handleStatusChange = async (id: string, status: string) => {
         await updateOrderStatus(id, status);
@@ -84,7 +98,7 @@ const CafeOrders = () => {
 
                             {order.order_items && order.order_items.length > 0 && (
                                 <div className="mb-3 text-sm text-gray-600 space-y-1">
-                                    {order.order_items.map((item: any) => (
+                                    {order.order_items.map((item) => (
                                         <div key={item.id} className="flex justify-between">
                                             <span>{item.name} x{item.qty}</span>
                                             <span className="text-gray-400">NPR {(Number(item.price) * item.qty).toLocaleString()}</span>

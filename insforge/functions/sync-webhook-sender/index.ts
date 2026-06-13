@@ -9,7 +9,7 @@ function toError(e: unknown): Error {
   return new Error(String(e))
 }
 
-export default async function handler(req: Request) {
+export default async function handler() {
   try {
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""

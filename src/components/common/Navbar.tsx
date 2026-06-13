@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react';
 
@@ -8,6 +8,7 @@ const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
+    const prevPath = useRef(location.pathname);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -18,8 +19,11 @@ const Navbar = () => {
     }, []);
 
     useEffect(() => {
-        setIsOpen(false);
-    }, [location]);
+        if (location.pathname !== prevPath.current) {
+            prevPath.current = location.pathname;
+            if (isOpen) setIsOpen(false);
+        }
+    });
 
     const navLinks = [
         { name: 'Home', path: '/', icon: null },
