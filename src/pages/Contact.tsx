@@ -1,14 +1,31 @@
 import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import { useState } from 'react';
+import { z } from 'zod';
+
+const contactSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Please enter a valid email address'),
+  message: z.string().min(10, 'Message must be at least 10 characters').max(2000),
+});
 
 const Contact = () => {
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+    const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name || !formData.email || !formData.message) return;
+        setErrors({});
+        const result = contactSchema.safeParse(formData);
+        if (!result.success) {
+          const fieldErrors: Record<string, string> = {};
+          for (const issue of result.error.issues) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+          setErrors(fieldErrors);
+          return;
+        }
 
         setStatus('sending');
         const subject = encodeURIComponent(`Contact from ${formData.name}`);
@@ -119,30 +136,33 @@ const Contact = () => {
                                         type="text"
                                         placeholder="Your Name"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="input w-full"
+                                        onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setErrors({}); }}
+                                        className={`input w-full ${errors.name ? 'border-red-400' : ''}`}
                                         required
                                     />
+                                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                                 </div>
                                 <div>
                                     <input
                                         type="email"
                                         placeholder="Your Email"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        className="input w-full"
+                                        onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setErrors({}); }}
+                                        className={`input w-full ${errors.email ? 'border-red-400' : ''}`}
                                         required
                                     />
+                                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                                 </div>
                                 <div>
                                     <textarea
                                         rows={4}
                                         placeholder="Your Message"
                                         value={formData.message}
-                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                        className="input w-full resize-none"
+                                        onChange={(e) => { setFormData({ ...formData, message: e.target.value }); setErrors({}); }}
+                                        className={`input w-full resize-none ${errors.message ? 'border-red-400' : ''}`}
                                         required
                                     />
+                                    {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
                                 </div>
                                 <button
                                     type="submit"

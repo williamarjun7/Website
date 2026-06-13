@@ -105,6 +105,13 @@ const CreateBookingSchema = z.object({
   pos_booking_id: z.string().optional(),
 })
 
+const GetBookingsQuerySchema = z.object({
+  status: z.enum(["confirmed", "cancelled", "checked_in", "checked_out"]).optional(),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid from date format (YYYY-MM-DD)").optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid to date format (YYYY-MM-DD)").optional(),
+  pos_booking_id: z.string().optional(),
+})
+
 const UpdateBookingSchema = z.object({
   booking_status: z.enum(["confirmed", "cancelled", "checked_in", "checked_out"]).optional(),
   payment_status: z.enum(["pending", "paid", "failed", "pay_at_property"]).optional(),
@@ -200,11 +207,13 @@ export default async function handler(req: Request) {
 
     // ── GET /bookings ────────────────────────────────────────────────────
     if (req.method === "GET" && path === "/bookings") {
-      const status = url.searchParams.get("status")
-      const fromDate = url.searchParams.get("from")
-      const toDate = url.searchParams.get("to")
-      const posId = url.searchParams.get("pos_booking_id")
+      const rawParams = Object.fromEntries(url.searchParams.entries())
+      const queryParams = GetBookingsQuerySchema.safeParse(rawParams)
+      if (!queryParams.success) {
+        return errorResponse("Validation: " + queryParams.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "), 400, corsHeaders)
+      }
 
+      const { status, from: fromDate, to: toDate, pos_booking_id: posId } = queryParams.data
       let query = db.from("bookings").select("*, rooms(name, room_type)").order("check_in", { ascending: false })
 
       if (status) query = query.eq("booking_status", status)
