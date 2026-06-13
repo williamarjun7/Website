@@ -18,12 +18,30 @@ import {
     createMenuItem,
     updateMenuItem,
     deleteMenuItem,
-    toggleItemAvailability
+    toggleItemAvailability,
+    MenuItem
 } from '../../services/menuService';
 import { uploadImage } from '../../services/storageService';
 
+interface MenuCategoryData {
+    id: string;
+    name: string;
+    sort_order: number;
+    is_active: boolean;
+    items: MenuItem[];
+}
+
+interface ItemFormData {
+    name: string;
+    description: string;
+    price: string;
+    category: string;
+    image: string;
+    available: boolean;
+}
+
 const Menu = () => {
-    const [menu, setMenu] = useState<any[]>([]);
+    const [menu, setMenu] = useState<MenuCategoryData[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Modals
@@ -31,13 +49,13 @@ const Menu = () => {
     const [isItemModalOpen, setItemModalOpen] = useState(false);
 
     // Editing states
-    const [editingCategory, setEditingCategory] = useState<any | null>(null);
-    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [editingCategory, setEditingCategory] = useState<MenuCategoryData | null>(null);
+    const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
     const [, setActiveCategoryId] = useState<string>('');
 
     // Form Data
     const [categoryForm, setCategoryForm] = useState({ name: '', sort_order: 0 });
-    const [itemForm, setItemForm] = useState({
+    const [itemForm, setItemForm] = useState<ItemFormData>({
         name: '',
         description: '',
         price: '',
@@ -145,8 +163,8 @@ const Menu = () => {
             if (data) {
                 setItemForm(prev => ({ ...prev, image: data.url }));
             }
-        } catch (err: any) {
-            setUploadError(err.message || 'Upload failed');
+        } catch (err: unknown) {
+            setUploadError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -233,7 +251,7 @@ const Menu = () => {
                                     <p className="text-center text-gray-500 py-4">No items in this category.</p>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {category.items.map((item: any) => (
+                                        {category.items.map((item) => (
                                             <div key={item.id} className={`flex p-3 rounded-lg border ${item.available ? 'border-gray-200 bg-white' : 'border-gray-200 bg-gray-50 opacity-75'}`}>
                                                 {/* Image */}
                                                 <div className="w-20 h-20 flex-shrink-0 bg-gray-200 rounded-md overflow-hidden mr-4">

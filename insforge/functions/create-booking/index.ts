@@ -1,32 +1,10 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
-// ─── Email Module (inlined) ─────────────────────────────────────────────
-interface EmailData { to: string; subject: string; html: string }
-
-async function sendEmail(data: EmailData): Promise<void> {
-  const apiKey = Deno.env.get("RESEND_API_KEY")
-  if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlandsmotelinn.netlify.app>"
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from, to: data.to, subject: data.subject, html: data.html }),
-  })
-  if (!res.ok) console.error(`Email send failed: ${res.status} ${await res.text().catch(() => "")}`)
-}
-
-function buildBookingConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
-  const advance = params.advanceAmount ?? params.totalPrice
-  const balance = params.balanceAmount ?? 0
-  const isPartial = !!params.advanceAmount
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${params.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${params.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
-}
-
 // ─── Allowed Origins (CORS) ───────────────────────────────────────────────
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
-  "https://highlandsmotelinn.netlify.app",
+  "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -105,8 +83,6 @@ const CreateBookingSchema = z.object({
   advance_amount: z.number().positive().optional(),
   balance_amount: z.number().min(0).optional(),
 })
-
-type CreateBookingInput = z.infer<typeof CreateBookingSchema>
 
 // ─── Main Handler ────────────────────────────────────────────────────────
 export default async function (req: Request) {

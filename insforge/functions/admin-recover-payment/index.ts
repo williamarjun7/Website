@@ -49,7 +49,6 @@ export default async function handler(req: Request) {
       return errorResponse("Unauthorized: invalid session", 401)
     }
     const user = userData.user
-    const adminEmail = user.email || ""
 
     // Check admin role via user_metadata or a DB check
     const isAdmin = user.role === "service_role" ||
@@ -118,7 +117,7 @@ export default async function handler(req: Request) {
     }
 
     if (action === "force-confirm") {
-      const { booking_id, payment_id, note } = body as Record<string, unknown>
+      const { booking_id, note } = body as Record<string, unknown>
       if (!booking_id || typeof booking_id !== "string") return errorResponse("Missing booking_id")
 
       // Check for an existing payment record

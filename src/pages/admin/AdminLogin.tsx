@@ -25,8 +25,8 @@ const AdminLogin = () => {
             if (data) {
                 navigate('/admin/dashboard');
             }
-        } catch (err: any) {
-            const msg = err.message || 'Invalid email or password';
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Invalid email or password';
             setError(msg);
 
             // If verification is required, give them a way to go to the verify page

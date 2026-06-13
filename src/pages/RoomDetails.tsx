@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -27,13 +27,7 @@ const RoomDetails = () => {
     const [relatedRooms, setRelatedRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (id) {
-            loadRoomData(id);
-        }
-    }, [id]);
-
-    const loadRoomData = async (roomId: string) => {
+    const loadRoomData = useCallback(async (roomId: string) => {
         setLoading(true);
         const { data: roomData } = await getRoomById(roomId);
         if (roomData) {
@@ -48,7 +42,13 @@ const RoomDetails = () => {
             navigate('/rooms');
         }
         setLoading(false);
-    };
+    }, [navigate]);
+
+    useEffect(() => {
+        if (id) {
+            loadRoomData(id);
+        }
+    }, [id, loadRoomData]);
 
     if (loading) {
         return (
@@ -60,7 +60,7 @@ const RoomDetails = () => {
 
     if (!room) return null;
 
-    const amenityIcons: Record<string, any> = {
+    const amenityIcons: Record<string, React.ReactNode> = {
         'wifi': <Wifi size={18} />,
         'ac': <Wind size={18} />,
         'tv': <Tv size={18} />,

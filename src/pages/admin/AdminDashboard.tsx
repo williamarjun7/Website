@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -10,8 +10,29 @@ import {
     XCircle,
     BarChart3
 } from 'lucide-react';
-import { getAllBookings, getUpcomingCheckIns, updateBookingStatus } from '../../services/bookingService';
+import { getAllBookings, getUpcomingCheckIns, updateBookingStatus, type Booking } from '../../services/bookingService';
 import { getAllRoomsForAdmin } from '../../services/roomService';
+
+interface DashboardBooking {
+    id: string;
+    guest_name: string;
+    guest_email: string;
+    total_price: number;
+    booking_status: string;
+    payment_status: string;
+    advance_amount?: number;
+    created_at: string;
+    check_in: string;
+    rooms?: { name: string };
+}
+
+interface StatCardProps {
+    title: string;
+    value: number | string;
+    icon: ComponentType<{ size?: number; className?: string }>;
+    color: string;
+    prefix?: string;
+}
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -21,8 +42,8 @@ const AdminDashboard = () => {
         revenue: 0,
         occupancyRate: 0
     });
-    const [recentBookings, setRecentBookings] = useState<any[]>([]);
-    const [upcomingCheckIns, setUpcomingCheckIns] = useState<any[]>([]);
+    const [recentBookings, setRecentBookings] = useState<DashboardBooking[]>([]);
+    const [upcomingCheckIns, setUpcomingCheckIns] = useState<DashboardBooking[]>([]);
     const [bookingStatusCounts, setBookingStatusCounts] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
 
@@ -44,15 +65,15 @@ const AdminDashboard = () => {
             const checkIns = checkInsRes.data || [];
 
             const totalRevenue = bookings
-                .filter((b: any) => b.payment_status === 'paid' || b.booking_status === 'checked_out' || b.payment_status === 'pay_at_property')
-                .reduce((sum: number, b: any) => {
+                .filter((b: DashboardBooking) => b.payment_status === 'paid' || b.booking_status === 'checked_out' || b.payment_status === 'pay_at_property')
+                .reduce((sum: number, b: DashboardBooking) => {
                     if (b.payment_status === 'pay_at_property') {
                         return sum + Number(b.advance_amount || Math.round(Number(b.total_price) * 60) / 100);
                     }
                     return sum + Number(b.total_price);
                 }, 0);
 
-            const activeBookings = bookings.filter((b: any) =>
+            const activeBookings = bookings.filter((b: DashboardBooking) =>
                 ['confirmed', 'checked_in'].includes(b.booking_status)
             ).length;
 
@@ -84,11 +105,11 @@ const AdminDashboard = () => {
     };
 
     const handleQuickAction = async (id: string, status: string) => {
-        await updateBookingStatus(id, status as any);
+        await updateBookingStatus(id, status as Booking['booking_status']);
         loadDashboardData();
     };
 
-    const StatCard = ({ title, value, icon: Icon, color, prefix = '' }: any) => (
+    const StatCard = ({ title, value, icon: Icon, color, prefix = '' }: StatCardProps) => (
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-gray-500 text-sm font-medium">{title}</h3>

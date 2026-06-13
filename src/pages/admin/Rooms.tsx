@@ -154,8 +154,8 @@ const Rooms = () => {
                     if (updated) setEditingRoom(updated);
                 }
             }
-        } catch (err: any) {
-            setUploadError(err.message || 'Upload failed');
+        } catch (err: unknown) {
+            setUploadError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
@@ -176,8 +176,8 @@ const Rooms = () => {
                     sort_order: (room?.room_images?.length || 0) + 1
                 });
             }
-        } catch (err: any) {
-            setUploadError(err.message || 'Upload failed');
+        } catch (err: unknown) {
+            setUploadError(err instanceof Error ? err.message : 'Upload failed');
         } finally {
             setUploading(false);
         }
@@ -259,7 +259,7 @@ const Rooms = () => {
             discount_percent: formData.discount_percent ? Number(formData.discount_percent) : 0
         };
 
-        let savedRoom: any = null;
+        let savedRoom: Room | null = null;
 
         if (editingRoom) {
             const result = await updateRoom(editingRoom.id, roomData);

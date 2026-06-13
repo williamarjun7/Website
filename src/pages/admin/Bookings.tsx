@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     Search,
     Filter,
@@ -13,14 +13,30 @@ import {
     ChevronRight,
     Banknote
 } from 'lucide-react';
-import { getAllBookings, updateBookingStatus } from '../../services/bookingService';
+import { getAllBookings, updateBookingStatus, type Booking } from '../../services/bookingService';
 import { exportToCsv } from '../../utils/csv';
+
+interface AdminBooking {
+    id: string;
+    guest_name: string;
+    guest_email: string;
+    guest_phone: string;
+    total_price: number;
+    advance_amount?: number;
+    balance_amount?: number;
+    booking_status: string;
+    payment_status: string;
+    check_in: string;
+    check_out: string;
+    created_at: string;
+    rooms?: { name: string };
+}
 
 const ITEMS_PER_PAGE = 10;
 
 const Bookings = () => {
-    const [bookings, setBookings] = useState<any[]>([]);
-    const [filteredBookings, setFilteredBookings] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<AdminBooking[]>([]);
+    const [filteredBookings, setFilteredBookings] = useState<AdminBooking[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -28,25 +44,16 @@ const Bookings = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    useEffect(() => {
-        loadBookings();
-    }, []);
-
-    useEffect(() => {
-        filterBookings();
-        setCurrentPage(1); // Reset to first page when filters change
-    }, [bookings, searchTerm, statusFilter]);
-
-    const loadBookings = async () => {
+    const loadBookings = useCallback(async () => {
         setLoading(true);
         const { data } = await getAllBookings();
         if (data) {
             setBookings(data);
         }
         setLoading(false);
-    };
+    }, []);
 
-    const filterBookings = () => {
+    const filterBookings = useCallback(() => {
         let result = [...bookings];
 
         // Search filter
@@ -67,7 +74,16 @@ const Bookings = () => {
         }
 
         setFilteredBookings(result);
-    };
+    }, [bookings, searchTerm, statusFilter]);
+
+    useEffect(() => {
+        loadBookings();
+    }, [loadBookings]);
+
+    useEffect(() => {
+        filterBookings();
+        setCurrentPage(1);
+    }, [bookings, searchTerm, statusFilter, filterBookings]);
 
     const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
     const paginatedBookings = filteredBookings.slice(
@@ -78,7 +94,7 @@ const Bookings = () => {
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         if (statusLoading) return;
         setStatusLoading(id);
-        const { data, error } = await updateBookingStatus(id, newStatus as any);
+        const { data, error } = await updateBookingStatus(id, newStatus as Booking['booking_status']);
         setStatusLoading(null);
         if (data) {
             loadBookings();

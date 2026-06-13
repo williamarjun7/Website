@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Car, Coffee } from 'lucide-react';
 
 interface FAQItem {
     question: string;
     answer: string;
     category: string;
-    icon?: any;
+    icon?: ComponentType<{ size?: number; className?: string }>;
 }
 
 const FAQ = () => {

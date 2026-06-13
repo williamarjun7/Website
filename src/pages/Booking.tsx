@@ -100,7 +100,7 @@ const Booking = () => {
             }
         }, 8000);
         return () => clearInterval(interval);
-    }, [pollingActive, paymentPrn, step]);
+    }, [pollingActive, paymentPrn, step, POLLING_TIMEOUT_MS]);
 
     const handleRoomSelect = (room: Room) => {
         setSelectedRoom(room);
@@ -134,39 +134,66 @@ const Booking = () => {
 
         const doConnect = (wsUrl: string) => {
             try {
+                console.log(`[Fonepay WS] Connecting to ${wsUrl}`);
                 const ws = new WebSocket(wsUrl);
                 wsRef.current = ws;
 
                 ws.onopen = () => {
+                    console.log(`[Fonepay WS] Connection OPEN for PRN: ${prn}`);
                     setWsStatus('connected');
                 };
 
                 ws.onmessage = (event) => {
+                    console.log(`[Fonepay WS] MESSAGE RECEIVED for PRN: ${prn}`, event.data);
                     try {
                         const msg = JSON.parse(event.data);
-                        if (msg.status === 'success' || msg.paymentStatus === 'success' || msg.response_code === 'successful') {
+                        console.log(`[Fonepay WS] Parsed message:`, JSON.stringify(msg, null, 2));
+                        const ts = msg.transactionStatus;
+                        if (ts) {
+                            console.log(`[Fonepay WS] transactionStatus:`, JSON.stringify(ts, null, 2));
+                            console.log(`[Fonepay WS]   qrVerified: ${ts.qrVerified}, paymentSuccess: ${ts.paymentSuccess}, success: ${ts.success}`);
+                        }
+                        console.log(`[Fonepay WS]   msg.status: ${msg.status}, msg.paymentStatus: ${msg.paymentStatus}, msg.response_code: ${msg.response_code}`);
+                        const paymentDone =
+                            msg.status === 'success' ||
+                            msg.paymentStatus === 'success' ||
+                            msg.response_code === 'successful' ||
+                            ts?.paymentSuccess === true ||
+                            ts?.qrVerified === true ||
+                            ts?.success === true;
+                        console.log(`[Fonepay WS] paymentDone: ${paymentDone}`);
+                        if (paymentDone) {
+                            console.log(`[Fonepay WS] PAYMENT RECEIVED! Calling onPaymentReceived for PRN: ${prn}`);
                             onPaymentReceived(prn);
+                        } else {
+                            console.log(`[Fonepay WS] Payment not yet complete, waiting for success event...`);
                         }
                     } catch {
+                        console.log(`[Fonepay WS] Failed to parse message as JSON: ${event.data}`);
                         if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
+                            console.log(`[Fonepay WS] Unparsed message contains success keyword, treating as payment done`);
                             onPaymentReceived(prn);
                         }
                     }
                 };
 
-                ws.onerror = () => {
+                ws.onerror = (err) => {
+                    console.error(`[Fonepay WS] ERROR for PRN: ${prn}`, err);
                     setWsStatus('disconnected');
                 };
 
-                ws.onclose = () => {
+                ws.onclose = (event) => {
+                    console.log(`[Fonepay WS] CLOSED for PRN: ${prn} - code: ${event.code}, reason: ${event.reason}, wasClean: ${event.wasClean}`);
                     setWsStatus('disconnected');
                     wsRef.current = null;
                     if (wsReconnectCount.current < 3) {
                         wsReconnectCount.current += 1;
+                        console.log(`[Fonepay WS] Reconnecting attempt ${wsReconnectCount.current}/3 in 2s...`);
                         wsReconnectTimer.current = setTimeout(() => doConnect(wsUrl), 2000);
                     }
                 };
-            } catch {
+            } catch (err) {
+                console.error(`[Fonepay WS] Connection failed for PRN: ${prn}`, err);
                 setWsStatus('disconnected');
                 if (wsReconnectCount.current < 3) {
                     wsReconnectCount.current += 1;

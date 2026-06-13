@@ -3,7 +3,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
-  "https://highlandsmotelinn.netlify.app",
+  "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -14,15 +14,6 @@ function isOriginAllowed(origin: string): boolean {
 
 const FETCH_TIMEOUT_MS = 15_000
 const HOLD_DURATION_MS = 15 * 60 * 1000
-
-function toError(e: unknown): Error {
-  if (e instanceof Error) return e
-  if (typeof e === "object" && e !== null) {
-    const msg = (e as Record<string, unknown>).message || (e as Record<string, unknown>).error || JSON.stringify(e)
-    return new Error(String(msg))
-  }
-  return new Error(String(e))
-}
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
@@ -103,7 +94,7 @@ interface EmailData { to: string; subject: string; html: string }
 async function sendEmail(data: EmailData): Promise<void> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlandsmotelinn.netlify.app>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlands-motel.com>"
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -278,7 +269,7 @@ async function confirmPayment(
   })
 
   // Fire-and-forget confirmation email
-  (async () => {
+  ;(async () => {
     try {
       const { data: booking } = await db
         .from("bookings")

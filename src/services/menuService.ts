@@ -93,7 +93,7 @@ export const getMenuCategories = async () => {
     }
 };
 
-export const createCategory = async (category: Partial<any>) => {
+export const createCategory = async (category: Record<string, unknown>) => {
     try {
         const { data, error } = await insforge.database
             .from('menu_categories')
@@ -108,7 +108,7 @@ export const createCategory = async (category: Partial<any>) => {
     }
 };
 
-export const updateCategory = async (id: string, updates: Partial<any>) => {
+export const updateCategory = async (id: string, updates: Record<string, unknown>) => {
     try {
         const { data, error } = await insforge.database
             .from('menu_categories')
@@ -138,7 +138,7 @@ export const deleteCategory = async (id: string) => {
     }
 };
 
-export const createMenuItem = async (item: Partial<any>) => {
+export const createMenuItem = async (item: Record<string, unknown>) => {
     try {
         const { data, error } = await insforge.database
             .from('menu_items')
@@ -153,7 +153,7 @@ export const createMenuItem = async (item: Partial<any>) => {
     }
 };
 
-export const updateMenuItem = async (id: string, updates: Partial<any>) => {
+export const updateMenuItem = async (id: string, updates: Record<string, unknown>) => {
     try {
         const { data, error } = await insforge.database
             .from('menu_items')

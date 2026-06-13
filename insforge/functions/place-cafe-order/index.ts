@@ -1,9 +1,8 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "npm:@insforge/sdk"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
-  "https://highlandsmotelinn.netlify.app",
+  "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -23,7 +22,15 @@ function getCorsHeaders(request: Request): Record<string, string> {
   }
 }
 
-function validate(data: any) {
+interface PlaceOrderInput {
+  customer_name: string
+  phone_number: string
+  address: string
+  area?: string
+  items: { menu_item_id: string; item_name: string; quantity: number; price: number }[]
+}
+
+function validate(data: PlaceOrderInput) {
   if (!data.customer_name || data.customer_name.length < 2) throw new Error("Name must be at least 2 characters")
   if (!data.phone_number) throw new Error("Phone number is required")
   if (!data.address) throw new Error("Address is required")
@@ -50,7 +57,8 @@ export default async function (req: Request) {
   }
 
   try {
-    const data = await req.json()
+    const rawData: unknown = await req.json()
+    const data = rawData as PlaceOrderInput
     validate(data)
 
     const { customer_name, phone_number, address, area, items } = data
@@ -62,7 +70,7 @@ export default async function (req: Request) {
 
     const client = createClient({ baseUrl, anonKey })
 
-    const subtotal = items.reduce((s: number, i: any) => s + i.price * i.quantity, 0)
+    const subtotal = items.reduce((s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0)
 
     let orderNumber = ""
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -114,7 +122,7 @@ export default async function (req: Request) {
 
     if (oErr) throw new Error(`Failed to create order: ${oErr.message}`)
 
-    const orderItems = items.map((item: any) => ({
+    const orderItems = items.map((item) => ({
       order_id: order.id,
       menu_item_id: item.menu_item_id,
       name: item.item_name,
