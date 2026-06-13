@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { z } from 'zod';
 import { Check, X, Loader } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
 import { getBookingById } from '../services/bookingService';
+
+const paymentParamSchema = z.object({
+  prn: z.string().min(1, 'Missing PRN'),
+  uid: z.string().default(''),
+  amount: z.string().default(''),
+  pid: z.string().default(''),
+  bc: z.string().default(''),
+});
 
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
@@ -14,18 +23,21 @@ const PaymentResult = () => {
 
   useEffect(() => {
     const verify = async () => {
-      const prn = searchParams.get('PRN') || searchParams.get('orderId');
-      const uid = searchParams.get('UID') || '';
-      const amount = searchParams.get('P_AMT') || '';
-      const pid = searchParams.get('PID') || '';
-      const bc = searchParams.get('BC') || '';
+      const parsed = paymentParamSchema.safeParse({
+        prn: searchParams.get('PRN') || searchParams.get('orderId'),
+        uid: searchParams.get('UID') || '',
+        amount: searchParams.get('P_AMT') || '',
+        pid: searchParams.get('PID') || '',
+        bc: searchParams.get('BC') || '',
+      });
 
-      if (!prn) {
+      if (!parsed.success) {
         setStatus('failed');
         setMessage('Invalid payment response');
         return;
       }
 
+      const { prn, uid, amount, pid, bc } = parsed.data;
       const { data, error } = await verifyWebPayment(prn, uid, amount, pid, bc);
 
       if (data?.success && (data.response_code === 'successful' || data.status === 'success')) {

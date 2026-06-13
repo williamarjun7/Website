@@ -30,7 +30,7 @@ const AdminRooms = lazy(() => import('./pages/admin/Rooms'));
 const Menu = lazy(() => import('./pages/admin/Menu'));
 const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
-const CafeOrders = lazy(() => import('./pages/admin/CafeOrders'));
+
 const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
 
 const LoadingFallback = () => (
@@ -83,7 +83,6 @@ function App() {
               <Route path="bookings" element={<Suspense fallback={<LoadingFallback />}><Bookings /></Suspense>} />
               <Route path="rooms" element={<Suspense fallback={<LoadingFallback />}><AdminRooms /></Suspense>} />
               <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
-              <Route path="orders" element={<Suspense fallback={<LoadingFallback />}><CafeOrders /></Suspense>} />
               <Route path="images" element={<Suspense fallback={<LoadingFallback />}><Images /></Suspense>} />
               <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
               <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />

@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Save, RefreshCw } from 'lucide-react';
+import { z } from 'zod';
 import { getAllSiteContent, updateSiteContent } from '../../services/contentService';
+
+const FIELD_SCHEMAS: Record<string, z.ZodString> = {
+  hero_title: z.string().min(2, 'Must be at least 2 characters').max(200),
+  hero_subtitle: z.string().min(2, 'Must be at least 2 characters').max(300),
+  about_text: z.string().min(10, 'Must be at least 10 characters').max(5000),
+  contact_address: z.string().min(5, 'Must be at least 5 characters').max(500),
+  contact_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/, 'Must be a valid phone number'),
+  contact_email: z.string().email('Must be a valid email address'),
+  footer_text: z.string().max(500),
+};
 
 const CONTENT_KEYS = [
   { key: 'hero_title', label: 'Hero Title', type: 'text' },
@@ -57,8 +68,34 @@ const ContentEditor = () => {
   }, []);
 
   const handleSave = async (key: string) => {
+    const value = contents[key] || '';
+
+    if (key === 'faq_questions' && value.trim()) {
+      try {
+        const parsed = JSON.parse(value);
+        if (!Array.isArray(parsed)) throw new Error('Must be a JSON array');
+        for (const item of parsed) {
+          if (!item.question || !item.answer) throw new Error('Each FAQ item must have question and answer fields');
+        }
+      } catch (e) {
+        setToastMessage('FAQ JSON error: ' + (e instanceof Error ? e.message : 'Invalid JSON'));
+        setTimeout(() => setToastMessage(''), 5000);
+        return;
+      }
+    } else {
+      const schema = FIELD_SCHEMAS[key];
+      if (schema) {
+        const result = schema.safeParse(value);
+        if (!result.success) {
+          setToastMessage(result.error.issues[0].message);
+          setTimeout(() => setToastMessage(''), 5000);
+          return;
+        }
+      }
+    }
+
     setSaving(key);
-    const { error } = await updateSiteContent(key, contents[key] || '');
+    const { error } = await updateSiteContent(key, value);
     setSaving(null);
     if (error) {
       setToastMessage('Failed to save: ' + error);
