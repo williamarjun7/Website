@@ -37,7 +37,7 @@ export const getRooms = async () => {
     try {
         const { data, error } = await insforge.database
             .from('rooms')
-            .select('*')
+            .select('*, room_images(*)')
             .eq('is_active', true)
             .order('room_number', { ascending: true });
 
@@ -54,7 +54,7 @@ export const getAllRoomsForAdmin = async () => {
     try {
         const { data, error } = await insforge.database
             .from('rooms')
-            .select('*')
+            .select('*, room_images(*)')
             .order('room_number', { ascending: true });
 
         if (error) throw error;
@@ -70,7 +70,7 @@ export const getRoomById = async (id: string) => {
     try {
         const { data, error } = await insforge.database
             .from('rooms')
-            .select('*')
+            .select('*, room_images(*)')
             .eq('id', id)
             .eq('is_active', true)
             .single();

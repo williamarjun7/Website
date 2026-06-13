@@ -39,17 +39,19 @@ const Cafe = () => {
     const [form, setForm] = useState({ customer_name: '', phone_number: '', address: '', area: '', order_notes: '' });
     const [formError, setFormError] = useState('');
 
-    const loadMenu = async () => {
-        setLoading(true);
-        const { data } = await getFullMenu();
-        if (data && data.length > 0) {
-            setMenu(data);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        loadMenu();
+        let cancelled = false;
+        getFullMenu().then(({ data }) => {
+            if (!cancelled) {
+                if (data && data.length > 0) {
+                    setMenu(data);
+                }
+                setLoading(false);
+            }
+        }).catch(() => {
+            if (!cancelled) setLoading(false);
+        });
+        return () => { cancelled = true; };
     }, []);
 
     const getFeaturedItems = () => {

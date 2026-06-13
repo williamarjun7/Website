@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
 import { MapPin, Users, Coffee, Heart, Award, CheckCircle, Star } from 'lucide-react';
 
@@ -6,6 +7,10 @@ const About = () => {
 
     return (
         <div className="min-h-screen pt-24 pb-16">
+            <Helmet>
+                <title>About Us | Highlands Motel & Cafe</title>
+                <meta name="description" content="Learn the story behind Highlands Motel & Cafe in Surkhet. Discover our mission, values, and the team dedicated to making your stay memorable." />
+            </Helmet>
             {/* Hero Section */}
             <section className="relative h-80 mb-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">

@@ -49,7 +49,7 @@ const Booking = () => {
         }
     });
 
-    const selectedPaymentMethod = watch('paymentMethod');
+    const selectedPaymentMethod = watch('paymentMethod'); // eslint-disable-line react-hooks/incompatible-library
 
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
@@ -284,6 +284,7 @@ const Booking = () => {
             guest_phone: data.guest_phone,
             check_in: checkIn,
             check_out: checkOut,
+            guests,
             payment_status
         });
 

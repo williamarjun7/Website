@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Car, Coffee } from 'lucide-react';
 
@@ -126,6 +127,10 @@ const FAQ = () => {
 
     return (
         <div className="min-h-screen pt-24 pb-16">
+            <Helmet>
+                <title>FAQ | Highlands Motel & Cafe</title>
+                <meta name="description" content="Find answers to frequently asked questions about booking, rooms, amenities, check-in/out, payments, and more at Highlands Motel & Cafe." />
+            </Helmet>
             {/* Hero Section */}
             <section className="relative h-64 mb-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">

@@ -34,6 +34,8 @@ const rateLimitStore = new Map<string, RateLimitEntry>()
 const RATE_LIMIT_MAX = 10          // requests
 const RATE_LIMIT_WINDOW = 60_000    // milliseconds (1 minute)
 
+const MAX_BODY_BYTES = 65_536       // 64KB
+
 function getClientIp(request: Request): string {
   return request.headers.get("x-forwarded-for")
     || request.headers.get("x-real-ip")
@@ -79,7 +81,8 @@ const CreateBookingSchema = z.object({
   guest_name: z.string().min(2, { message: "guest_name must be at least 2 characters" }).max(100),
   guest_email: z.string().email({ message: "guest_email must be a valid email" }),
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/, { message: "guest_phone is invalid" }),
-  payment_status: z.enum(["pending", "paid", "failed", "pay_at_property"]).optional(),
+  guests: z.number().int().min(1).max(20).optional(),
+  payment_status: z.enum(["pending", "failed", "pay_at_property"]).optional(),
   advance_amount: z.number().positive().optional(),
   balance_amount: z.number().min(0).optional(),
 })
@@ -111,6 +114,15 @@ export default async function (req: Request) {
     })
   }
 
+  // Body size limit
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
+  if (contentLength > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: "Request too large" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 413,
+    })
+  }
+
   try {
     // ── Parse & validate body ──────────────────────────────────────────
     let rawBody: unknown
@@ -126,7 +138,7 @@ export default async function (req: Request) {
       throw new Error(`Validation failed: ${messages}`)
     }
 
-    const { room_id, check_in, check_out, guest_name, guest_email, guest_phone, payment_status, advance_amount, balance_amount } = parseResult.data
+    const { room_id, check_in, check_out, guest_name, guest_email, guest_phone, guests, payment_status, advance_amount, balance_amount } = parseResult.data
 
     // Validate date logic
     const checkInDate = new Date(check_in)
@@ -155,7 +167,14 @@ export default async function (req: Request) {
       .eq("id", room_id)
       .single()
 
-    if (roomError || !room) {
+    if (roomError) {
+      console.error("create-booking: DB error fetching room:", roomError.message)
+      return new Response(JSON.stringify({ error: "Database error, please try again" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 502,
+      })
+    }
+    if (!room) {
       throw new Error("Room not found")
     }
 
@@ -197,7 +216,11 @@ export default async function (req: Request) {
         .limit(1)
 
       if (conflictError) {
-        throw new Error("Error verifying room availability")
+        console.error("create-booking: DB error checking conflicts:", conflictError.message)
+        return new Response(JSON.stringify({ error: "Database error, please try again" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 502,
+        })
       }
 
       if (conflictingBookings && conflictingBookings.length > 0) {
@@ -220,6 +243,7 @@ export default async function (req: Request) {
           room_id,
           check_in,
           check_out,
+          guests: guests || null,
           total_price,
           advance_amount: isPayAtProperty ? advAmount : null,
           balance_amount: isPayAtProperty ? balAmount : null,
@@ -262,6 +286,7 @@ export default async function (req: Request) {
     throw new Error("Room is no longer available for the selected dates")
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error"
+    console.error("create-booking error:", error)
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

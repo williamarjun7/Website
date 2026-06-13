@@ -1,4 +1,5 @@
 import { createClient } from "npm:@insforge/sdk"
+import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
@@ -6,6 +7,13 @@ const ALLOWED_ORIGINS: (string | RegExp)[] = [
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
+
+const RATE_LIMIT_MAX = 20
+const RATE_LIMIT_WINDOW = 60_000
+const MAX_BODY_BYTES = 65_536
+
+interface RateLimitEntry { count: number; expires: number }
+const rateLimitStore = new Map<string, RateLimitEntry>()
 
 function isOriginAllowed(origin: string): boolean {
   return ALLOWED_ORIGINS.some(a => typeof a === "string" ? a === origin : a.test(origin))
@@ -22,25 +30,43 @@ function getCorsHeaders(request: Request): Record<string, string> {
   }
 }
 
-interface PlaceOrderInput {
-  customer_name: string
-  phone_number: string
-  address: string
-  area?: string
-  items: { menu_item_id: string; item_name: string; quantity: number; price: number }[]
+function getClientIp(request: Request): string {
+  return request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
 }
 
-function validate(data: PlaceOrderInput) {
-  if (!data.customer_name || data.customer_name.length < 2) throw new Error("Name must be at least 2 characters")
-  if (!data.phone_number) throw new Error("Phone number is required")
-  if (!data.address) throw new Error("Address is required")
-  if (!Array.isArray(data.items) || data.items.length === 0) throw new Error("At least one item required")
-  for (const item of data.items) {
-    if (!item.menu_item_id || !item.item_name || !item.quantity || !item.price) throw new Error("Invalid item")
-    if (item.quantity < 1) throw new Error("Quantity must be positive")
-    if (item.price <= 0) throw new Error("Price must be positive")
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+  if (entry && entry.expires < now) rateLimitStore.delete(ip)
+  if (!entry || entry.expires < now) {
+    rateLimitStore.set(ip, { count: 1, expires: now + RATE_LIMIT_WINDOW })
+    return { allowed: true }
   }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.expires - now) / 1000) }
+  }
+  entry.count++
+  return { allowed: true }
 }
+
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of rateLimitStore.entries()) {
+    if (val.expires < now) rateLimitStore.delete(key)
+  }
+}, 300_000)
+
+const PlaceOrderSchema = z.object({
+  customer_name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  phone_number: z.string().min(7, "Phone number too short").max(20),
+  address: z.string().min(1, "Address is required").max(500),
+  area: z.string().max(100).optional(),
+  order_notes: z.string().max(500).optional(),
+  items: z.array(z.object({
+    menu_item_id: z.string().min(1, "Invalid item"),
+    quantity: z.number().int().min(1, "Quantity must be positive"),
+  })).min(1, "At least one item required"),
+})
 
 export default async function (req: Request) {
   const corsHeaders = getCorsHeaders(req)
@@ -56,21 +82,79 @@ export default async function (req: Request) {
     })
   }
 
+  const clientIp = getClientIp(req)
+  const rateCheck = checkRateLimit(clientIp)
+  if (!rateCheck.allowed) {
+    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rateCheck.retryAfter) },
+      status: 429,
+    })
+  }
+
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
+  if (contentLength > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: "Request too large" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 413,
+    })
+  }
+
   try {
     const rawData: unknown = await req.json()
-    const data = rawData as PlaceOrderInput
-    validate(data)
 
-    const { customer_name, phone_number, address, area, items } = data
+    const parsed = PlaceOrderSchema.safeParse(rawData)
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "Validation: " + parsed.error.errors.map(
+        e => `${e.path.join(".")}: ${e.message}`
+      ).join("; ") }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      })
+    }
+
+    const { customer_name, phone_number, address, area, order_notes, items } = parsed.data
 
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
-    if (!baseUrl || !anonKey) throw new Error("Server configuration error")
+    if (!baseUrl || !anonKey) {
+      console.error("place-cafe-order: Server configuration error")
+      return new Response(JSON.stringify({ error: "Server configuration error" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      })
+    }
 
     const client = createClient({ baseUrl, anonKey })
 
-    const subtotal = items.reduce((s: number, i: { price: number; quantity: number }) => s + i.price * i.quantity, 0)
+    const menuItemIds = [...new Set(items.map(i => i.menu_item_id))]
+    const { data: menuItems, error: menuError } = await client.database
+      .from("menu_items")
+      .select("id, name, price")
+      .in("id", menuItemIds)
+
+    if (menuError || !menuItems || menuItems.length !== menuItemIds.length) {
+      console.error("place-cafe-order: Menu items not found:", menuItemIds)
+      return new Response(JSON.stringify({ error: "One or more menu items not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      })
+    }
+
+    const menuMap = new Map(menuItems.map(m => [m.id, { name: m.name, price: m.price }]))
+
+    const resolvedItems = items.map(item => {
+      const menuItem = menuMap.get(item.menu_item_id)
+      if (!menuItem) throw new Error(`Menu item ${item.menu_item_id} not found`)
+      return {
+        menu_item_id: item.menu_item_id,
+        item_name: menuItem.name,
+        quantity: item.quantity,
+        price: menuItem.price,
+      }
+    })
+
+    const subtotal = resolvedItems.reduce((s, i) => s + i.price * i.quantity, 0)
 
     let orderNumber = ""
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -80,7 +164,10 @@ export default async function (req: Request) {
         .select("last_number")
         .eq("id", 1)
         .single()
-      if (cErr || !counter) continue
+      if (cErr || !counter) {
+        if (attempt < 4) await new Promise(r => setTimeout(r, 50 + Math.random() * 150))
+        continue
+      }
       const lastNumber = counter.last_number
       const nextNumber = lastNumber + 1
       const { data: updated, error: uErr } = await client
@@ -95,6 +182,7 @@ export default async function (req: Request) {
         orderNumber = "ORD-" + nextNumber.toString().padStart(5, "0")
         break
       }
+      if (attempt < 4) await new Promise(r => setTimeout(r, 50 + Math.random() * 150))
     }
 
     if (!orderNumber) orderNumber = "ORD-" + Date.now().toString(36).toUpperCase()
@@ -116,13 +204,20 @@ export default async function (req: Request) {
         delivery_address: address,
         delivery_area: area || null,
         room_number: address,
+        order_notes: order_notes || null,
       })
       .select()
       .single()
 
-    if (oErr) throw new Error(`Failed to create order: ${oErr.message}`)
+    if (oErr) {
+      console.error("place-cafe-order: Failed to create order:", oErr.message)
+      return new Response(JSON.stringify({ error: "Failed to create order" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      })
+    }
 
-    const orderItems = items.map((item) => ({
+    const orderItems = resolvedItems.map((item) => ({
       order_id: order.id,
       menu_item_id: item.menu_item_id,
       name: item.item_name,
@@ -137,7 +232,13 @@ export default async function (req: Request) {
       .insert(orderItems)
       .select()
 
-    if (iErr) throw new Error(`Failed to create order items: ${iErr.message}`)
+    if (iErr) {
+      console.error("place-cafe-order: Failed to create order items:", iErr.message)
+      return new Response(JSON.stringify({ error: "Failed to create order items" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      })
+    }
 
     return new Response(JSON.stringify({ order, items: createdItems }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -145,6 +246,7 @@ export default async function (req: Request) {
     })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error"
+    console.error("place-cafe-order error:", error)
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

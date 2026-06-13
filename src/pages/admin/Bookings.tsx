@@ -44,19 +44,8 @@ const Bookings = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
 
-    const loadBookings = useCallback(async () => {
-        setLoading(true);
-        const { data } = await getAllBookings();
-        if (data) {
-            setBookings(data);
-        }
-        setLoading(false);
-    }, []);
-
-    const filterBookings = useCallback(() => {
+    const filterAndSetBookings = useCallback(() => {
         let result = [...bookings];
-
-        // Search filter
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             result = result.filter(b =>
@@ -65,25 +54,33 @@ const Bookings = () => {
                 b.id.toLowerCase().includes(term)
             );
         }
-
-        // Status filter (booking_status or payment_status)
         if (statusFilter === 'paid' || statusFilter === 'pending' || statusFilter === 'failed' || statusFilter === 'pay_at_property') {
             result = result.filter(b => b.payment_status === statusFilter);
         } else if (statusFilter !== 'all') {
             result = result.filter(b => b.booking_status === statusFilter);
         }
-
         setFilteredBookings(result);
     }, [bookings, searchTerm, statusFilter]);
 
     useEffect(() => {
-        loadBookings();
-    }, [loadBookings]);
+        let cancelled = false;
+        getAllBookings().then(({ data }) => {
+            if (!cancelled && data) {
+                setBookings(data);
+            }
+            if (!cancelled) setLoading(false);
+        }).catch(() => {
+            if (!cancelled) setLoading(false);
+        });
+        return () => { cancelled = true; };
+    }, []);
 
     useEffect(() => {
-        filterBookings();
-        setCurrentPage(1);
-    }, [bookings, searchTerm, statusFilter, filterBookings]);
+        setTimeout(() => {
+            filterAndSetBookings();
+            setCurrentPage(1);
+        }, 0);
+    }, [bookings, searchTerm, statusFilter, filterAndSetBookings]);
 
     const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
     const paginatedBookings = filteredBookings.slice(
@@ -91,13 +88,19 @@ const Bookings = () => {
         currentPage * ITEMS_PER_PAGE
     );
 
+    const refreshBookings = () => {
+        getAllBookings().then(({ data }) => {
+            if (data) setBookings(data);
+        }).catch(() => {});
+    };
+
     const handleStatusUpdate = async (id: string, newStatus: string) => {
         if (statusLoading) return;
         setStatusLoading(id);
         const { data, error } = await updateBookingStatus(id, newStatus as Booking['booking_status']);
         setStatusLoading(null);
         if (data) {
-            loadBookings();
+            refreshBookings();
         } else {
             setToastMessage('Failed to update status: ' + error);
             setTimeout(() => setToastMessage(''), 5000);

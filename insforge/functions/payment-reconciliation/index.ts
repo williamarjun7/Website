@@ -70,12 +70,11 @@ export default async function handler(req: Request) {
   const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "reconciler"
   if (!checkRate(clientIp)) return errorResponse("Too many requests", 429)
 
-  // Optional API key check
+  // Required API key check
   const expectedKey = Deno.env.get("RECONCILE_API_KEY")
-  if (expectedKey) {
-    const provided = req.headers.get("x-reconcile-key") || req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || ""
-    if (provided !== expectedKey) return errorResponse("Unauthorized", 401)
-  }
+  if (!expectedKey) return errorResponse("Server configuration error: RECONCILE_API_KEY not set", 500)
+  const provided = req.headers.get("x-reconcile-key") || req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || ""
+  if (provided !== expectedKey) return errorResponse("Unauthorized", 401)
 
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
@@ -166,19 +165,21 @@ export default async function handler(req: Request) {
           // Find payment record
           const { data: existingPayment } = await db
             .from("payments")
-            .select("id, status")
+            .select("id, status, amount")
             .eq("prn", prn)
             .maybeSingle()
 
           const fonepayTraceId = String(fonepayResult.fonepayTraceId || fonepayResult.fonepayTraceId === 0 ? fonepayResult.fonepayTraceId : "")
 
           if (existingPayment) {
+            // Use the payment record's actual amount (correct for partial payments)
+            const paidAmount = existingPayment.amount || booking.total_price
             // Payment record exists — use atomic confirm
             const { data: rpcResult } = await db.rpc("confirm_booking_payment", {
               p_payment_id: existingPayment.id,
               p_booking_id: booking.id,
               p_prn: prn,
-              p_amount: booking.total_price,
+              p_amount: paidAmount,
               p_fonepay_trace_id: fonepayTraceId,
             }).single()
 
@@ -212,8 +213,10 @@ export default async function handler(req: Request) {
             }
           } else {
             // No payment record found — this is anomalous. Create one and confirm.
+            // For partial payments, use advance amount; otherwise full price
+            const paidAmount = booking.advance_amount || (booking.payment_status === "pay_at_property" ? Math.round(booking.total_price * 60) / 100 : booking.total_price)
             const { data: newPayment } = await db.from("payments").insert({
-              booking_id: booking.id, prn, amount: booking.total_price,
+              booking_id: booking.id, prn, amount: paidAmount,
               payment_method: "fonepay_qr", status: "pending",
             }).select("id").single()
 
@@ -222,7 +225,7 @@ export default async function handler(req: Request) {
                 p_payment_id: newPayment.id,
                 p_booking_id: booking.id,
                 p_prn: prn,
-                p_amount: booking.total_price,
+                p_amount: paidAmount,
                 p_fonepay_trace_id: fonepayTraceId,
               }).single()
 
@@ -274,6 +277,7 @@ export default async function handler(req: Request) {
     })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error"
+    console.error("payment-reconciliation error:", error)
     return new Response(JSON.stringify({ error: message }), {
       headers: { "Content-Type": "application/json" }, status: 500,
     })

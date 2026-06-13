@@ -72,6 +72,8 @@ export default async function handler() {
 
         const signature = await createHmacSignature(webhookSecret, webhookPayload)
 
+        const controller = new AbortController()
+        const timeoutTimer = setTimeout(() => controller.abort(), 10_000)
         const response = await fetch(webhookUrl, {
           method: "POST",
           headers: {
@@ -82,7 +84,9 @@ export default async function handler() {
             "X-Idempotency-Key": `website:${event.entity_id}:${event.event_type}`,
           },
           body: webhookPayload,
+          signal: controller.signal,
         })
+        clearTimeout(timeoutTimer)
 
         if (response.ok) {
           await db
