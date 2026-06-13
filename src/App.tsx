@@ -30,7 +30,6 @@ const AdminRooms = lazy(() => import('./pages/admin/Rooms'));
 const Menu = lazy(() => import('./pages/admin/Menu'));
 const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
-const CafeOrders = lazy(() => import('./pages/admin/CafeOrders'));
 const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
 
 const LoadingFallback = () => (
@@ -83,7 +82,6 @@ function App() {
               <Route path="bookings" element={<Bookings />} />
               <Route path="rooms" element={<AdminRooms />} />
               <Route path="menu" element={<Menu />} />
-              <Route path="orders" element={<CafeOrders />} />
               <Route path="images" element={<Images />} />
               <Route path="content" element={<ContentEditor />} />
               <Route path="payment-recovery" element={<PaymentRecovery />} />

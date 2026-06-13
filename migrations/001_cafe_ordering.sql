@@ -1,4 +1,9 @@
 -- Migration: Cafe ordering system (production schema)
+-- DEPRECATED: Cafe ordering has been removed. The website is now read-only menu display.
+-- Ordering is handled by the external POS system.
+-- Tables (orders, order_items, order_counter) were dropped in migration 008_cleanup_unused_tables.sql.
+-- This file is kept for reference only.
+
 -- Production has: orders, order_items, menu_items, menu_categories
 
 -- Sequence for human-readable order numbers
