@@ -23,20 +23,30 @@ const CafeOrders = () => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
 
-    const loadOrders = async () => {
+    const refreshOrders = () => {
         setLoading(true);
-        const { data } = await getAllOrders();
-        if (data) setOrders(data);
-        setLoading(false);
+        getAllOrders().then(({ data }) => {
+            if (data) setOrders(data);
+            setLoading(false);
+        }).catch(() => setLoading(false));
     };
 
     useEffect(() => {
-        loadOrders();
+        let cancelled = false;
+        getAllOrders().then(({ data }) => {
+            if (!cancelled) {
+                if (data) setOrders(data);
+                setLoading(false);
+            }
+        }).catch(() => {
+            if (!cancelled) setLoading(false);
+        });
+        return () => { cancelled = true; };
     }, []);
 
     const handleStatusChange = async (id: string, status: string) => {
         await updateOrderStatus(id, status);
-        loadOrders();
+        refreshOrders();
     };
 
     const filtered = orders.filter(o =>
@@ -53,7 +63,7 @@ const CafeOrders = () => {
                     <h1 className="text-2xl font-bold font-heading text-gray-900">Cafe Orders</h1>
                     <p className="text-gray-500">Manage incoming food orders</p>
                 </div>
-                <button onClick={loadOrders} className="btn-secondary text-sm">
+                    <button onClick={refreshOrders} className="btn-secondary text-sm">
                     Refresh
                 </button>
             </div>

@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react';
 
 import logo from '../../assets/logo.png';
 
-const Navbar = () => {
+const Navbar = memo(() => {
     const [isOpen, setIsOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
@@ -19,11 +19,12 @@ const Navbar = () => {
     }, []);
 
     useEffect(() => {
-        if (location.pathname !== prevPath.current) {
-            prevPath.current = location.pathname;
-            if (isOpen) setIsOpen(false);
+        const prev = prevPath.current;
+        prevPath.current = location.pathname;
+        if (prev !== location.pathname && isOpen) {
+            setTimeout(() => setIsOpen(false), 0);
         }
-    });
+    }, [location.pathname, isOpen]);
 
     const navLinks = [
         { name: 'Home', path: '/', icon: null },
@@ -157,6 +158,6 @@ const Navbar = () => {
             </div>
         </nav>
     );
-};
+});
 
 export default Navbar;

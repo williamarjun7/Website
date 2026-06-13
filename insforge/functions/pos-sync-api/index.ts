@@ -23,6 +23,38 @@ function getCorsHeaders(request: Request): Record<string, string> {
   }
 }
 
+const RATE_LIMIT_MAX = 30
+const RATE_LIMIT_WINDOW = 60_000
+const MAX_BODY_BYTES = 65_536
+interface RateLimitEntry { count: number; expires: number }
+const rateLimitStore = new Map<string, RateLimitEntry>()
+
+function getClientIp(request: Request): string {
+  return request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now()
+  const entry = rateLimitStore.get(ip)
+  if (entry && entry.expires < now) rateLimitStore.delete(ip)
+  if (!entry || entry.expires < now) {
+    rateLimitStore.set(ip, { count: 1, expires: now + RATE_LIMIT_WINDOW })
+    return { allowed: true }
+  }
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfter: Math.ceil((entry.expires - now) / 1000) }
+  }
+  entry.count++
+  return { allowed: true }
+}
+
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, val] of rateLimitStore.entries()) {
+    if (val.expires < now) rateLimitStore.delete(key)
+  }
+}, 300_000)
+
 function verifyPosApiKey(request: Request): boolean {
   const expectedKey = Deno.env.get("POS_SYNC_API_KEY")
   if (!expectedKey) return false
@@ -33,9 +65,9 @@ function verifyPosApiKey(request: Request): boolean {
   return bearerMatch !== null && bearerMatch[1] === expectedKey
 }
 
-function errorResponse(message: string, status = 400): Response {
+function errorResponse(message: string, status = 400, corsHeaders?: Record<string, string>): Response {
   return new Response(JSON.stringify({ error: message }), {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...corsHeaders },
     status,
   })
 }
@@ -89,22 +121,35 @@ export default async function handler(req: Request) {
     return new Response("ok", { headers: corsHeaders })
   }
 
-  // Verify POS API key (except for GET availability)
-  if (req.method !== "GET") {
-    if (!verifyPosApiKey(req)) {
-      return errorResponse("Unauthorized: Invalid or missing POS API key", 401)
-    }
-  }
-
   const url = new URL(req.url)
   const path = url.pathname.replace(/^\/functions\/pos-sync-api/, "").replace(/^\/api\/pos-sync/, "").replace(/^\/pos-sync/, "")
+
+  // Verify POS API key (except for GET availability — public for booking form)
+  const isAvailabilityGet = req.method === "GET" && path === "/availability"
+  if (!isAvailabilityGet && !verifyPosApiKey(req)) {
+    return errorResponse("Unauthorized: Invalid or missing POS API key", 401, corsHeaders)
+  }
+
+  const clientIp = getClientIp(req)
+  const rateCheck = checkRateLimit(clientIp)
+  if (!rateCheck.allowed) {
+    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rateCheck.retryAfter) },
+      status: 429,
+    })
+  }
+
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
+  if (contentLength > MAX_BODY_BYTES) {
+    return errorResponse("Request too large", 413, corsHeaders)
+  }
 
   try {
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
     if (!baseUrl || !anonKey) {
-      return errorResponse("Server configuration error", 500)
+      return errorResponse("Server configuration error", 500, corsHeaders)
     }
 
     const { database: db } = createClient({ baseUrl, anonKey })
@@ -115,7 +160,10 @@ export default async function handler(req: Request) {
       const checkOut = url.searchParams.get("check_out")
 
       if (!checkIn || !checkOut) {
-        return errorResponse("check_in and check_out query parameters are required")
+        return errorResponse("check_in and check_out query parameters are required", 400, corsHeaders)
+      }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(checkIn) || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut)) {
+        return errorResponse("Invalid date format. Use YYYY-MM-DD.", 400, corsHeaders)
       }
 
       const [roomsResult, bookingsResult] = await Promise.all([
@@ -143,7 +191,7 @@ export default async function handler(req: Request) {
         .select("*, room_images(*)")
         .order("name", { ascending: true })
 
-      if (error) return errorResponse(error.message, 500)
+      if (error) return errorResponse(error.message, 500, corsHeaders)
 
       return new Response(JSON.stringify({ data: rooms }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -166,7 +214,7 @@ export default async function handler(req: Request) {
 
       const { data: bookings, error } = await query
 
-      if (error) return errorResponse(error.message, 500)
+      if (error) return errorResponse(error.message, 500, corsHeaders)
 
       return new Response(JSON.stringify({ data: bookings }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -182,7 +230,7 @@ export default async function handler(req: Request) {
         .eq("id", bookingIdMatch[1])
         .single()
 
-      if (error) return errorResponse("Booking not found", 404)
+      if (error) return errorResponse("Booking not found", 404, corsHeaders)
 
       return new Response(JSON.stringify({ data: booking }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -193,14 +241,14 @@ export default async function handler(req: Request) {
     if (req.method === "POST" && path === "/bookings") {
       const rawBodyText = await req.text()
       if (!(await verifyHmacSignature(req, rawBodyText))) {
-        return errorResponse("Invalid webhook signature", 403)
+        return errorResponse("Invalid webhook signature", 403, corsHeaders)
       }
 
       let rawBody: unknown
       try {
         rawBody = JSON.parse(rawBodyText)
       } catch {
-        return errorResponse("Invalid JSON body")
+        return errorResponse("Invalid JSON body", 400, corsHeaders)
       }
 
       const idempotencyKey = req.headers.get("x-idempotency-key") || (rawBody as Record<string, unknown>)?.idempotency_key as string | undefined
@@ -214,7 +262,7 @@ export default async function handler(req: Request) {
 
       const parsed = CreateBookingSchema.safeParse(rawBody)
       if (!parsed.success) {
-        return errorResponse("Validation: " + parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "))
+        return errorResponse("Validation: " + parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "), 400, corsHeaders)
       }
 
       const input = parsed.data
@@ -223,7 +271,7 @@ export default async function handler(req: Request) {
       const checkInDate = new Date(input.check_in)
       const checkOutDate = new Date(input.check_out)
       if (checkOutDate <= checkInDate) {
-        return errorResponse("check_out must be after check_in")
+        return errorResponse("check_out must be after check_in", 400, corsHeaders)
       }
 
       // Get room price
@@ -234,7 +282,7 @@ export default async function handler(req: Request) {
         .single()
 
       if (roomError || !room) {
-        return errorResponse("Room not found", 404)
+        return errorResponse("Room not found", 404, corsHeaders)
       }
 
       const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
@@ -251,7 +299,7 @@ export default async function handler(req: Request) {
         .limit(1)
 
       if (conflicts && conflicts.length > 0) {
-        return errorResponse("Room is not available for the selected dates", 409)
+        return errorResponse("Room is not available for the selected dates", 409, corsHeaders)
       }
 
       // Insert with source=pos to prevent loop
@@ -273,7 +321,7 @@ export default async function handler(req: Request) {
         .select()
         .single()
 
-      if (insertError) return errorResponse(insertError.message, 500)
+      if (insertError) return errorResponse(insertError.message, 500, corsHeaders)
 
       return new Response(JSON.stringify({ data: booking }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -286,19 +334,19 @@ export default async function handler(req: Request) {
     if (req.method === "PUT" && updateMatch) {
       const rawBodyText = await req.text()
       if (!(await verifyHmacSignature(req, rawBodyText))) {
-        return errorResponse("Invalid webhook signature", 403)
+        return errorResponse("Invalid webhook signature", 403, corsHeaders)
       }
 
       let rawBody: unknown
       try {
         rawBody = JSON.parse(rawBodyText)
       } catch {
-        return errorResponse("Invalid JSON body")
+        return errorResponse("Invalid JSON body", 400, corsHeaders)
       }
 
       const parsed = UpdateBookingSchema.safeParse(rawBody)
       if (!parsed.success) {
-        return errorResponse("Validation: " + parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "))
+        return errorResponse("Validation: " + parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "), 400, corsHeaders)
       }
 
       // Only allow updates that don't re-trigger website sync
@@ -312,16 +360,17 @@ export default async function handler(req: Request) {
         .select()
         .single()
 
-      if (updateError) return errorResponse(updateError.message, 500)
+      if (updateError) return errorResponse(updateError.message, 500, corsHeaders)
 
       return new Response(JSON.stringify({ data: booking }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
 
-    return errorResponse("Not found", 404)
+    return errorResponse("Not found", 404, corsHeaders)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal server error"
+    console.error("pos-sync-api error:", error)
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

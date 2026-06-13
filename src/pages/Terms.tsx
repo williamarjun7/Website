@@ -1,9 +1,14 @@
+import { Helmet } from 'react-helmet-async';
 import { Calendar, CreditCard, Shield, Users, AlertCircle, FileText, RefreshCw } from 'lucide-react';
 
 const Terms = () => {
 
     return (
         <div className="min-h-screen pt-24 pb-16">
+            <Helmet>
+                <title>Terms of Service | Highlands Motel & Cafe</title>
+                <meta name="description" content="Read the Terms of Service for Highlands Motel & Cafe. Learn about booking policies, cancellation, payment terms, and guest responsibilities." />
+            </Helmet>
             {/* Hero Section */}
             <section className="relative h-64 mb-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">

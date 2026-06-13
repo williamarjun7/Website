@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee } from 'lucide-react';
 
-const Footer = () => {
+const Footer = memo(() => {
     const currentYear = new Date().getFullYear();
 
     return (
@@ -222,6 +223,6 @@ const Footer = () => {
             </div>
         </footer>
     );
-};
+});
 
 export default Footer;

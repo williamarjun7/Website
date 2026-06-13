@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
     Users,
@@ -27,28 +28,29 @@ const RoomDetails = () => {
     const [relatedRooms, setRelatedRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const loadRoomData = useCallback(async (roomId: string) => {
-        setLoading(true);
-        const { data: roomData } = await getRoomById(roomId);
-        if (roomData) {
-            setRoom(roomData);
-
-            // Load related rooms
-            const { data: allRooms } = await getRooms();
-            if (allRooms) {
-                setRelatedRooms(allRooms.filter(r => r.id !== roomId).slice(0, 3));
-            }
-        } else {
-            navigate('/rooms');
-        }
-        setLoading(false);
-    }, [navigate]);
-
     useEffect(() => {
-        if (id) {
-            loadRoomData(id);
-        }
-    }, [id, loadRoomData]);
+        if (!id) return;
+        let cancelled = false;
+
+        const load = async () => {
+            const { data: roomData } = await getRoomById(id);
+            if (!cancelled) {
+                if (roomData) {
+                    setRoom(roomData);
+                    const { data: allRooms } = await getRooms();
+                    if (!cancelled && allRooms) {
+                        setRelatedRooms(allRooms.filter(r => r.id !== id).slice(0, 3));
+                    }
+                } else {
+                    navigate('/rooms');
+                }
+                setLoading(false);
+            }
+        };
+
+        load();
+        return () => { cancelled = true; };
+    }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (loading) {
         return (
@@ -79,6 +81,10 @@ const RoomDetails = () => {
 
     return (
         <div className="min-h-screen pt-24 pb-16 bg-gray-50/50">
+            <Helmet>
+                <title>{room.name} | Highlands Motel & Cafe</title>
+                <meta name="description" content={`Book ${room.name} at Highlands Motel & Cafe in Surkhet. ${room.description?.substring(0, 120)}`} />
+            </Helmet>
             <div className="container-custom">
                 {/* Back Button */}
                 <Link

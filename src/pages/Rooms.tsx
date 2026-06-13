@@ -27,17 +27,19 @@ const Rooms = () => {
         searchQuery: ''
     });
 
-    const loadRooms = async () => {
-        setLoading(true);
-        const { data } = await getRooms();
-        if (data) {
-            setRooms(data);
-        }
-        setLoading(false);
-    };
-
     useEffect(() => {
-        loadRooms();
+        let cancelled = false;
+        getRooms().then(({ data }) => {
+            if (!cancelled) {
+                if (data) {
+                    setRooms(data);
+                }
+                setLoading(false);
+            }
+        }).catch(() => {
+            if (!cancelled) setLoading(false);
+        });
+        return () => { cancelled = true; };
     }, []);
 
     const filteredRooms = useMemo(() => {

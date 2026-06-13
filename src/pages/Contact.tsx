@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
 import { useState } from 'react';
 
@@ -19,6 +20,10 @@ const Contact = () => {
     };
     return (
         <div className="min-h-screen pt-24 pb-16">
+            <Helmet>
+                <title>Contact Us | Highlands Motel & Cafe</title>
+                <meta name="description" content="Get in touch with Highlands Motel & Cafe. Call +977 9763215874, email us, or visit Birendranagar-07, Khajura, Surkhet, Nepal." />
+            </Helmet>
             <div className="container-custom">
                 {/* Header */}
                 <div className="text-center mb-12">

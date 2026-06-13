@@ -19,24 +19,41 @@ const ContentEditor = () => {
   const [saving, setSaving] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState('');
 
-  const loadContent = async () => {
+  const refreshContent = () => {
     setLoading(true);
-    const { data } = await getAllSiteContent();
-    if (data) {
-      const map: Record<string, string> = {};
-      for (const item of data) {
-        map[item.key] = item.value;
+    getAllSiteContent().then(({ data }) => {
+      if (data) {
+        const map: Record<string, string> = {};
+        for (const item of data) {
+          map[item.key] = item.value;
+        }
+        for (const c of CONTENT_KEYS) {
+          if (!map[c.key]) map[c.key] = '';
+        }
+        setContents(map);
       }
-      for (const c of CONTENT_KEYS) {
-        if (!map[c.key]) map[c.key] = '';
-      }
-      setContents(map);
-    }
-    setLoading(false);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   };
 
   useEffect(() => {
-    loadContent();
+    let cancelled = false;
+    getAllSiteContent().then(({ data }) => {
+      if (!cancelled && data) {
+        const map: Record<string, string> = {};
+        for (const item of data) {
+          map[item.key] = item.value;
+        }
+        for (const c of CONTENT_KEYS) {
+          if (!map[c.key]) map[c.key] = '';
+        }
+        setContents(map);
+      }
+      if (!cancelled) setLoading(false);
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
   }, []);
 
   const handleSave = async (key: string) => {
@@ -64,7 +81,7 @@ const ContentEditor = () => {
           <h1 className="text-2xl font-bold font-heading text-gray-900">Content Editor</h1>
           <p className="text-gray-500">Manage text content across the website</p>
         </div>
-        <button onClick={loadContent} className="btn-secondary flex items-center space-x-2">
+        <button onClick={refreshContent} className="btn-secondary flex items-center space-x-2">
           <RefreshCw size={18} />
           <span>Refresh</span>
         </button>

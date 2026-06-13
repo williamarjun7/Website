@@ -14,6 +14,7 @@ function isOriginAllowed(origin: string): boolean {
 
 const FETCH_TIMEOUT_MS = 15_000
 const HOLD_DURATION_MS = 15 * 60 * 1000
+const MAX_BODY_BYTES = 65_536
 
 function getCorsHeaders(request: Request): Record<string, string> {
   const origin = request.headers.get("origin") || ""
@@ -53,7 +54,7 @@ async function hmacSha512(secret: string, data: string): Promise<string> {
 
 function generateSecurePrn(bookingId: string): string {
   const ts = Date.now()
-  const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 12)
+  const rand = crypto.randomUUID().replace(/-/g, "")
   return `HIGHLANDS_${bookingId}_${ts}_${rand}`
 }
 
@@ -168,10 +169,10 @@ const RequestSchema = z.discriminatedUnion("action", [
 
 type AppError = { error: string }
 
-function errorResponse(message: string, status = 400): Response {
+function errorResponse(message: string, status = 400, corsHeaders?: Record<string, string>): Response {
   const body: AppError = { error: message }
   return new Response(JSON.stringify(body), {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...corsHeaders },
     status,
   })
 }
@@ -242,7 +243,7 @@ async function confirmPayment(
       booking_id: bookingId, event_type: "payment_failed",
       payment_id: paymentRecord.id, payload: { prn, error: "RPC call failed: " + rpcError.message },
     })
-    return errorResponse("Payment confirmation failed", 500)
+    return errorResponse("Payment confirmation failed", 500, corsHeaders)
   }
 
   const rpcResult = result as Record<string, unknown>
@@ -258,7 +259,7 @@ async function confirmPayment(
       booking_id: bookingId, event_type: "payment_failed",
       payment_id: paymentRecord.id, payload: { prn, reason: String(rpcResult.message || "Unknown"), code },
     })
-    return errorResponse(String(rpcResult.message || "Payment processing failed"), 409)
+    return errorResponse(String(rpcResult.message || "Payment processing failed"), 409, corsHeaders)
   }
 
   await logEvent(db, {
@@ -305,10 +306,69 @@ async function confirmPayment(
   })
 }
 
+// ─── Session JWT verification ──────────────────────────────────────────────
+
+async function verifySession(request: Request): Promise<{ authorized: boolean; error?: string }> {
+  const authHeader = request.headers.get("authorization") || ""
+  const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
+
+  if (!jwt) {
+    return { authorized: false, error: "Missing authorization header" }
+  }
+
+  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+  if (!insforgeUrl) return { authorized: false, error: "Server configuration error" }
+
+  try {
+    const { auth: authClient } = createClient({ baseUrl: insforgeUrl, anonKey: jwt })
+    const { data: userData, error: userErr } = await authClient.getCurrentUser()
+    if (userErr || !userData?.user) {
+      return { authorized: false, error: "Invalid or expired session" }
+    }
+    return { authorized: true }
+  } catch {
+    return { authorized: false, error: "Authentication failed" }
+  }
+}
+
+// ─── Admin JWT verification ────────────────────────────────────────────────
+
+async function verifyAdminJwt(request: Request): Promise<{ authorized: boolean; error?: string }> {
+  const authHeader = request.headers.get("authorization") || ""
+  const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
+
+  if (!jwt) {
+    return { authorized: false, error: "Missing authorization header" }
+  }
+
+  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
+  if (!insforgeUrl) return { authorized: false, error: "Server configuration error" }
+
+  try {
+    const { auth: authClient } = createClient({ baseUrl: insforgeUrl, anonKey: jwt })
+    const { data: userData, error: userErr } = await authClient.getCurrentUser()
+    if (userErr || !userData?.user) {
+      return { authorized: false, error: "Invalid or expired session" }
+    }
+    const user = userData.user
+    const isAdmin = user.role === "service_role" ||
+      (user.user_metadata as Record<string, unknown>)?.role === "admin"
+
+    if (!isAdmin) {
+      return { authorized: false, error: "Admin access required" }
+    }
+
+    return { authorized: true }
+  } catch {
+    return { authorized: false, error: "Authentication failed" }
+  }
+}
+
 // ─── Main Handler ──────────────────────────────────────────────────────────
 
 export default async function handler(req: Request) {
   const corsHeaders = getCorsHeaders(req)
+  const _err = (m: string, s = 400) => errorResponse(m, s, corsHeaders)
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
@@ -318,9 +378,9 @@ export default async function handler(req: Request) {
   if (req.method !== "POST") {
     const url = new URL(req.url)
     if (req.method === "GET" && url.searchParams.has("PRN")) {
-      return errorResponse("Callback endpoint removed. Use POST verify-web instead.", 410)
+      return _err("Callback endpoint removed. Use POST verify-web instead.", 410)
     }
-    return errorResponse("Method not allowed", 405)
+    return _err("Method not allowed", 405)
   }
 
   // Rate limiting
@@ -333,6 +393,15 @@ export default async function handler(req: Request) {
     })
   }
 
+  // Body size limit
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
+  if (contentLength > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: "Request too large" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 413,
+    })
+  }
+
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
   const baseUrl = Deno.env.get("FONEPAY_PG_URL") || ""
@@ -341,15 +410,15 @@ export default async function handler(req: Request) {
   const password = Deno.env.get("FONEPAY_PASSWORD") || ""
   const callbackUrl = Deno.env.get("FONEPAY_PG_CALLBACK_URL") || ""
 
-  if (!merchantCode || !merchantSecret) {
-    return errorResponse("Payment gateway not configured", 500)
-  }
+    if (!merchantCode || !merchantSecret) {
+      return _err("Payment gateway not configured", 500, corsHeaders)
+    }
 
   try {
     const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
     if (!insforgeUrl || !anonKey) {
-      return errorResponse("Database not configured", 500)
+      return _err("Database not configured", 500, corsHeaders)
     }
     const { database: db } = createClient({ baseUrl: insforgeUrl, anonKey })
 
@@ -363,22 +432,22 @@ export default async function handler(req: Request) {
         }
         body = entries
       } catch {
-        return errorResponse("Invalid request body")
+        return _err("Invalid request body")
       }
     }
 
     if (!body || typeof body !== "object") {
-      return errorResponse("Invalid request")
+      return _err("Invalid request", 400, corsHeaders)
     }
 
     const action = (body as Record<string, unknown>)?.action as string
     if (!action) {
-      return errorResponse("Missing action field")
+      return _err("Missing action field", 400, corsHeaders)
     }
 
     const parsed = RequestSchema.safeParse(body)
     if (!parsed.success) {
-      return errorResponse("Invalid request: " + parsed.error.errors.map(
+      return _err("Invalid request: " + parsed.error.errors.map(
         e => `${e.path.join(".")}: ${e.message}`
       ).join("; "))
     }
@@ -387,7 +456,14 @@ export default async function handler(req: Request) {
 
     // ─── Generate QR ──────────────────────────────────────────────────────
     if (action === "generate-qr") {
-      if (!db) return errorResponse("Database not configured", 500)
+      const sessionCheck = await verifySession(req)
+      if (!sessionCheck.authorized) {
+        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
+      if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
 
@@ -398,13 +474,13 @@ export default async function handler(req: Request) {
         .single()
 
       if (fetchError || !booking) {
-        return errorResponse("Booking not found", 404)
+        return _err("Booking not found", 404)
       }
       if (booking.payment_status === "paid") {
-        return errorResponse("Booking already paid", 409)
+        return _err("Booking already paid", 409)
       }
       if (booking.booking_status !== "pending_payment") {
-        return errorResponse("Booking is not in pending payment state", 409)
+        return _err("Booking is not in pending payment state", 409)
       }
 
       // For pay_at_property, charge only the advance amount (60%)
@@ -436,12 +512,12 @@ export default async function handler(req: Request) {
         if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
         qrData = await res.json()
       } catch (e) {
-        return errorResponse(`QR generation failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+        return _err(`QR generation failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
       const qrResponse = qrData as Record<string, unknown>
       if (!qrResponse.qrMessage) {
-        return errorResponse("Fonepay rejected the request. Verify merchant credentials.", 502)
+        return _err("Fonepay rejected the request. Verify merchant credentials.", 502)
       }
 
       // Create payment record in pending state (for PRN uniqueness + reconciliation)
@@ -465,7 +541,7 @@ export default async function handler(req: Request) {
           booking_id: orderId, event_type: "payment_failed",
           payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
         })
-        return errorResponse("Failed to initiate payment, please try again", 500)
+        return _err("Failed to initiate payment, please try again", 500)
       }
 
       // Refresh hold on the booking
@@ -493,7 +569,14 @@ export default async function handler(req: Request) {
 
     // ─── Generate Web ─────────────────────────────────────────────────────
     if (action === "generate-web") {
-      if (!db) return errorResponse("Database not configured", 500)
+      const sessionCheck = await verifySession(req)
+      if (!sessionCheck.authorized) {
+        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
+      if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
 
@@ -504,13 +587,13 @@ export default async function handler(req: Request) {
         .single()
 
       if (fetchError || !booking) {
-        return errorResponse("Booking not found", 404)
+        return _err("Booking not found", 404)
       }
       if (booking.payment_status === "paid") {
-        return errorResponse("Booking already paid", 409)
+        return _err("Booking already paid", 409)
       }
       if (booking.booking_status !== "pending_payment") {
-        return errorResponse("Booking is not in pending payment state", 409)
+        return _err("Booking is not in pending payment state", 409)
       }
 
       // For pay_at_property, charge only the advance amount (60%)
@@ -558,7 +641,7 @@ export default async function handler(req: Request) {
           booking_id: orderId, event_type: "payment_failed",
           payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
         })
-        return errorResponse("Failed to initiate payment, please try again", 500)
+        return _err("Failed to initiate payment, please try again", 500)
       }
 
       // Refresh hold
@@ -580,10 +663,17 @@ export default async function handler(req: Request) {
 
     // ─── Verify QR ────────────────────────────────────────────────────────
     if (action === "verify-qr") {
+      const sessionCheck = await verifySession(req)
+      if (!sessionCheck.authorized) {
+        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
       const { prn } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
-        return errorResponse("Invalid PRN format", 400)
+        return _err("Invalid PRN format", 400)
       }
 
       const dataToHash = `${prn},${merchantCode}`
@@ -599,7 +689,7 @@ export default async function handler(req: Request) {
         if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
         fonepayResult = await res.json()
       } catch (e) {
-        return errorResponse(`QR verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+        return _err(`QR verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
       // Payment not yet successful on Fonepay side
@@ -620,28 +710,32 @@ export default async function handler(req: Request) {
 
       // ── Payment status = success. Now verify integrity ──
 
-      if (!db) return errorResponse("Database not configured", 500)
+      if (!db) return _err("Database not configured", 500)
 
       // Fetch booking to verify amount
       const { data: booking } = await db
         .from("bookings")
-        .select("id, total_price, payment_status, booking_status")
+        .select("id, total_price, advance_amount, payment_status, booking_status")
         .eq("id", bookingId)
         .single()
 
       if (!booking) {
         await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
-        return errorResponse("Booking not found", 404)
+        return _err("Booking not found", 404)
       }
+
+      // Calculate expected charged amount (same logic as generate-qr)
+      const isPartial = booking.payment_status === "pay_at_property"
+      const chargedAmount = isPartial ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
 
       // ⚠️ Amount integrity check — REJECT mismatch
       const fonepayAmount = parseFloat(String(fonepayResult.amount || fonepayResult.txnAmount || "0"))
-      if (fonepayAmount > 0 && Math.abs(fonepayAmount - booking.total_price) > 0.01) {
+      if (fonepayAmount > 0 && Math.abs(fonepayAmount - chargedAmount) > 0.01) {
         await logEvent(db, {
           booking_id: bookingId, event_type: "amount_mismatch",
-          payload: { prn, fonepayAmount, dbAmount: booking.total_price },
+          payload: { prn, fonepayAmount, dbAmount: chargedAmount },
         })
-        return errorResponse("Payment amount mismatch. Contact support.", 409)
+        return _err("Payment amount mismatch. Contact support.", 409)
       }
 
       // Find existing payment record (created at QR generation time)
@@ -654,12 +748,12 @@ export default async function handler(req: Request) {
       if (!existingPayment) {
         // Should not happen — payment record was created at QR generation time
         await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
-        return errorResponse("Payment session not found", 404)
+        return _err("Payment session not found", 404)
       }
 
       const fonepayTraceId = String(fonepayResult.fonepayTraceId || fonepayResult.fonepayTraceId === 0 ? fonepayResult.fonepayTraceId : "")
 
-      return await confirmPayment(db, existingPayment, bookingId, prn, booking.total_price, fonepayTraceId || null, corsHeaders)
+      return await confirmPayment(db, existingPayment, bookingId, prn, chargedAmount, fonepayTraceId || null, corsHeaders)
     }
 
     // ─── Verify Web ───────────────────────────────────────────────────────
@@ -667,7 +761,7 @@ export default async function handler(req: Request) {
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
-        return errorResponse("Invalid PRN format", 400)
+        return _err("Invalid PRN format", 400)
       }
 
       const PID = pid || merchantCode
@@ -690,7 +784,7 @@ export default async function handler(req: Request) {
         const jsonResult = parse(xmlText) as Record<string, unknown>
         fonepayResult = (jsonResult?.response || jsonResult) as Record<string, unknown>
       } catch (e) {
-        return errorResponse(`Web payment verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+        return _err(`Web payment verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
       const isSuccess = fonepayResult.success === "true" || fonepayResult.response_code === "successful"
@@ -715,28 +809,32 @@ export default async function handler(req: Request) {
         })
       }
 
-      if (!db) return errorResponse("Database not configured", 500)
+      if (!db) return _err("Database not configured", 500)
 
       // Fetch booking to verify amount
       const { data: booking } = await db
         .from("bookings")
-        .select("id, total_price, payment_status, booking_status")
+        .select("id, total_price, advance_amount, payment_status, booking_status")
         .eq("id", bookingId)
         .single()
 
       if (!booking) {
         await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
-        return errorResponse("Booking not found", 404)
+        return _err("Booking not found", 404)
       }
+
+      // Calculate expected charged amount (same logic as generate-web)
+      const isPartialWeb = booking.payment_status === "pay_at_property"
+      const chargedAmount = isPartialWeb ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
 
       // Amount integrity check
       const webAmount = parseFloat(callbackAmount)
-      if (webAmount > 0 && Math.abs(webAmount - booking.total_price) > 0.01) {
+      if (webAmount > 0 && Math.abs(webAmount - chargedAmount) > 0.01) {
         await logEvent(db, {
           booking_id: bookingId, event_type: "amount_mismatch",
-          payload: { prn, webAmount, dbAmount: booking.total_price },
+          payload: { prn, webAmount, dbAmount: chargedAmount },
         })
-        return errorResponse("Payment amount mismatch. Contact support.", 409)
+        return _err("Payment amount mismatch. Contact support.", 409)
       }
 
       // Find existing payment record
@@ -748,17 +846,25 @@ export default async function handler(req: Request) {
 
       if (!existingPayment) {
         await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
-        return errorResponse("Payment session not found", 404)
+        return _err("Payment session not found", 404)
       }
 
       const fonepayTraceId = String(fonepayResult.uniqueId || "")
 
-      return await confirmPayment(db, existingPayment, bookingId, prn, booking.total_price, fonepayTraceId || null, corsHeaders)
+      return await confirmPayment(db, existingPayment, bookingId, prn, chargedAmount, fonepayTraceId || null, corsHeaders)
     }
 
     // ─── Post Tax Refund ──────────────────────────────────────────────────
     if (action === "post-tax-refund") {
-      if (!db) return errorResponse("Database not configured", 500)
+      // Admin JWT required — refunds bypass the normal payment flow
+      const authCheck = await verifyAdminJwt(req)
+      if (!authCheck.authorized) {
+        return new Response(JSON.stringify({ error: authCheck.error || "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
+      if (!db) return _err("Database not configured", 500)
 
       const { prn, fonepayTraceId, invoiceNumber, invoiceDate, transactionAmount } = actionData
 
@@ -769,10 +875,10 @@ export default async function handler(req: Request) {
         .single()
 
       if (!payment) {
-        return errorResponse("Payment not found", 404)
+        return _err("Payment not found", 404)
       }
       if (payment.status !== "completed") {
-        return errorResponse("Payment not completed", 400)
+        return _err("Payment not completed", 400)
       }
 
       const dataToHash = `${fonepayTraceId},${prn},${invoiceNumber},${invoiceDate},${transactionAmount},${merchantCode}`
@@ -800,7 +906,7 @@ export default async function handler(req: Request) {
         if (!res.ok) throw new Error(`Fonepay tax refund API error: ${res.status}`)
         result = await res.json()
       } catch (e) {
-        return errorResponse(`Tax refund failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+        return _err(`Tax refund failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
       }
 
       await logEvent(db, {
@@ -815,7 +921,7 @@ export default async function handler(req: Request) {
       })
     }
 
-    return errorResponse("Unknown action", 400)
+    return _err("Unknown action", 400)
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error"
     return new Response(JSON.stringify({ error: message }), {

@@ -1,8 +1,13 @@
+import { Helmet } from 'react-helmet-async';
 import { Shield, Eye, Database, Lock, User, Globe, Cookie } from 'lucide-react';
 
 const Privacy = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
+            <Helmet>
+                <title>Privacy Policy | Highlands Motel & Cafe</title>
+                <meta name="description" content="Read the Privacy Policy of Highlands Motel & Cafe. Learn how we collect, use, and protect your personal information." />
+            </Helmet>
             {/* Hero Section */}
             <section className="relative h-64 mb-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">

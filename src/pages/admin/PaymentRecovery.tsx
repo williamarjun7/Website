@@ -31,6 +31,7 @@ const PaymentRecovery = () => {
   const [searchResults, setSearchResults] = useState<{ bookings: StuckBooking[]; payments: PaymentRecord[] } | null>(null);
   const [searching, setSearching] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{ booking: StuckBooking; action: 'confirm' | 'expire' } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const showToast = useCallback((type: 'success' | 'error' | 'info', message: string) => {
     setToast({ type, message });
@@ -45,10 +46,15 @@ const PaymentRecovery = () => {
     setLoading(false);
   }, [showToast]);
 
-  useEffect(() => { loadStuck() }, [loadStuck]);
+  useEffect(() => { setTimeout(() => loadStuck(), 0) }, [loadStuck]);
 
   useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults(null); return }
+    const interval = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) { setTimeout(() => setSearchResults(null), 0); return }
     const timer = setTimeout(async () => {
       setSearching(true);
       const { data, error } = await searchBookingsAndPayments(searchQuery);
@@ -127,7 +133,7 @@ const PaymentRecovery = () => {
               <p><span className="text-gray-500">Guest:</span> <strong>{confirmDialog.booking.guest_name}</strong></p>
               <p><span className="text-gray-500">Room:</span> <strong>{confirmDialog.booking.rooms?.name || 'Unknown'}</strong></p>
               <p><span className="text-gray-500">Amount:</span> <strong>NPR {confirmDialog.booking.total_price.toLocaleString()}</strong></p>
-              <p><span className="text-gray-500">Hold expired:</span> <strong className="text-red-600">{getHoldAge(confirmDialog.booking.hold_expires_at, Date.now())}</strong></p>
+              <p><span className="text-gray-500">Hold expired:</span> <strong className="text-red-600">{getHoldAge(confirmDialog.booking.hold_expires_at, now)}</strong></p>
             </div>
 
             {confirmDialog.action === 'confirm' && (
@@ -353,7 +359,7 @@ const PaymentRecovery = () => {
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                         <Clock size={12} className="mr-1" />
-                        {getHoldAge(booking.hold_expires_at, Date.now())}
+                        {getHoldAge(booking.hold_expires_at, now)}
                       </span>
                     </td>
                     <td className="px-6 py-4 font-medium">

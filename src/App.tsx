@@ -73,20 +73,20 @@ function App() {
           </Route>
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminGate />}>
-            <Route path="login" element={<AdminLogin />} />
-            <Route path="signup" element={<AdminSignup />} />
-            <Route path="verify" element={<AdminVerify />} />
-            <Route element={<AdminLayout />}>
-              <Route index element={<AdminDashboard />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="bookings" element={<Bookings />} />
-              <Route path="rooms" element={<AdminRooms />} />
-              <Route path="menu" element={<Menu />} />
-              <Route path="orders" element={<CafeOrders />} />
-              <Route path="images" element={<Images />} />
-              <Route path="content" element={<ContentEditor />} />
-              <Route path="payment-recovery" element={<PaymentRecovery />} />
+          <Route path="/admin" element={<Suspense fallback={<LoadingFallback />}><AdminGate /></Suspense>}>
+            <Route path="login" element={<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>} />
+            <Route path="signup" element={<Suspense fallback={<LoadingFallback />}><AdminSignup /></Suspense>} />
+            <Route path="verify" element={<Suspense fallback={<LoadingFallback />}><AdminVerify /></Suspense>} />
+            <Route element={<Suspense fallback={<LoadingFallback />}><AdminLayout /></Suspense>}>
+              <Route index element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
+              <Route path="dashboard" element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
+              <Route path="bookings" element={<Suspense fallback={<LoadingFallback />}><Bookings /></Suspense>} />
+              <Route path="rooms" element={<Suspense fallback={<LoadingFallback />}><AdminRooms /></Suspense>} />
+              <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
+              <Route path="orders" element={<Suspense fallback={<LoadingFallback />}><CafeOrders /></Suspense>} />
+              <Route path="images" element={<Suspense fallback={<LoadingFallback />}><Images /></Suspense>} />
+              <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
+              <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />
             </Route>
           </Route>
         </Routes>
