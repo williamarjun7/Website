@@ -7,15 +7,17 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "preview": "vite preview",
+    "security:audit": "npm audit"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@insforge/sdk": "^1.0.0",
-    "axios": "^1.16.0",
-    "crypto": "^1.0.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.4.2",
     "lucide-react": "^0.468.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.3",
@@ -29,11 +31,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.52.0",
     "@types/node": "^24.10.0",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.0",
+    "@vitest/coverage-v8": "^3.2.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -43,9 +47,11 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.3",
-    "vite": "npm:rolldown-vite@7.2.2"
+    "vite": "npm:rolldown-vite@7.3.1",
+    "vitest": "^3.2.1"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@7.2.2"
+    "vite": "npm:rolldown-vite@7.3.1",
+    "picomatch": "^4.0.4"
   }
 }

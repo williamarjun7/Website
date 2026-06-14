@@ -39,6 +39,10 @@ async function fetchWithTimeout(url: string, options: RequestInit & { timeout?: 
   }
 }
 
+function htmlEncode(str: string): string {
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;")
+}
+
 async function hmacSha512(secret: string, data: string): Promise<string> {
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
@@ -109,10 +113,11 @@ async function sendEmail(data: EmailData): Promise<void> {
 }
 
 function buildConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
+  const ge = htmlEncode
   const advance = params.advanceAmount ?? params.totalPrice
   const balance = params.balanceAmount ?? 0
   const isPartial = !!params.advanceAmount
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel & Cafe</h2><p>Dear ${params.guestName},</p><p>Your booking at Highlands Motel & Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.roomName}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkIn}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${params.checkOut}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${params.bookingId}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel & Cafe</p></body></html>`
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel &amp; Cafe</h2><p>Dear ${ge(params.guestName)},</p><p>Your booking at Highlands Motel &amp; Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(params.roomName)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(params.checkIn)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(params.checkOut)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${params.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${ge(params.bookingId)}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel &amp; Cafe</p></body></html>`
 }
 
 // ─── Zod Schemas ──────────────────────────────────────────────────────────
@@ -308,7 +313,7 @@ async function confirmPayment(
 
 // ─── Session JWT verification ──────────────────────────────────────────────
 
-async function verifySession(request: Request): Promise<{ authorized: boolean; error?: string }> {
+async function verifySession(request: Request): Promise<{ authorized: boolean; user?: { id: string; email: string }; error?: string }> {
   const authHeader = request.headers.get("authorization") || ""
   const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
 
@@ -325,7 +330,7 @@ async function verifySession(request: Request): Promise<{ authorized: boolean; e
     if (userErr || !userData?.user) {
       return { authorized: false, error: "Invalid or expired session" }
     }
-    return { authorized: true }
+    return { authorized: true, user: { id: userData.user.id, email: userData.user.email || "" } }
   } catch {
     return { authorized: false, error: "Authentication failed" }
   }
@@ -350,13 +355,18 @@ async function verifyAdminJwt(request: Request): Promise<{ authorized: boolean; 
     if (userErr || !userData?.user) {
       return { authorized: false, error: "Invalid or expired session" }
     }
-    const user = userData.user
-    const isAdmin = user.role === "service_role" ||
-      (user.user_metadata as Record<string, unknown>)?.role === "admin"
 
-    if (!isAdmin) {
-      return { authorized: false, error: "Admin access required" }
-    }
+    const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    if (!svcKey) return { authorized: false, error: "Server configuration error" }
+
+    const { database: adminDb } = createClient({ baseUrl: insforgeUrl, anonKey: svcKey })
+    const { data: adminRecord } = await adminDb
+      .from("admins")
+      .select("id")
+      .eq("user_id", userData.user.id)
+      .maybeSingle()
+
+    if (!adminRecord) return { authorized: false, error: "Admin access required" }
 
     return { authorized: true }
   } catch {
@@ -469,12 +479,15 @@ export default async function handler(req: Request) {
 
       const { data: booking, error: fetchError } = await db
         .from("bookings")
-        .select("id, total_price, advance_amount, balance_amount, payment_status, booking_status")
+        .select("id, guest_email, total_price, advance_amount, balance_amount, payment_status, booking_status")
         .eq("id", orderId)
         .single()
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
+      }
+      if (booking.guest_email !== sessionCheck.user.email) {
+        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -511,8 +524,8 @@ export default async function handler(req: Request) {
         })
         if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
         qrData = await res.json()
-      } catch (e) {
-        return _err(`QR generation failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+      } catch {
+        return _err("Payment gateway error. Please try again.", 502)
       }
 
       const qrResponse = qrData as Record<string, unknown>
@@ -582,12 +595,15 @@ export default async function handler(req: Request) {
 
       const { data: booking, error: fetchError } = await db
         .from("bookings")
-        .select("id, total_price, advance_amount, balance_amount, payment_status, booking_status")
+        .select("id, guest_email, total_price, advance_amount, balance_amount, payment_status, booking_status")
         .eq("id", orderId)
         .single()
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
+      }
+      if (booking.guest_email !== sessionCheck.user.email) {
+        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -688,8 +704,8 @@ export default async function handler(req: Request) {
         })
         if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
         fonepayResult = await res.json()
-      } catch (e) {
-        return _err(`QR verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+      } catch {
+        return _err("Payment verification failed. Please try again.", 502)
       }
 
       // Payment not yet successful on Fonepay side
@@ -758,6 +774,13 @@ export default async function handler(req: Request) {
 
     // ─── Verify Web ───────────────────────────────────────────────────────
     if (action === "verify-web") {
+      const sessionCheck = await verifySession(req)
+      if (!sessionCheck.authorized) {
+        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        })
+      }
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
@@ -783,8 +806,8 @@ export default async function handler(req: Request) {
         const { parse } = await import("https://deno.land/x/xml@2.1.1/mod.ts")
         const jsonResult = parse(xmlText) as Record<string, unknown>
         fonepayResult = (jsonResult?.response || jsonResult) as Record<string, unknown>
-      } catch (e) {
-        return _err(`Web payment verification failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+      } catch {
+        return _err("Payment verification failed. Please try again.", 502)
       }
 
       const isSuccess = fonepayResult.success === "true" || fonepayResult.response_code === "successful"
@@ -905,8 +928,8 @@ export default async function handler(req: Request) {
         })
         if (!res.ok) throw new Error(`Fonepay tax refund API error: ${res.status}`)
         result = await res.json()
-      } catch (e) {
-        return _err(`Tax refund failed: ${e instanceof Error ? e.message : "unknown"}`, 502)
+      } catch {
+        return _err("Tax refund failed. Please try again.", 502)
       }
 
       await logEvent(db, {

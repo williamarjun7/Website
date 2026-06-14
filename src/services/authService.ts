@@ -24,20 +24,9 @@ export const adminLogin = async (email: string, password: string) => {
     }
 };
 
-// Admin signup
-export const adminSignup = async (email: string, password: string) => {
-    try {
-        const { data, error } = await insforge.auth.signUp({
-            email,
-            password,
-        });
-
-        if (error) throw error;
-        return { data, error: null };
-    } catch (error) {
-        console.error('Admin signup failed:', error);
-        return handleInsforgeError(error);
-    }
+// Admin signup — disabled
+export const adminSignup = async () => {
+    return { data: null, error: 'Admin signup is disabled. Contact the system administrator to create an account.' };
 };
 
 // Verify email
