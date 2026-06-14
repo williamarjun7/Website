@@ -90,18 +90,16 @@ export const checkRoomAvailability = async (
     checkOut: string
 ) => {
     try {
-        // Check for conflicting bookings
-        const { data: bookings, error: bookingError } = await insforge.database
-            .from('bookings')
-            .select('*')
+        const { data: conflicts, error } = await insforge.database
+            .from('booking_conflicts')
+            .select('room_id')
             .eq('room_id', roomId)
-            .in('booking_status', ['confirmed', 'checked_in'])
             .lt('check_in', checkOut)
             .gt('check_out', checkIn);
 
-        if (bookingError) throw bookingError;
+        if (error) throw error;
 
-        const isAvailable = (!bookings || bookings.length === 0);
+        const isAvailable = (!conflicts || conflicts.length === 0);
 
         return { data: { isAvailable }, error: null };
     } catch (error) {
@@ -112,25 +110,23 @@ export const checkRoomAvailability = async (
 // Get available rooms for date range (single query batch instead of N+1)
 export const getAvailableRooms = async (checkIn: string, checkOut: string) => {
     try {
-        const [roomsResult, bookingsResult] = await Promise.all([
+        const [roomsResult, conflictsResult] = await Promise.all([
             getRooms(),
             insforge.database
-                .from('bookings')
+                .from('booking_conflicts')
                 .select('room_id')
-                .in('booking_status', ['confirmed', 'checked_in'])
                 .lt('check_in', checkOut)
                 .gt('check_out', checkIn),
         ]);
 
         if (roomsResult.error) throw roomsResult.error;
-        if (bookingsResult.error) throw bookingsResult.error;
+        if (conflictsResult.error) throw conflictsResult.error;
 
         const unavailableRoomIds = new Set<string>();
-        for (const booking of bookingsResult.data || []) {
-            unavailableRoomIds.add(booking.room_id);
+        for (const conflict of conflictsResult.data || []) {
+            unavailableRoomIds.add(conflict.room_id);
         }
 
-        // Filter to only available rooms
         const availableRooms = (roomsResult.data || []).filter(
             (room) => !unavailableRoomIds.has(room.id)
         );

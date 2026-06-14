@@ -4,7 +4,6 @@ import { Helmet } from 'react-helmet-async';
 import { z } from 'zod';
 import { Check, X, Loader } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
-import { getBookingById } from '../services/bookingService';
 
 const paymentParamSchema = z.object({
   prn: z.string().min(1, 'Missing PRN'),
@@ -14,12 +13,18 @@ const paymentParamSchema = z.object({
   bc: z.string().default(''),
 });
 
+interface BookingInfo {
+  total: number;
+  advance: number;
+  balance: number;
+}
+
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [message, setMessage] = useState('');
-  const [bookingInfo, setBookingInfo] = useState<{ total: number; advance: number; balance: number } | null>(null);
+  const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
 
   useEffect(() => {
     const verify = async () => {
@@ -42,17 +47,21 @@ const PaymentResult = () => {
 
       if (data?.success && (data.response_code === 'successful' || data.status === 'success')) {
         setStatus('success');
-        const bookingId = sessionStorage.getItem('pendingBookingId');
-        if (bookingId) {
-          const { data: booking } = await getBookingById(bookingId);
-          if (booking) {
-            const total = Number(booking.total_price);
-            const advance = booking.advance_amount ? Number(booking.advance_amount) : total;
-            const balance = booking.balance_amount ? Number(booking.balance_amount) : 0;
-            setBookingInfo({ total, advance, balance });
+        const stored = sessionStorage.getItem('pendingBookingData');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setBookingInfo({
+              total: Number(parsed.total_price),
+              advance: Number(parsed.advance_amount) || Number(parsed.total_price),
+              balance: Number(parsed.balance_amount) || 0,
+            });
+          } catch {
+            // stored data is malformed, ignore
           }
-          sessionStorage.removeItem('pendingBookingId');
+          sessionStorage.removeItem('pendingBookingData');
         }
+        sessionStorage.removeItem('pendingBookingId');
         setMessage('Payment successful! Your booking is confirmed.');
       } else {
         setStatus('failed');

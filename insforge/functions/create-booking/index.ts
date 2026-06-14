@@ -1,7 +1,6 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
-// ─── Allowed Origins (CORS) ───────────────────────────────────────────────
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
   "https://highlands-motel.com",
@@ -24,17 +23,15 @@ function getCorsHeaders(request: Request): Record<string, string> {
   }
 }
 
-// ─── Rate Limiting (in-memory, per-deployment) ───────────────────────────
-// Note: For multi-instance deployments, use Deno KV or Redis instead.
 interface RateLimitEntry {
   count: number
   expires: number
 }
 const rateLimitStore = new Map<string, RateLimitEntry>()
-const RATE_LIMIT_MAX = 10          // requests
-const RATE_LIMIT_WINDOW = 60_000    // milliseconds (1 minute)
+const RATE_LIMIT_MAX = 10
+const RATE_LIMIT_WINDOW = 60_000
 
-const MAX_BODY_BYTES = 65_536       // 64KB
+const MAX_BODY_BYTES = 65_536
 
 function getClientIp(request: Request): string {
   return request.headers.get("x-forwarded-for")
@@ -65,7 +62,6 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfter?: number } {
   return { allowed: true }
 }
 
-// Clean up expired entries periodically (simple GC)
 setInterval(() => {
   const now = Date.now()
   for (const [key, val] of rateLimitStore.entries()) {
@@ -73,7 +69,10 @@ setInterval(() => {
   }
 }, 300_000)
 
-// ─── Request Schema (Zod) ────────────────────────────────────────────────
+function sanitizeString(input: string): string {
+  return input.replace(/<[^>]*>/g, '').trim()
+}
+
 const CreateBookingSchema = z.object({
   room_id: z.string().uuid({ message: "room_id must be a valid UUID" }),
   check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: "check_in must be YYYY-MM-DD" }),
@@ -83,20 +82,15 @@ const CreateBookingSchema = z.object({
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/, { message: "guest_phone is invalid" }),
   guests: z.number().int().min(1).max(20).optional(),
   payment_status: z.enum(["pending", "failed", "pay_at_property"]).optional(),
-  advance_amount: z.number().positive().optional(),
-  balance_amount: z.number().min(0).optional(),
 })
 
-// ─── Main Handler ────────────────────────────────────────────────────────
 export default async function (req: Request) {
   const corsHeaders = getCorsHeaders(req)
 
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders })
   }
 
-  // Only allow POST
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -104,7 +98,6 @@ export default async function (req: Request) {
     })
   }
 
-  // Rate limiting
   const clientIp = getClientIp(req)
   const rateCheck = checkRateLimit(clientIp)
   if (!rateCheck.allowed) {
@@ -114,7 +107,6 @@ export default async function (req: Request) {
     })
   }
 
-  // Body size limit
   const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
   if (contentLength > MAX_BODY_BYTES) {
     return new Response(JSON.stringify({ error: "Request too large" }), {
@@ -124,7 +116,6 @@ export default async function (req: Request) {
   }
 
   try {
-    // ── Parse & validate body ──────────────────────────────────────────
     let rawBody: unknown
     try {
       rawBody = await req.json()
@@ -138,9 +129,10 @@ export default async function (req: Request) {
       throw new Error(`Validation failed: ${messages}`)
     }
 
-    const { room_id, check_in, check_out, guest_name, guest_email, guest_phone, guests, payment_status, advance_amount, balance_amount } = parseResult.data
+    const { room_id, check_in, check_out, guest_name: rawName, guest_email, guest_phone, guests, payment_status } = parseResult.data
 
-    // Validate date logic
+    const guest_name = sanitizeString(rawName)
+
     const checkInDate = new Date(check_in)
     const checkOutDate = new Date(check_out)
     if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
@@ -150,7 +142,16 @@ export default async function (req: Request) {
       throw new Error("check_out must be after check_in")
     }
 
-    // ── Initialize InsForge client ─────────────────────────────────────
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    if (checkInDate < today) {
+      throw new Error("check_in cannot be in the past")
+    }
+
+    if (guest_name.length < 2 || guest_name.length > 100) {
+      throw new Error("guest_name must be between 2 and 100 characters")
+    }
+
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
     const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
 
@@ -160,10 +161,9 @@ export default async function (req: Request) {
 
     const { database: db } = createClient({ baseUrl, anonKey })
 
-    // ── Fetch room price (trusted source) ─────────────────────────────
     const { data: room, error: roomError } = await db
       .from("rooms")
-      .select("price_per_night")
+      .select("price_per_night, max_guests, is_active, maintenance")
       .eq("id", room_id)
       .single()
 
@@ -177,20 +177,28 @@ export default async function (req: Request) {
     if (!room) {
       throw new Error("Room not found")
     }
+    if (!room.is_active || room.maintenance) {
+      throw new Error("Room is not available for booking")
+    }
 
-    // ── Calculate total price securely ─────────────────────────────────
+    const guestCount = guests || 1
+    if (room.max_guests && guestCount > room.max_guests) {
+      throw new Error(`Room capacity exceeded. Maximum ${room.max_guests} guests allowed.`)
+    }
+
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
     if (nights <= 0) {
       throw new Error("Invalid dates")
     }
+    if (nights > 30) {
+      throw new Error("Maximum booking duration is 30 nights")
+    }
     const total_price = nights * room.price_per_night
 
-    // Calculate advance (60%) and balance (40%) for pay_at_property
     const isPayAtProperty = payment_status === "pay_at_property"
-    const advAmount = isPayAtProperty ? Math.round(total_price * 60) / 100 : (advance_amount || total_price)
-    const balAmount = isPayAtProperty ? total_price - advAmount : (balance_amount || 0)
+    const advAmount = isPayAtProperty ? Math.round(total_price * 60) / 100 : total_price
+    const balAmount = isPayAtProperty ? total_price - advAmount : 0
 
-    // ── Auto-expire stale holds ──────────────────────────────────────
     const now = new Date().toISOString()
     await db
       .from("bookings")
@@ -199,7 +207,6 @@ export default async function (req: Request) {
       .eq("booking_status", "pending_payment")
       .lt("hold_expires_at", now)
 
-    // ── Check for conflicting bookings (with retry for TOCTOU) ───────
     let attempts = 0
     const maxAttempts = 3
 
@@ -227,23 +234,19 @@ export default async function (req: Request) {
         throw new Error("Room is no longer available for the selected dates")
       }
 
-      // Determine booking status based on payment method
-      // payment_status = "pay_at_property" → still pending_payment (needs 60% advance)
-      // payment_status = "pending" → online payment → pending_payment with hold
       const needsPayment = payment_status === "pending" || payment_status === "pay_at_property"
       const bookingStatus = needsPayment ? "pending_payment" : "confirmed"
       const holdExpiresAt = needsPayment
         ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
         : null
 
-      // Insert booking
       const { data: booking, error: insertError } = await db
         .from("bookings")
         .insert({
           room_id,
           check_in,
           check_out,
-          guests: guests || null,
+          guests: guestCount,
           total_price,
           advance_amount: isPayAtProperty ? advAmount : null,
           balance_amount: isPayAtProperty ? balAmount : null,
@@ -259,17 +262,12 @@ export default async function (req: Request) {
         .single()
 
       if (!insertError && booking) {
-        // Send confirmation email for pay_at_property bookings (after advance payment)
-        // Online payment bookings get their email after payment verification
-        // Note: pay_at_property now goes through payment flow for the 60% advance
-
         return new Response(JSON.stringify(booking), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         })
       }
 
-      // Retry on unique violation (race condition)
       if (insertError && (insertError.code === "23505" || insertError.message?.includes("unique"))) {
         if (attempts === maxAttempts) {
           throw new Error("Room is no longer available for the selected dates")

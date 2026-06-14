@@ -90,12 +90,18 @@ async function verifyAdminSession(request: Request): Promise<{ authorized: boole
     if (userErr || !userData?.user) {
       return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
     }
-    const user = userData.user
-    const adminEmail = Deno.env.get("ADMIN_EMAIL") || ""
-    const isAdmin = user.role === "service_role" ||
-      (adminEmail && user.email === adminEmail) ||
-      (user.user_metadata as Record<string, unknown>)?.role === "admin"
-    if (!isAdmin) {
+
+    const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    if (!svcKey) return { authorized: false, error: "Server configuration error", errorStatus: 500 }
+
+    const { database: adminDb } = createClient({ baseUrl: insforgeUrl, anonKey: svcKey })
+    const { data: adminRecord } = await adminDb
+      .from("admins")
+      .select("id")
+      .eq("user_id", userData.user.id)
+      .maybeSingle()
+
+    if (!adminRecord) {
       return { authorized: false, error: "Admin access required", errorStatus: 403 }
     }
     return { authorized: true }

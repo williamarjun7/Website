@@ -12,7 +12,6 @@ export const insforge = createClient({
     anonKey: insforgeAnonKey || ''
 });
 
-// Helper function to handle errors consistently
 export const handleInsforgeError = <T = null>(error: unknown): { data: T | null; error: string } => {
     const message = error instanceof Error ? error.message : 'An unexpected error occurred';
     console.error('Insforge Error:', message);

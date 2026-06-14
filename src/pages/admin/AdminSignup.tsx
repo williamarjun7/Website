@@ -33,7 +33,7 @@ const AdminSignup = () => {
         }
 
         try {
-            const { data, error } = await adminSignup(email, password);
+            const { data, error } = await adminSignup();
 
             if (error) {
                 throw new Error(error);
