@@ -10,7 +10,8 @@ export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
     const wsRef = useRef<WebSocket | null>(null);
     const wsReconnectCount = useRef(0);
     const wsReconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const wsUrlRef = useRef('');
+    const wsCallbackRef = useRef(onPaymentReceived);
+    useEffect(() => { wsCallbackRef.current = onPaymentReceived; });
 
     const cleanup = useCallback(() => {
         if (wsRef.current) {
@@ -27,10 +28,9 @@ export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
         return cleanup;
     }, [cleanup]);
 
-    const connect = useCallback((url: string, prn: string) => {
+    const connect = useCallback((url: string, expectedPrn: string) => {
         cleanup();
         wsReconnectCount.current = 0;
-        wsUrlRef.current = url;
         setWsStatus('connecting');
 
         const doConnect = (wsUrl: string) => {
@@ -45,6 +45,13 @@ export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
                 ws.onmessage = (event) => {
                     try {
                         const msg = JSON.parse(event.data);
+
+                        // Extract PRN from message if present — verify it matches expected PRN
+                        const msgPrn = msg.prn || msg.PRN || msg.orderId || msg.merchantPRN || null;
+                        if (msgPrn && String(msgPrn) !== expectedPrn) {
+                            return;
+                        }
+
                         const ts = msg.transactionStatus;
                         const paymentDone =
                             msg.status === 'success' ||
@@ -55,11 +62,11 @@ export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
                             ts?.success === true;
 
                         if (paymentDone) {
-                            onPaymentReceived(prn);
+                            wsCallbackRef.current(expectedPrn);
                         }
                     } catch {
                         if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
-                            onPaymentReceived(prn);
+                            wsCallbackRef.current(expectedPrn);
                         }
                     }
                 };
@@ -86,7 +93,7 @@ export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
         };
 
         doConnect(url);
-    }, [onPaymentReceived, cleanup]);
+    }, [cleanup]);
 
     return { wsStatus, connect, cleanup };
 };

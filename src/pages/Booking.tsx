@@ -16,6 +16,7 @@ import PaymentStep from '../components/booking/PaymentStep';
 import ConfirmationStep from '../components/booking/ConfirmationStep';
 
 const POLLING_TIMEOUT_MS = 15 * 60 * 1000;
+const POLLING_INTERVAL_MS = 8000;
 
 const Booking = () => {
     const location = useLocation();
@@ -68,7 +69,7 @@ const Booking = () => {
         defaultValues: { paymentMethod: 'pay_at_property' }
     });
 
-    const selectedPaymentMethod = watch('paymentMethod'); // eslint-disable-line react-hooks/incompatible-library
+    const selectedPaymentMethod = watch('paymentMethod');
 
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
@@ -111,17 +112,20 @@ const Booking = () => {
         run();
     }, [checkIn, checkOut, preselectedRoom, showAlternatives]);
 
-    const onPaymentReceived = useCallback(async (prn: string) => {
-        setPollingActive(false);
+    const confirmPaymentAndAdvance = useCallback(async (prn: string) => {
         const { data } = await verifyQrPayment(prn);
         if (data?.success) {
+            setPollingActive(false);
             setQrCodeDataUrl(null);
             setPaymentPrn('');
             setStep(4);
-        } else {
-            setPollingActive(true);
         }
     }, []);
+
+    const onPaymentReceived = useCallback((prn: string) => {
+        setPollingActive(false);
+        confirmPaymentAndAdvance(prn);
+    }, [confirmPaymentAndAdvance]);
 
     const { wsStatus, connect: connectWebSocket, cleanup: cleanupWs } = useWebSocket(onPaymentReceived);
 
@@ -153,9 +157,9 @@ const Booking = () => {
                 pollingStartRef.current = null;
                 setStep(4);
             }
-        }, 8000);
+        }, POLLING_INTERVAL_MS);
         return () => clearInterval(interval);
-    }, [pollingActive, paymentPrn, step, POLLING_TIMEOUT_MS]);
+    }, [pollingActive, paymentPrn, step]);
 
     const clearBookingSession = () => {
         sessionStorage.removeItem('preselectedRoom');

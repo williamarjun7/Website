@@ -92,7 +92,7 @@ export default async function (req: Request) {
   }
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+    return new Response(JSON.stringify({ message: "Method not allowed", error: "METHOD_NOT_ALLOWED" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 405,
     })
@@ -101,7 +101,7 @@ export default async function (req: Request) {
   const clientIp = getClientIp(req)
   const rateCheck = checkRateLimit(clientIp)
   if (!rateCheck.allowed) {
-    return new Response(JSON.stringify({ error: "Too many requests. Please try again later." }), {
+    return new Response(JSON.stringify({ message: "Too many requests. Please try again later.", error: "RATE_LIMITED" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(rateCheck.retryAfter) },
       status: 429,
     })
@@ -109,7 +109,7 @@ export default async function (req: Request) {
 
   const contentLength = parseInt(req.headers.get("content-length") || "0", 10)
   if (contentLength > MAX_BODY_BYTES) {
-    return new Response(JSON.stringify({ error: "Request too large" }), {
+    return new Response(JSON.stringify({ message: "Request too large", error: "REQUEST_TOO_LARGE" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 413,
     })
@@ -169,7 +169,7 @@ export default async function (req: Request) {
 
     if (roomError) {
       console.error("create-booking: DB error fetching room:", roomError.message)
-      return new Response(JSON.stringify({ error: "Database error, please try again" }), {
+      return new Response(JSON.stringify({ message: "Database error, please try again", error: "DATABASE_ERROR" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 502,
       })
@@ -224,7 +224,7 @@ export default async function (req: Request) {
 
       if (conflictError) {
         console.error("create-booking: DB error checking conflicts:", conflictError.message)
-        return new Response(JSON.stringify({ error: "Database error, please try again" }), {
+        return new Response(JSON.stringify({ message: "Database error, please try again", error: "DATABASE_ERROR" }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 502,
         })
@@ -285,7 +285,7 @@ export default async function (req: Request) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error"
     console.error("create-booking error:", error)
-    return new Response(JSON.stringify({ error: message }), {
+    return new Response(JSON.stringify({ message, error: "BOOKING_ERROR" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
     })
