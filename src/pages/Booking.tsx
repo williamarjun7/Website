@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Users, Check, QrCode, ExternalLink, Wifi, WifiOff, Smartphone, Clock, Loader } from 'lucide-react';
 import QRCode from 'qrcode';
-import { getAvailableRooms, Room } from '../services/roomService';
+import { getAvailableRooms, checkRoomAvailability, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice, calculateAdvanceAmount, calculateBalanceAmount } from '../services/bookingService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
@@ -13,7 +13,19 @@ import { bookingSchema, BookingFormData } from './bookingSchema';
 const Booking = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const preselectedRoom = location.state?.selectedRoom;
+    const preselectedRoom = (() => {
+        const fromState = (location.state as { selectedRoom?: Room } | null)?.selectedRoom;
+        if (fromState) {
+            sessionStorage.setItem('preselectedRoom', JSON.stringify(fromState));
+            return fromState;
+        }
+        const stored = sessionStorage.getItem('preselectedRoom');
+        if (stored) {
+            try { return JSON.parse(stored) as Room; } catch { /* ignore */ }
+        }
+        return null;
+    })();
+    const bookingSource = preselectedRoom ? 'room-card' : 'navbar';
 
     const [step, setStep] = useState(1);
     const [checkIn, setCheckIn] = useState('');
@@ -31,6 +43,8 @@ const Booking = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [pollingActive, setPollingActive] = useState(false);
     const [qrError, setQrError] = useState('');
+    const [showAlternatives, setShowAlternatives] = useState(false);
+    const [unavailableError, setUnavailableError] = useState('');
     const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
     const wsRef = useRef<WebSocket | null>(null);
     const wsReconnectCount = useRef(0);
@@ -69,9 +83,24 @@ const Booking = () => {
         };
 
         if (checkIn && checkOut && checkIn < checkOut) {
-            searchAvailableRooms();
+            if (preselectedRoom && !showAlternatives) {
+                setLoading(true);
+                setUnavailableError('');
+                checkRoomAvailability(preselectedRoom.id, checkIn, checkOut).then(({ data }) => {
+                    setLoading(false);
+                    if (data?.isAvailable) {
+                        setSelectedRoom(preselectedRoom);
+                        setStep(2);
+                    } else {
+                        setUnavailableError(`${preselectedRoom.name} is not available for the selected dates. Please try different dates or choose another room.`);
+                        searchAvailableRooms();
+                    }
+                });
+            } else {
+                searchAvailableRooms();
+            }
         }
-    }, [checkIn, checkOut]);
+    }, [checkIn, checkOut, preselectedRoom, showAlternatives]);
 
     // Auto-poll for QR payment confirmation (max 15 min)
     const pollingStartRef = useRef<number | null>(null);
@@ -102,8 +131,14 @@ const Booking = () => {
         return () => clearInterval(interval);
     }, [pollingActive, paymentPrn, step, POLLING_TIMEOUT_MS]);
 
+    const clearBookingSession = () => {
+        sessionStorage.removeItem('preselectedRoom');
+    };
+
     const handleRoomSelect = (room: Room) => {
         setSelectedRoom(room);
+        setShowAlternatives(false);
+        setUnavailableError('');
         setStep(2);
     };
 
@@ -206,7 +241,14 @@ const Booking = () => {
     }, [onPaymentReceived]);
 
     useEffect(() => {
+        if (step === 4) {
+            clearBookingSession();
+        }
+    }, [step]);
+
+    useEffect(() => {
         return () => {
+            clearBookingSession();
             if (wsRef.current) {
                 wsRef.current.close();
                 wsRef.current = null;
@@ -408,7 +450,54 @@ const Booking = () => {
                             </div>
                         </div>
 
-                        {checkIn && checkOut && checkIn < checkOut && (
+                        {/* Room-card flow: preselected room summary card */}
+                        {preselectedRoom && !showAlternatives && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                                <div className="flex items-start justify-between">
+                                    <div>
+                                        <h3 className="font-heading text-xl font-bold text-gray-900">{preselectedRoom.name}</h3>
+                                        {preselectedRoom.room_number && (
+                                            <p className="text-sm text-gray-500">Room #{preselectedRoom.room_number}</p>
+                                        )}
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
+                                            <span className="font-medium text-primary uppercase text-xs">{preselectedRoom.room_type || 'Room'}</span>
+                                            <span>Up to {preselectedRoom.max_guests} guests</span>
+                                            <span className="font-semibold text-primary">NPR {preselectedRoom.price_per_night.toLocaleString()}/night</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowAlternatives(true)}
+                                        className="text-sm text-primary font-medium hover:underline whitespace-nowrap ml-4"
+                                    >
+                                        Change Room
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Loading during availability check (room-card flow) */}
+                        {preselectedRoom && !showAlternatives && loading && checkIn && checkOut && checkIn < checkOut && (
+                            <div className="flex items-center justify-center py-8 space-x-2">
+                                <div className="spinner" />
+                                <span className="text-gray-500">Checking availability...</span>
+                            </div>
+                        )}
+
+                        {/* Unavailable error (room-card flow) */}
+                        {preselectedRoom && !showAlternatives && unavailableError && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                <p className="text-red-700 text-sm">{unavailableError}</p>
+                                <button
+                                    onClick={() => setShowAlternatives(true)}
+                                    className="mt-2 text-sm text-primary font-medium hover:underline"
+                                >
+                                    Show Available Rooms
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Available rooms: navbar flow OR after change room OR after unavailable */}
+                        {checkIn && checkIn < checkOut && checkOut && (bookingSource === 'navbar' || showAlternatives || unavailableError) && (
                             <>
                                 <h3 className="font-heading text-2xl font-semibold mb-4">
                                     Available Rooms ({calculateNights()} {calculateNights() === 1 ? 'night' : 'nights'})
@@ -734,7 +823,7 @@ const Booking = () => {
                                 )}
                             </button>
                             <button
-                                onClick={() => navigate('/')}
+                                onClick={() => { clearBookingSession(); navigate('/'); }}
                                 className="btn-secondary w-full"
                             >
                                 Cancel & Return Home
@@ -759,7 +848,7 @@ const Booking = () => {
                                 <span>Try Again</span>
                             </button>
                             <button
-                                onClick={() => navigate('/')}
+                                onClick={() => { clearBookingSession(); navigate('/'); }}
                                 className="btn-secondary w-full"
                             >
                                 Return Home
