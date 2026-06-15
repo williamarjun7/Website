@@ -134,7 +134,7 @@ export default async function handler(req: Request) {
         try {
           const controller = new AbortController()
           const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
-          const res = await fetch(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+          const res = await fetch(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
