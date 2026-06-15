@@ -25,3 +25,16 @@ netlify.toml
 .graphify_python
 graphify-out/cache/
 /src/assets/nul
+
+# InsForge & AI agent skills
+.agent
+.agents
+.augment
+.claude
+.cline
+.kilocode
+.qoder
+.qwen
+.roo
+.trae
+.windsurf
