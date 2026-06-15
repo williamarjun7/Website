@@ -184,7 +184,8 @@ export default async function (req: Request) {
 
     const guestCount = guests || 1
     if (room.max_guests && guestCount > room.max_guests) {
-      throw new Error(`Room capacity exceeded. Maximum ${room.max_guests} guests allowed.`)
+      const label = room.max_guests === 1 ? "guest" : "guests"
+      throw new Error(`Room capacity exceeded. Maximum ${room.max_guests} ${label} allowed.`)
     }
 
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
