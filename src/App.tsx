@@ -30,7 +30,6 @@ const AdminRooms = lazy(() => import('./pages/admin/Rooms'));
 const Menu = lazy(() => import('./pages/admin/Menu'));
 const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
-
 const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
 
 const LoadingFallback = () => (

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import QRCode from 'qrcode';
-import { getAvailableRooms, Room } from '../services/roomService';
+import { getAvailableRooms, checkRoomAvailability, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice } from '../services/bookingService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
@@ -19,7 +19,25 @@ const POLLING_TIMEOUT_MS = 15 * 60 * 1000;
 
 const Booking = () => {
     const location = useLocation();
-    const preselectedRoom = location.state?.selectedRoom;
+    const navigate = useNavigate();
+    const preselectedRoom = (() => {
+        const fromState = (location.state as { selectedRoom?: Room } | null)?.selectedRoom;
+        if (fromState) {
+            sessionStorage.setItem('preselectedRoom', JSON.stringify(fromState));
+            sessionStorage.setItem('bookingFromRooms', 'true');
+            return fromState;
+        }
+        if (sessionStorage.getItem('bookingFromRooms') !== 'true') {
+            sessionStorage.removeItem('preselectedRoom');
+            return null;
+        }
+        const stored = sessionStorage.getItem('preselectedRoom');
+        if (stored) {
+            try { return JSON.parse(stored) as Room; } catch { /* ignore */ }
+        }
+        return null;
+    })();
+    const bookingSource = preselectedRoom ? 'room-card' : 'navbar';
 
     const [step, setStep] = useState(1);
     const [checkIn, setCheckIn] = useState('');
@@ -37,6 +55,8 @@ const Booking = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [pollingActive, setPollingActive] = useState(false);
     const [qrError, setQrError] = useState('');
+    const [showAlternatives, setShowAlternatives] = useState(false);
+    const [unavailableError, setUnavailableError] = useState('');
 
     const {
         register,
@@ -68,9 +88,24 @@ const Booking = () => {
         };
 
         if (checkIn && checkOut && checkIn < checkOut) {
-            searchAvailableRooms();
+            if (preselectedRoom && !showAlternatives) {
+                setLoading(true);
+                setUnavailableError('');
+                checkRoomAvailability(preselectedRoom.id, checkIn, checkOut).then(({ data }) => {
+                    setLoading(false);
+                    if (data?.isAvailable) {
+                        setSelectedRoom(preselectedRoom);
+                        setStep(2);
+                    } else {
+                        setUnavailableError(`${preselectedRoom.name} is not available for the selected dates. Please try different dates or choose another room.`);
+                        searchAvailableRooms();
+                    }
+                });
+            } else {
+                searchAvailableRooms();
+            }
         }
-    }, [checkIn, checkOut]);
+    }, [checkIn, checkOut, preselectedRoom, showAlternatives]);
 
     const onPaymentReceived = useCallback(async (prn: string) => {
         setPollingActive(false);
@@ -116,10 +151,17 @@ const Booking = () => {
             }
         }, 8000);
         return () => clearInterval(interval);
-    }, [pollingActive, paymentPrn, step]);
+    }, [pollingActive, paymentPrn, step, POLLING_TIMEOUT_MS]);
+
+    const clearBookingSession = () => {
+        sessionStorage.removeItem('preselectedRoom');
+        sessionStorage.removeItem('bookingFromRooms');
+    };
 
     const handleRoomSelect = (room: Room) => {
         setSelectedRoom(room);
+        setShowAlternatives(false);
+        setUnavailableError('');
         setStep(2);
     };
 
@@ -231,6 +273,20 @@ const Booking = () => {
 
     const steps = ['Dates', 'Details', 'Payment', 'Confirmed'];
 
+    useEffect(() => {
+        if (step === 4) {
+            clearBookingSession();
+        }
+    }, [step]);
+
+    useEffect(() => {
+        return () => {
+            clearBookingSession();
+            cleanupWs();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
@@ -248,13 +304,83 @@ const Booking = () => {
                 <ProgressSteps step={step} steps={steps} />
 
                 {step === 1 && (
-                    <DateSelectionStep
-                        checkIn={checkIn} checkOut={checkOut} guests={guests}
-                        today={today} tomorrow={tomorrow}
-                        loading={loading} availableRooms={availableRooms}
-                        onCheckInChange={setCheckIn} onCheckOutChange={setCheckOut}
-                        onGuestsChange={setGuests} onRoomSelect={handleRoomSelect}
-                    />
+                    <>
+                        {/* Room-card flow: preselected room summary card */}
+                        {preselectedRoom && !showAlternatives && (
+                            <div className="card mb-6">
+                                <h2 className="font-heading text-3xl font-bold mb-6">Select Your Dates</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div>
+                                        <label htmlFor="check_in" className="block text-sm font-medium mb-2">Check-in Date</label>
+                                        <input id="check_in" type="date" min={today} value={checkIn}
+                                            onChange={(e) => setCheckIn(e.target.value)} className="input w-full" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="check_out" className="block text-sm font-medium mb-2">Check-out Date</label>
+                                        <input id="check_out" type="date" min={checkIn || tomorrow} value={checkOut}
+                                            onChange={(e) => setCheckOut(e.target.value)} className="input w-full" />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="guests" className="block text-sm font-medium mb-2">Guests</label>
+                                        <select id="guests" value={guests}
+                                            onChange={(e) => setGuests(Number(e.target.value))} className="input w-full">
+                                            {[1, 2, 3, 4, 5, 6].map(num => (
+                                                <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h3 className="font-heading text-xl font-bold text-gray-900">{preselectedRoom.name}</h3>
+                                            {preselectedRoom.room_number && (
+                                                <p className="text-sm text-gray-500">Room #{preselectedRoom.room_number}</p>
+                                            )}
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
+                                                <span className="font-medium text-primary uppercase text-xs">{preselectedRoom.room_type || 'Room'}</span>
+                                                <span>Up to {preselectedRoom.max_guests} guests</span>
+                                                <span className="font-semibold text-primary">NPR {preselectedRoom.price_per_night.toLocaleString()}/night</span>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setShowAlternatives(true)}
+                                            className="text-sm text-primary font-medium hover:underline whitespace-nowrap ml-4">
+                                            Change Room
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {loading && checkIn && checkOut && checkIn < checkOut && (
+                                    <div className="flex items-center justify-center py-8 space-x-2">
+                                        <div className="spinner" />
+                                        <span className="text-gray-500">Checking availability...</span>
+                                    </div>
+                                )}
+
+                                {unavailableError && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                                        <p className="text-red-700 text-sm">{unavailableError}</p>
+                                        <button onClick={() => setShowAlternatives(true)}
+                                            className="mt-2 text-sm text-primary font-medium hover:underline">
+                                            Show Available Rooms
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Navbar flow OR alternatives / unavailable: full date selection + room list */}
+                        {(bookingSource === 'navbar' || showAlternatives || unavailableError) && (
+                            <DateSelectionStep
+                                checkIn={checkIn} checkOut={checkOut} guests={guests}
+                                today={today} tomorrow={tomorrow}
+                                loading={loading} availableRooms={availableRooms}
+                                onCheckInChange={setCheckIn} onCheckOutChange={setCheckOut}
+                                onGuestsChange={setGuests} onRoomSelect={handleRoomSelect}
+                            />
+                        )}
+                    </>
                 )}
 
                 {step === 2 && selectedRoom && (
