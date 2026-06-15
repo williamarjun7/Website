@@ -17,7 +17,12 @@ const Booking = () => {
         const fromState = (location.state as { selectedRoom?: Room } | null)?.selectedRoom;
         if (fromState) {
             sessionStorage.setItem('preselectedRoom', JSON.stringify(fromState));
+            sessionStorage.setItem('bookingFromRooms', 'true');
             return fromState;
+        }
+        if (sessionStorage.getItem('bookingFromRooms') !== 'true') {
+            sessionStorage.removeItem('preselectedRoom');
+            return null;
         }
         const stored = sessionStorage.getItem('preselectedRoom');
         if (stored) {
@@ -72,6 +77,7 @@ const Booking = () => {
         const searchAvailableRooms = async () => {
             setLoading(true);
             const { data, error } = await getAvailableRooms(checkIn, checkOut);
+            console.log('Available rooms response:', { data, error });
             if (error) {
                 setToastMessage(error || 'Failed to load rooms. Please try again.');
                 setTimeout(() => setToastMessage(''), 5000);
@@ -81,6 +87,8 @@ const Booking = () => {
             }
             setLoading(false);
         };
+
+        console.log('Booking flow state:', { preselectedRoom: !!preselectedRoom, bookingSource, showAlternatives, unavailableError: !!unavailableError });
 
         if (checkIn && checkOut && checkIn < checkOut) {
             if (preselectedRoom && !showAlternatives) {
@@ -133,6 +141,7 @@ const Booking = () => {
 
     const clearBookingSession = () => {
         sessionStorage.removeItem('preselectedRoom');
+        sessionStorage.removeItem('bookingFromRooms');
     };
 
     const handleRoomSelect = (room: Room) => {
