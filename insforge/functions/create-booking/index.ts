@@ -4,6 +4,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
   "https://highlands-motel.com",
+  "https://highalndsmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -246,7 +247,7 @@ export default async function (req: Request) {
           room_id,
           check_in,
           check_out,
-          guests: guestCount,
+          adults: guestCount,
           total_price,
           advance_amount: isPayAtProperty ? advAmount : null,
           balance_amount: isPayAtProperty ? balAmount : null,
@@ -283,8 +284,8 @@ export default async function (req: Request) {
 
     throw new Error("Room is no longer available for the selected dates")
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error"
-    console.error("create-booking error:", error)
+    const message = error instanceof Error ? error.message : typeof error === "object" && error !== null ? JSON.stringify(error) : String(error)
+    console.error("create-booking error:", message, error)
     return new Response(JSON.stringify({ message, error: "BOOKING_ERROR" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,
