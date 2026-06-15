@@ -4,6 +4,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
   "https://highlands-motel.com",
+  "https://highalndsmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -490,13 +491,6 @@ export default async function handler(req: Request) {
 
     // ─── Generate QR ──────────────────────────────────────────────────────
     if (action === "generate-qr") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
@@ -509,9 +503,6 @@ export default async function handler(req: Request) {
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
-      }
-      if (booking.guest_email !== sessionCheck.user.email) {
-        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -576,7 +567,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -640,13 +631,6 @@ export default async function handler(req: Request) {
 
     // ─── Generate Web ─────────────────────────────────────────────────────
     if (action === "generate-web") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
@@ -659,9 +643,6 @@ export default async function handler(req: Request) {
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
-      }
-      if (booking.guest_email !== sessionCheck.user.email) {
-        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -765,13 +746,6 @@ export default async function handler(req: Request) {
 
     // ─── Verify QR ────────────────────────────────────────────────────────
     if (action === "verify-qr") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       const { prn } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
@@ -783,7 +757,7 @@ export default async function handler(req: Request) {
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
@@ -864,13 +838,6 @@ export default async function handler(req: Request) {
 
     // ─── Verify Web ───────────────────────────────────────────────────────
     if (action === "verify-web") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {

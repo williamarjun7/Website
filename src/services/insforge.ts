@@ -14,17 +14,11 @@ export const insforge = createClient({
 
 export const handleInsforgeError = <T = null>(error: unknown): { data: T | null; error: string } => {
     console.error('Insforge Error:', error);
-    let message: string;
-    if (error instanceof Error) {
-        message = error.message || JSON.stringify(error);
-    } else if (typeof error === 'string') {
-        message = error;
-    } else if (error && typeof error === 'object') {
-        const obj = error as Record<string, unknown>;
-        message = (typeof obj.message === 'string' ? obj.message : obj.error as string) || JSON.stringify(error);
-    } else {
-        message = 'An unexpected error occurred';
-    }
+    const message = error instanceof Error ? error.message
+        : typeof error === 'string' ? error
+        : error && typeof error === 'object' && 'message' in error ? String((error as Record<string, unknown>).message)
+        : error && typeof error === 'object' && 'error' in error ? String((error as Record<string, unknown>).error)
+        : 'An unexpected error occurred';
     return { data: null, error: message };
 };
 
