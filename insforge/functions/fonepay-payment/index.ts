@@ -56,6 +56,26 @@ async function hmacSha512(secret: string, data: string): Promise<string> {
     .join("")
 }
 
+async function verifyFonepayResponseSignature(
+  merchantSecret: string,
+  merchantCode: string,
+  fonepayResult: Record<string, unknown>
+): Promise<boolean> {
+  const responseDv = fonepayResult.dataValidation as string | undefined
+  if (!responseDv) return false
+
+  const expectedFields = [
+    String(fonepayResult.fonepayTraceId ?? ""),
+    String(fonepayResult.amount ?? "0"),
+    String(fonepayResult.prn ?? ""),
+    merchantCode,
+    String(fonepayResult.paymentStatus ?? ""),
+  ]
+  const dataToHash = expectedFields.join(",")
+  const computedDv = await hmacSha512(merchantSecret, dataToHash)
+  return computedDv === responseDv
+}
+
 function generateSecurePrn(bookingId: string): string {
   const ts = Date.now()
   const rand = crypto.randomUUID().replace(/-/g, "")
@@ -172,10 +192,10 @@ const RequestSchema = z.discriminatedUnion("action", [
   PostTaxRefundSchema,
 ])
 
-type AppError = { error: string }
+type AppError = { message: string; error: string }
 
 function errorResponse(message: string, status = 400, corsHeaders?: Record<string, string>): Response {
-  const body: AppError = { error: message }
+  const body: AppError = { message, error: "PAYMENT_ERROR" }
   return new Response(JSON.stringify(body), {
     headers: { "Content-Type": "application/json", ...corsHeaders },
     status,
@@ -274,7 +294,11 @@ async function confirmPayment(
     payload: { prn, amount },
   })
 
-  // Fire-and-forget confirmation email
+  await logEvent(db, {
+    payment_id: paymentRecord.id, booking_id: bookingId,
+    event_type: "booking_confirmed",
+    payload: { prn, amount },
+  })
   ;(async () => {
     try {
       const { data: booking } = await db
@@ -500,6 +524,41 @@ export default async function handler(req: Request) {
       // For other methods, charge the full total
       const isPartial = booking.payment_status === "pay_at_property"
       const amount = isPartial ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
+
+      // Check for existing pending payment for this booking to prevent duplicate PRNs
+      const { data: existingPending } = await db
+        .from("payments")
+        .select("id, prn, amount, created_at")
+        .eq("booking_id", orderId)
+        .in("status", ["pending"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existingPending) {
+        await logEvent(db, {
+          booking_id: orderId,
+          event_type: "qr_reused",
+          payload: { prn: existingPending.prn, existing_payment_id: existingPending.id, reason: "reused existing pending payment" },
+        })
+
+        // Refresh hold on the booking
+        const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS).toISOString()
+        await db.from("bookings")
+          .update({ hold_expires_at: holdExpiresAt, active_prn: existingPending.prn })
+          .eq("id", orderId)
+
+        return new Response(JSON.stringify({
+          success: true,
+          prn: existingPending.prn,
+          qrMessage: "",
+          thirdpartyQrWebSocketUrl: "",
+          amount: existingPending.amount,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
+      }
+
       const prn = generateSecurePrn(orderId)
       const dataToHash = `${String(amount)},${prn},${merchantCode},${remarks1},${remarks2}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
@@ -549,7 +608,6 @@ export default async function handler(req: Request) {
       // PRN uniqueness is enforced at DB level — if another QR was generated
       // with the same PRN (extremely unlikely with crypto UUID), this fails.
       if (payInsertErr) {
-        // PRN collision or other DB error — let caller retry
         await logEvent(db, {
           booking_id: orderId, event_type: "payment_failed",
           payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
@@ -565,8 +623,8 @@ export default async function handler(req: Request) {
 
       await logEvent(db, {
         booking_id: orderId,
-        event_type: "payment_initiated",
-        payload: { prn, amount, method: "fonepay_qr" },
+        event_type: "qr_created",
+        payload: { prn, amount, method: "fonepay_qr", qr_message_present: !!qrResponse.qrMessage },
       })
 
       return new Response(JSON.stringify({
@@ -615,6 +673,34 @@ export default async function handler(req: Request) {
       // For pay_at_property, charge only the advance amount (60%)
       const isPartialWeb = booking.payment_status === "pay_at_property"
       const amount = isPartialWeb ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
+
+      // Check for existing pending payment for this booking
+      const { data: existingPendingWeb } = await db
+        .from("payments")
+        .select("id, prn, amount, created_at")
+        .eq("booking_id", orderId)
+        .in("status", ["pending"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (existingPendingWeb) {
+        await logEvent(db, {
+          booking_id: orderId,
+          event_type: "idempotency_hit",
+          payload: { prn: existingPendingWeb.prn, existing_payment_id: existingPendingWeb.id, reason: "reused existing pending payment" },
+        })
+
+        const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS).toISOString()
+        await db.from("bookings")
+          .update({ hold_expires_at: holdExpiresAt, active_prn: existingPendingWeb.prn })
+          .eq("id", orderId)
+
+        return new Response(JSON.stringify({ success: true, prn: existingPendingWeb.prn, paymentUrl: "", amount: existingPendingWeb.amount }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
+      }
+
       const prn = generateSecurePrn(orderId)
 
       const today = new Date()
@@ -728,48 +814,52 @@ export default async function handler(req: Request) {
 
       if (!db) return _err("Database not configured", 500)
 
-      // Fetch booking to verify amount
-      const { data: booking } = await db
-        .from("bookings")
-        .select("id, total_price, advance_amount, payment_status, booking_status")
-        .eq("id", bookingId)
-        .single()
-
-      if (!booking) {
-        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
-        return _err("Booking not found", 404)
-      }
-
-      // Calculate expected charged amount (same logic as generate-qr)
-      const isPartial = booking.payment_status === "pay_at_property"
-      const chargedAmount = isPartial ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
-
-      // ⚠️ Amount integrity check — REJECT mismatch
-      const fonepayAmount = parseFloat(String(fonepayResult.amount || fonepayResult.txnAmount || "0"))
-      if (fonepayAmount > 0 && Math.abs(fonepayAmount - chargedAmount) > 0.01) {
+      // Verify Fonepay response HMAC signature to prevent forgery
+      const signatureValid = await verifyFonepayResponseSignature(merchantSecret, merchantCode, fonepayResult)
+      if (!signatureValid) {
         await logEvent(db, {
-          booking_id: bookingId, event_type: "amount_mismatch",
-          payload: { prn, fonepayAmount, dbAmount: chargedAmount },
+          booking_id: bookingId, event_type: "payment_failed",
+          payload: { prn, reason: "Fonepay response signature verification failed" },
         })
-        return _err("Payment amount mismatch. Contact support.", 409)
+        return _err("Payment verification failed: invalid response signature", 502)
       }
 
       // Find existing payment record (created at QR generation time)
+      // IMPORTANT: read amount from payment record, not recalculated from booking
       const { data: existingPayment } = await db
         .from("payments")
-        .select("id, status")
+        .select("id, booking_id, status, amount")
         .eq("prn", prn)
         .maybeSingle()
 
       if (!existingPayment) {
-        // Should not happen — payment record was created at QR generation time
         await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
         return _err("Payment session not found", 404)
       }
 
+      // Integrity: payment record must belong to this booking
+      if (existingPayment.booking_id !== bookingId) {
+        await logEvent(db, {
+          booking_id: bookingId, event_type: "payment_failed",
+          payload: { prn, paymentBookingId: existingPayment.booking_id, reason: "Payment record booking_id mismatch" },
+        })
+        return _err("Payment session mismatch", 409)
+      }
+
+      // ⚠️ Amount integrity check — compare Fonepay amount vs PAYMENT RECORD amount (authoritative)
+      const fonepayAmount = parseFloat(String(fonepayResult.amount || fonepayResult.txnAmount || "0"))
+      if (fonepayAmount > 0 && Math.abs(fonepayAmount - existingPayment.amount) > 0.01) {
+        await logEvent(db, {
+          booking_id: bookingId, event_type: "amount_mismatch",
+          payload: { prn, fonepayAmount, dbAmount: existingPayment.amount },
+        })
+        return _err("Payment amount mismatch. Contact support.", 409)
+      }
+
       const fonepayTraceId = String(fonepayResult.fonepayTraceId || fonepayResult.fonepayTraceId === 0 ? fonepayResult.fonepayTraceId : "")
 
-      return await confirmPayment(db, existingPayment, bookingId, prn, chargedAmount, fonepayTraceId || null, corsHeaders)
+      // Use payment record's stored amount — this is the authoritative amount from QR generation time
+      return await confirmPayment(db, existingPayment, bookingId, prn, existingPayment.amount, fonepayTraceId || null, corsHeaders)
     }
 
     // ─── Verify Web ───────────────────────────────────────────────────────
@@ -834,36 +924,10 @@ export default async function handler(req: Request) {
 
       if (!db) return _err("Database not configured", 500)
 
-      // Fetch booking to verify amount
-      const { data: booking } = await db
-        .from("bookings")
-        .select("id, total_price, advance_amount, payment_status, booking_status")
-        .eq("id", bookingId)
-        .single()
-
-      if (!booking) {
-        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Booking not found" } })
-        return _err("Booking not found", 404)
-      }
-
-      // Calculate expected charged amount (same logic as generate-web)
-      const isPartialWeb = booking.payment_status === "pay_at_property"
-      const chargedAmount = isPartialWeb ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
-
-      // Amount integrity check
-      const webAmount = parseFloat(callbackAmount)
-      if (webAmount > 0 && Math.abs(webAmount - chargedAmount) > 0.01) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "amount_mismatch",
-          payload: { prn, webAmount, dbAmount: chargedAmount },
-        })
-        return _err("Payment amount mismatch. Contact support.", 409)
-      }
-
-      // Find existing payment record
+      // Find existing payment record (read amount from stored record)
       const { data: existingPayment } = await db
         .from("payments")
-        .select("id, status")
+        .select("id, booking_id, status, amount")
         .eq("prn", prn)
         .maybeSingle()
 
@@ -872,9 +936,29 @@ export default async function handler(req: Request) {
         return _err("Payment session not found", 404)
       }
 
+      // Integrity: payment record must belong to this booking
+      if (existingPayment.booking_id !== bookingId) {
+        await logEvent(db, {
+          booking_id: bookingId, event_type: "payment_failed",
+          payload: { prn, paymentBookingId: existingPayment.booking_id, reason: "Payment record booking_id mismatch" },
+        })
+        return _err("Payment session mismatch", 409)
+      }
+
+      // Verify the callback amount matches the stored payment amount (authoritative at generation time)
+      const webAmount = parseFloat(callbackAmount)
+      if (webAmount > 0 && Math.abs(webAmount - existingPayment.amount) > 0.01) {
+        await logEvent(db, {
+          booking_id: bookingId, event_type: "amount_mismatch",
+          payload: { prn, webAmount, dbAmount: existingPayment.amount },
+        })
+        return _err("Payment amount mismatch. Contact support.", 409)
+      }
+
       const fonepayTraceId = String(fonepayResult.uniqueId || "")
 
-      return await confirmPayment(db, existingPayment, bookingId, prn, chargedAmount, fonepayTraceId || null, corsHeaders)
+      // Use stored payment.amount (authoritative at QR generation time), not recalculated
+      return await confirmPayment(db, existingPayment, bookingId, prn, existingPayment.amount, fonepayTraceId || null, corsHeaders)
     }
 
     // ─── Post Tax Refund ──────────────────────────────────────────────────
@@ -893,7 +977,7 @@ export default async function handler(req: Request) {
 
       const { data: payment } = await db
         .from("payments")
-        .select("id, booking_id, status")
+        .select("id, booking_id, status, tax_refund_submitted_at, tax_refund_response")
         .eq("prn", prn)
         .single()
 
@@ -902,6 +986,24 @@ export default async function handler(req: Request) {
       }
       if (payment.status !== "completed") {
         return _err("Payment not completed", 400)
+      }
+
+      // Idempotency: if already submitted, return previous response
+      if (payment.tax_refund_submitted_at) {
+        await logEvent(db, {
+          payment_id: payment.id,
+          booking_id: payment.booking_id,
+          event_type: "idempotency_hit",
+          payload: { prn, fonepayTraceId, invoiceNumber, reason: "tax_refund_already_submitted" },
+        })
+        return new Response(JSON.stringify({
+          success: true,
+          message: "Tax refund already submitted",
+          tax_refund_submitted_at: payment.tax_refund_submitted_at,
+          fonepayResponse: payment.tax_refund_response,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        })
       }
 
       const dataToHash = `${fonepayTraceId},${prn},${invoiceNumber},${invoiceDate},${transactionAmount},${merchantCode}`
@@ -932,10 +1034,18 @@ export default async function handler(req: Request) {
         return _err("Tax refund failed. Please try again.", 502)
       }
 
+      // Record the submission result whether success or failure
+      await db.from("payments")
+        .update({
+          tax_refund_submitted_at: new Date().toISOString(),
+          tax_refund_response: result,
+        })
+        .eq("id", payment.id)
+
       await logEvent(db, {
         payment_id: payment.id,
         booking_id: payment.booking_id,
-        event_type: result.success ? "payment_completed" : "payment_failed",
+        event_type: result.success ? "tax_refund_submitted" : "tax_refund_failed",
         payload: { prn, fonepayTraceId, invoiceNumber, fonepayResponse: result },
       })
 
