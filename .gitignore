@@ -26,6 +26,10 @@ opencode.json
 graphify-out/cache/
 /src/assets/nul
 
+# Session artifacts
+response.txt
+skills-lock.json
+
 # InsForge & AI agent skills
 .agent
 .agents

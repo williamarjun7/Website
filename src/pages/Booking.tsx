@@ -20,7 +20,9 @@ const POLLING_INTERVAL_MS = 8000;
 
 const Booking = () => {
     const location = useLocation();
-    const preselectedRoom = (() => {
+
+    // ── Entry snapshot (immutable after mount) ──────────────────────────
+    const entryRoom = (() => {
         const fromState = (location.state as { selectedRoom?: Room } | null)?.selectedRoom;
         if (fromState) {
             sessionStorage.setItem('preselectedRoom', JSON.stringify(fromState));
@@ -37,17 +39,27 @@ const Booking = () => {
         }
         return null;
     })();
-    const bookingSource = preselectedRoom ? 'room-card' : 'navbar';
 
+    const entryMode = entryRoom ? 'room_card' : 'search';
+
+    // ── Single source of truth for room selection ──────────────────────
+    const [activeRoom, setActiveRoom] = useState<Room | null>(entryRoom || null);
+
+    // ── Booking parameters ──────────────────────────────────────────────
     const [step, setStep] = useState(1);
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
-    const [guests, setGuests] = useState(2);
-    const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(preselectedRoom || null);
-    const [loading, setLoading] = useState(false);
-    const [bookingId, setBookingId] = useState('');
+    const [guests, setGuests] = useState(entryRoom?.max_guests || 1);
 
+    // ── Availability search state ───────────────────────────────────────
+    const [showAvailabilitySearch, setShowAvailabilitySearch] = useState(false);
+    const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [roomAvailable, setRoomAvailable] = useState(false);
+    const [unavailableError, setUnavailableError] = useState('');
+
+    // ── Payment state ──────────────────────────────────────────────────
+    const [bookingId, setBookingId] = useState('');
     const [confirmedEmail, setConfirmedEmail] = useState('');
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
@@ -55,8 +67,6 @@ const Booking = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [pollingActive, setPollingActive] = useState(false);
     const [qrError, setQrError] = useState('');
-    const [showAlternatives, setShowAlternatives] = useState(false);
-    const [unavailableError, setUnavailableError] = useState('');
     const fetchIdRef = useRef(0);
 
     const {
@@ -74,25 +84,36 @@ const Booking = () => {
     const today = new Date().toISOString().split('T')[0];
     const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
 
+    const datesValid = checkIn && checkOut && checkIn < checkOut;
+
+    // ── Availability fetch ──────────────────────────────────────────────
     useEffect(() => {
         const id = ++fetchIdRef.current;
 
-        if (!checkIn || !checkOut || !(checkIn < checkOut)) return;
+        if (!datesValid) {
+            setRoomAvailable(false);
+            return;
+        }
 
         const run = async () => {
             setLoading(true);
             setUnavailableError('');
+            setRoomAvailable(false);
 
-            if (preselectedRoom && !showAlternatives) {
-                const { data } = await checkRoomAvailability(preselectedRoom.id, checkIn, checkOut);
+            if (entryMode === 'room_card' && !showAvailabilitySearch) {
+                const roomId = activeRoom?.id;
+                if (!roomId) {
+                    setLoading(false);
+                    return;
+                }
+                const { data } = await checkRoomAvailability(roomId, checkIn, checkOut);
                 if (id !== fetchIdRef.current) return;
                 setLoading(false);
                 if (data?.isAvailable) {
-                    setSelectedRoom(preselectedRoom);
-                    setStep(2);
+                    setRoomAvailable(true);
                     return;
                 }
-                setUnavailableError(`${preselectedRoom.name} is not available for the selected dates. Please try different dates or choose another room.`);
+                setUnavailableError(`${activeRoom!.name} is not available for the selected dates. Please try different dates or choose another room.`);
                 setAvailableRooms([]);
                 return;
             }
@@ -110,7 +131,7 @@ const Booking = () => {
         };
 
         run();
-    }, [checkIn, checkOut, preselectedRoom, showAlternatives]);
+    }, [checkIn, checkOut, showAvailabilitySearch, datesValid, entryMode, activeRoom?.id]);
 
     const confirmPaymentAndAdvance = useCallback(async (prn: string) => {
         const { data } = await verifyQrPayment(prn);
@@ -167,9 +188,14 @@ const Booking = () => {
     };
 
     const handleRoomSelect = (room: Room) => {
-        setSelectedRoom(room);
-        setShowAlternatives(false);
+        setActiveRoom(room);
+        setShowAvailabilitySearch(false);
         setUnavailableError('');
+        setRoomAvailable(true);
+        setStep(2);
+    };
+
+    const handleProceedToDetails = () => {
         setStep(2);
     };
 
@@ -226,13 +252,13 @@ const Booking = () => {
     };
 
     const onSubmit = async (data: BookingFormData) => {
-        if (!selectedRoom) return;
+        if (!activeRoom) return;
 
         setLoading(true);
         const payment_status = data.paymentMethod === 'pay_at_property' ? 'pay_at_property' : 'pending';
 
         const { data: bookingData, error } = await createBooking({
-            room_id: selectedRoom.id,
+            room_id: activeRoom.id,
             guest_name: data.guest_name,
             guest_email: data.guest_email,
             guest_phone: data.guest_phone,
@@ -260,8 +286,8 @@ const Booking = () => {
     };
 
     const getTotalPrice = () => {
-        if (!selectedRoom) return 0;
-        return calculateTotalPrice(selectedRoom.price_per_night, checkIn, checkOut);
+        if (!activeRoom) return 0;
+        return calculateTotalPrice(activeRoom.price_per_night, checkIn, checkOut);
     };
 
     const handleVerifyClick = async () => {
@@ -289,11 +315,14 @@ const Booking = () => {
 
     useEffect(() => {
         return () => {
-            clearBookingSession();
             cleanupWs();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // ── UI mode derivation ──────────────────────────────────────────────
+    const isRoomLocked = entryMode === 'room_card';
+    const showDateSelection = entryMode === 'search' || showAvailabilitySearch;
 
     return (
         <div className="min-h-screen pt-24 pb-16">
@@ -313,8 +342,7 @@ const Booking = () => {
 
                 {step === 1 && (
                     <>
-                        {/* Room-card flow: preselected room summary card */}
-                        {preselectedRoom && !showAlternatives && (
+                        {isRoomLocked && !showAvailabilitySearch && activeRoom && (
                             <div className="card mb-6">
                                 <h2 className="font-heading text-3xl font-bold mb-6">Select Your Dates</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -329,10 +357,10 @@ const Booking = () => {
                                             onChange={(e) => setCheckOut(e.target.value)} className="input w-full" />
                                     </div>
                                     <div>
-                                        <label htmlFor="guests" className="block text-sm font-medium mb-2">Guests</label>
-                                        <select id="guests" value={guests}
+                                        <label htmlFor="guests_locked" className="block text-sm font-medium mb-2">Guests</label>
+                                        <select id="guests_locked" value={guests}
                                             onChange={(e) => setGuests(Number(e.target.value))} className="input w-full">
-                                            {[1, 2, 3, 4, 5, 6].map(num => (
+                                            {Array.from({ length: (activeRoom.max_guests || 6) }, (_, i) => i + 1).map(num => (
                                                 <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
                                             ))}
                                         </select>
@@ -342,34 +370,53 @@ const Booking = () => {
                                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                                     <div className="flex items-start justify-between">
                                         <div>
-                                            <h3 className="font-heading text-xl font-bold text-gray-900">{preselectedRoom.name}</h3>
-                                            {preselectedRoom.room_number && (
-                                                <p className="text-sm text-gray-500">Room #{preselectedRoom.room_number}</p>
+                                            <h3 className="font-heading text-xl font-bold text-gray-900">{activeRoom.name}</h3>
+                                            {activeRoom.room_number && (
+                                                <p className="text-sm text-gray-500">Room #{activeRoom.room_number}</p>
                                             )}
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
-                                                <span className="font-medium text-primary uppercase text-xs">{preselectedRoom.room_type || 'Room'}</span>
-                                                <span>Up to {preselectedRoom.max_guests} guests</span>
-                                                <span className="font-semibold text-primary">NPR {preselectedRoom.price_per_night.toLocaleString()}/night</span>
+                                                <span className="font-medium text-primary uppercase text-xs">{activeRoom.room_type || 'Room'}</span>
+                                                <span>Up to {activeRoom.max_guests} guests</span>
+                                                <span className="font-semibold text-primary">NPR {activeRoom.price_per_night.toLocaleString()}/night</span>
                                             </div>
                                         </div>
-                                        <button onClick={() => setShowAlternatives(true)}
+                                        <button onClick={() => setShowAvailabilitySearch(true)}
                                             className="text-sm text-primary font-medium hover:underline whitespace-nowrap ml-4">
                                             Change Room
                                         </button>
                                     </div>
                                 </div>
 
-                                {loading && checkIn && checkOut && checkIn < checkOut && (
+                                {loading && datesValid && (
                                     <div className="flex items-center justify-center py-8 space-x-2">
                                         <div className="spinner" />
                                         <span className="text-gray-500">Checking availability...</span>
                                     </div>
                                 )}
 
+                                {roomAvailable && !loading && (
+                                    <div className="mt-6">
+                                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                            <p className="text-green-700 text-sm font-medium">
+                                                {activeRoom.name} is available for your selected dates.
+                                            </p>
+                                            {checkIn && checkOut && (
+                                                <p className="text-green-600 text-sm mt-1">
+                                                    Total: NPR {calculateTotalPrice(activeRoom.price_per_night, checkIn, checkOut).toLocaleString()}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <button onClick={handleProceedToDetails}
+                                            className="btn-primary w-full focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
+                                            Continue to Details
+                                        </button>
+                                    </div>
+                                )}
+
                                 {unavailableError && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
                                         <p className="text-red-700 text-sm">{unavailableError}</p>
-                                        <button onClick={() => setShowAlternatives(true)}
+                                        <button onClick={() => setShowAvailabilitySearch(true)}
                                             className="mt-2 text-sm text-primary font-medium hover:underline">
                                             Show Available Rooms
                                         </button>
@@ -378,8 +425,7 @@ const Booking = () => {
                             </div>
                         )}
 
-                        {/* Navbar flow OR alternatives: full date selection + room list */}
-                        {(bookingSource === 'navbar' || showAlternatives) && (
+                        {showDateSelection && (
                             <DateSelectionStep
                                 checkIn={checkIn} checkOut={checkOut} guests={guests}
                                 today={today} tomorrow={tomorrow}
@@ -391,9 +437,9 @@ const Booking = () => {
                     </>
                 )}
 
-                {step === 2 && selectedRoom && (
+                {step === 2 && activeRoom && (
                     <GuestInfoStep
-                        selectedRoom={selectedRoom} checkIn={checkIn} checkOut={checkOut}
+                        selectedRoom={activeRoom} checkIn={checkIn} checkOut={checkOut}
                         guests={guests} selectedPaymentMethod={selectedPaymentMethod}
                         loading={loading} isSubmitting={isSubmitting}
                         register={register} errors={errors}
