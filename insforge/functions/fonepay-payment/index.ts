@@ -467,13 +467,6 @@ export default async function handler(req: Request) {
 
     // ─── Generate QR ──────────────────────────────────────────────────────
     if (action === "generate-qr") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
@@ -486,9 +479,6 @@ export default async function handler(req: Request) {
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
-      }
-      if (booking.guest_email !== sessionCheck.user.email) {
-        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -583,13 +573,6 @@ export default async function handler(req: Request) {
 
     // ─── Generate Web ─────────────────────────────────────────────────────
     if (action === "generate-web") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       if (!db) return _err("Database not configured", 500)
 
       const { orderId, remarks1, remarks2 } = actionData
@@ -602,9 +585,6 @@ export default async function handler(req: Request) {
 
       if (fetchError || !booking) {
         return _err("Booking not found", 404)
-      }
-      if (booking.guest_email !== sessionCheck.user.email) {
-        return _err("Unauthorized: booking does not belong to this user", 403)
       }
       if (booking.payment_status === "paid") {
         return _err("Booking already paid", 409)
@@ -680,13 +660,6 @@ export default async function handler(req: Request) {
 
     // ─── Verify QR ────────────────────────────────────────────────────────
     if (action === "verify-qr") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       const { prn } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
@@ -775,13 +748,6 @@ export default async function handler(req: Request) {
 
     // ─── Verify Web ───────────────────────────────────────────────────────
     if (action === "verify-web") {
-      const sessionCheck = await verifySession(req)
-      if (!sessionCheck.authorized) {
-        return new Response(JSON.stringify({ error: sessionCheck.error || "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        })
-      }
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
       const bookingId = extractBookingId(prn)
       if (!bookingId) {
