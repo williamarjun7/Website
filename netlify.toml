@@ -6,3 +6,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+  Content-Security-Policy = '''
+default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://6aiag3ra.us-east.insforge.app https://highlands-motel.com https://images.unsplash.com; connect-src 'self' https://6aiag3ra.us-east.insforge.app wss://6aiag3ra.us-east.insforge.app https://clientapi.fonepay.com https://merchantapi.fonepay.com wss://ws.fonepay.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://clientapi.fonepay.com; upgrade-insecure-requests
+'''
