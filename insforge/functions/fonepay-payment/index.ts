@@ -508,7 +508,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -671,7 +671,7 @@ export default async function handler(req: Request) {
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
