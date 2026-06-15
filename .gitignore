@@ -18,6 +18,7 @@ logs
 .insforge
 .netlify
 netlify.toml
+opencode.json
 .github/copilot*
 
 # Graphify intermediates
