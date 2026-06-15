@@ -75,9 +75,7 @@ const Cafe = () => {
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                             <a
-                                href="https://wa.me/9779763215874"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                href="tel:+9779763215874"
                                 className="inline-flex items-center space-x-2 px-8 py-4 bg-white text-amber-900 hover:bg-gray-100 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                             >
                                 <span>Call to Reserve</span>
@@ -238,9 +236,7 @@ const Cafe = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <a
-                            href="https://wa.me/9779763215874"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="tel:+9779763215874"
                             className="btn-primary"
                         >
                             Call to Reserve
