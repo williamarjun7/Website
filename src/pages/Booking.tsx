@@ -56,6 +56,7 @@ const Booking = () => {
     const [qrError, setQrError] = useState('');
     const [showAlternatives, setShowAlternatives] = useState(false);
     const [unavailableError, setUnavailableError] = useState('');
+    const fetchIdRef = useRef(0);
 
     const {
         register,
@@ -73,9 +74,31 @@ const Booking = () => {
     const tomorrow = new Date(new Date().getTime() + 86400000).toISOString().split('T')[0];
 
     useEffect(() => {
-        const searchAvailableRooms = async () => {
+        const id = ++fetchIdRef.current;
+
+        if (!checkIn || !checkOut || !(checkIn < checkOut)) return;
+
+        const run = async () => {
             setLoading(true);
+            setUnavailableError('');
+
+            if (preselectedRoom && !showAlternatives) {
+                const { data } = await checkRoomAvailability(preselectedRoom.id, checkIn, checkOut);
+                if (id !== fetchIdRef.current) return;
+                setLoading(false);
+                if (data?.isAvailable) {
+                    setSelectedRoom(preselectedRoom);
+                    setStep(2);
+                    return;
+                }
+                setUnavailableError(`${preselectedRoom.name} is not available for the selected dates. Please try different dates or choose another room.`);
+                setAvailableRooms([]);
+                return;
+            }
+
             const { data, error } = await getAvailableRooms(checkIn, checkOut);
+            if (id !== fetchIdRef.current) return;
+            setLoading(false);
             if (error) {
                 setToastMessage(error || 'Failed to load rooms. Please try again.');
                 setTimeout(() => setToastMessage(''), 5000);
@@ -83,27 +106,9 @@ const Booking = () => {
             } else if (data) {
                 setAvailableRooms(data);
             }
-            setLoading(false);
         };
 
-        if (checkIn && checkOut && checkIn < checkOut) {
-            if (preselectedRoom && !showAlternatives) {
-                setLoading(true);
-                setUnavailableError('');
-                checkRoomAvailability(preselectedRoom.id, checkIn, checkOut).then(({ data }) => {
-                    setLoading(false);
-                    if (data?.isAvailable) {
-                        setSelectedRoom(preselectedRoom);
-                        setStep(2);
-                    } else {
-                        setUnavailableError(`${preselectedRoom.name} is not available for the selected dates. Please try different dates or choose another room.`);
-                        searchAvailableRooms();
-                    }
-                });
-            } else {
-                searchAvailableRooms();
-            }
-        }
+        run();
     }, [checkIn, checkOut, preselectedRoom, showAlternatives]);
 
     const onPaymentReceived = useCallback(async (prn: string) => {
@@ -369,8 +374,8 @@ const Booking = () => {
                             </div>
                         )}
 
-                        {/* Navbar flow OR alternatives / unavailable: full date selection + room list */}
-                        {(bookingSource === 'navbar' || showAlternatives || unavailableError) && (
+                        {/* Navbar flow OR alternatives: full date selection + room list */}
+                        {(bookingSource === 'navbar' || showAlternatives) && (
                             <DateSelectionStep
                                 checkIn={checkIn} checkOut={checkOut} guests={guests}
                                 today={today} tomorrow={tomorrow}
