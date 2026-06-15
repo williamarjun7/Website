@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +19,6 @@ const POLLING_TIMEOUT_MS = 15 * 60 * 1000;
 
 const Booking = () => {
     const location = useLocation();
-    const navigate = useNavigate();
     const preselectedRoom = (() => {
         const fromState = (location.state as { selectedRoom?: Room } | null)?.selectedRoom;
         if (fromState) {
