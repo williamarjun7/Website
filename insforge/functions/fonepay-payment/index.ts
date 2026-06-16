@@ -1,6 +1,15 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
+// ─── Startup env-var check ────────────────────────────────────────────────
+const ENV_VARS = [
+  "FONEPAY_PG_MERCHANT_CODE", "FONEPAY_PG_MERCHANT_SECRET",
+  "FONEPAY_USERNAME", "FONEPAY_PASSWORD", "FONEPAY_MERCHANT_BASE",
+  "FONEPAY_CLIENT_BASE", "FONEPAY_PG_CALLBACK_URL",
+  "INSFORGE_BASE_URL", "SUPABASE_SERVICE_ROLE_KEY",
+] as const
+console.log("[startup] Env var check:", ENV_VARS.map(v => `${v}=${Deno.env.get(v) ? "✓" : "✗ MISSING"}`).join(", "))
+
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
   "https://highlands-motel.com",
@@ -80,7 +89,9 @@ async function verifyFonepayResponseSignature(
 function generateSecurePrn(bookingId: string): string {
   const shortId = bookingId.replace(/-/g, "").slice(0, 8)
   const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 8)
-  return `HL${shortId}${rand}`.toUpperCase()
+  const prn = `HL${shortId}${rand}`.toUpperCase()
+  console.log(`[debug] PRN generated: "${prn}" (length=${prn.length}, shortId="${shortId}", rand="${rand}")`)
+  return prn
 }
 
 async function logEvent(db: ReturnType<typeof createClient>["database"] | null, event: {
@@ -137,14 +148,14 @@ function buildConfirmationHtml(params: { guestName: string; roomName: string; ch
 const GenerateQrSchema = z.object({
   action: z.literal("generate-qr"),
   orderId: z.string(),
-  remarks1: z.string().optional().default("Payment"),
+  remarks1: z.string().optional().default("Room Booking"),
   remarks2: z.string().optional().default("-"),
 })
 
 const GenerateWebSchema = z.object({
   action: z.literal("generate-web"),
   orderId: z.string(),
-  remarks1: z.string().optional().default("Payment"),
+  remarks1: z.string().optional().default("Room Booking"),
   remarks2: z.string().optional().default("-"),
 })
 
@@ -513,7 +524,11 @@ export default async function handler(req: Request) {
       // For pay_at_property, charge only the advance amount (60%)
       // For other methods, charge the full total
       const isPartial = booking.payment_status === "pay_at_property"
-      const amount = isPartial ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
+      const rawAmount = isPartial ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
+      // Normalize amount: convert to number to strip DB-induced trailing zeros, then back to string
+      const amountNum = Number(rawAmount)
+      const amountStr = String(amountNum)
+      console.log(`[debug] Amount: raw=${rawAmount} (${typeof rawAmount}) → normalized="${amountStr}"`)
 
       // Check for existing pending payment for this booking to prevent duplicate PRNs
       const { data: existingPending } = await db
@@ -550,34 +565,59 @@ export default async function handler(req: Request) {
       }
 
       const prn = generateSecurePrn(orderId)
-      const dataToHash = `${String(amount)},${prn},${merchantCode},${remarks1},${remarks2}`
+
+      // Ensure remarks2 follows "BK-" + 8-char bookingId pattern if not already
+      const shortId = orderId.replace(/-/g, "").slice(0, 8)
+      const safeRemarks2 = remarks2 && remarks2.startsWith("BK-") && remarks2.length === 11
+        ? remarks2
+        : `BK-${shortId}`
+
+      const dataToHash = `${amountStr},${prn},${merchantCode},${remarks1},${safeRemarks2}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
+      console.log(`[debug] HMAC data string: "${dataToHash}"`)
+      console.log(`[debug] HMAC output (first 32 / full 128): "${dataValidation.slice(0, 32)}..." / "${dataValidation}"`)
 
       const payload = {
-        amount: String(amount),
+        amount: amountStr,
         remarks1,
-        remarks2,
+        remarks2: safeRemarks2,
         prn,
         merchantCode,
         dataValidation,
         username,
         password,
       }
+      console.log(`[debug] Request body: ${JSON.stringify(payload, null, 2)}`)
 
       let qrData: unknown
       try {
+        console.log(`[debug] POST ${ENDPOINTS.qrDownload}`)
         const res = await fetchWithTimeout(ENDPOINTS.qrDownload, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
-        if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "(unreadable)")
+          console.error(`Fonepay QR download failed [${res.status}]: ${errBody}`)
+          return _err(`Fonepay API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+        }
         qrData = await res.json()
-      } catch {
+      } catch (fetchErr) {
+        const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
+        console.error(`[debug] Fonepay fetch exception: ${msg}`)
         return _err("Payment gateway error. Please try again.", 502)
       }
 
+      // Check for Fonepay error response even with HTTP 200
       const qrResponse = qrData as Record<string, unknown>
+      console.log(`[debug] Fonepay response: ${JSON.stringify(qrResponse)}`)
+      if (qrResponse.error || qrResponse.status === "error") {
+        const errMsg = String(qrResponse.message || qrResponse.error || "unknown")
+        console.error(`[debug] Fonepay returned error: ${errMsg}`)
+        return _err(`Fonepay rejected: ${errMsg}`, 502)
+      }
+
       if (!qrResponse.qrMessage) {
         return _err("Fonepay rejected the request. Verify merchant credentials.", 502)
       }
@@ -588,7 +628,7 @@ export default async function handler(req: Request) {
         .insert({
           booking_id: orderId,
           prn,
-          amount,
+          amount: amountNum,
           payment_method: "fonepay_qr",
           status: "pending",
         })
@@ -614,7 +654,7 @@ export default async function handler(req: Request) {
       await logEvent(db, {
         booking_id: orderId,
         event_type: "qr_created",
-        payload: { prn, amount, method: "fonepay_qr", qr_message_present: !!qrResponse.qrMessage },
+        payload: { prn, amount: amountNum, method: "fonepay_qr", qr_message_present: !!qrResponse.qrMessage },
       })
 
       return new Response(JSON.stringify({
@@ -622,7 +662,7 @@ export default async function handler(req: Request) {
         prn,
         qrMessage: qrResponse.qrMessage || "",
         thirdpartyQrWebSocketUrl: qrResponse.thirdpartyQrWebSocketUrl || "",
-        amount,
+        amount: amountNum,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
@@ -652,7 +692,6 @@ export default async function handler(req: Request) {
 
       // For pay_at_property, charge only the advance amount (60%)
       const isPartialWeb = booking.payment_status === "pay_at_property"
-      const amount = isPartialWeb ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
 
       // Check for existing pending payment for this booking
       const { data: existingPendingWeb } = await db
@@ -688,22 +727,37 @@ export default async function handler(req: Request) {
       const day = String(today.getDate()).padStart(2, "0")
       const date = `${month}/${day}/${today.getFullYear()}`
 
+      // Normalize amount for web payment too
+      const rawAmountWeb = isPartialWeb ? (booking.advance_amount || Math.round(booking.total_price * 60) / 100) : booking.total_price
+      const amountNumWeb = Number(rawAmountWeb)
+      const amountStrWeb = String(amountNumWeb)
+      console.log(`[debug] Web amount: raw=${rawAmountWeb} → normalized="${amountStrWeb}"`)
+
+      // Ensure remarks2 has BK- prefix
+      const shortIdWeb = orderId.replace(/-/g, "").slice(0, 8)
+      const safeRemarks2Web = remarks2 && remarks2.startsWith("BK-") && remarks2.length === 11
+        ? remarks2
+        : `BK-${shortIdWeb}`
+
       const paymentData = {
         PID: merchantCode,
         MD: "P",
         PRN: prn,
-        AMT: amount,
+        AMT: amountStrWeb,
         CRN: "NPR",
         DT: date,
         R1: remarks1,
-        R2: remarks2,
+        R2: safeRemarks2Web,
         RU: callbackUrl,
       }
 
       const concat = `${paymentData.PID},${paymentData.MD},${paymentData.PRN},${paymentData.AMT},${paymentData.CRN},${paymentData.DT},${paymentData.R1},${paymentData.R2},${paymentData.RU}`
+      console.log(`[debug] Web HMAC concat string: "${concat}"`)
       const dv = await hmacSha512(merchantSecret, concat)
+      console.log(`[debug] Web DV output: "${dv}"`)
 
       const paymentUrl = `${ENDPOINTS.webRedirect}?PID=${paymentData.PID}&MD=${paymentData.MD}&PRN=${paymentData.PRN}&AMT=${paymentData.AMT}&CRN=${paymentData.CRN}&DT=${encodeURIComponent(paymentData.DT)}&R1=${encodeURIComponent(paymentData.R1)}&R2=${encodeURIComponent(paymentData.R2)}&DV=${dv}&RU=${encodeURIComponent(paymentData.RU)}`
+      console.log(`[debug] Web payment URL: ${paymentUrl}`)
 
       // Create payment record in pending state
       const { error: payInsertErr } = await db
@@ -711,7 +765,7 @@ export default async function handler(req: Request) {
         .insert({
           booking_id: orderId,
           prn,
-          amount,
+          amount: amountNumWeb,
           payment_method: "fonepay_web",
           status: "pending",
         })
@@ -735,10 +789,10 @@ export default async function handler(req: Request) {
       await logEvent(db, {
         booking_id: orderId,
         event_type: "payment_initiated",
-        payload: { prn, amount, method: "fonepay_web" },
+        payload: { prn, amount: amountNumWeb, method: "fonepay_web" },
       })
 
-      return new Response(JSON.stringify({ success: true, prn, paymentUrl, amount }), {
+      return new Response(JSON.stringify({ success: true, prn, paymentUrl, amount: amountNumWeb }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }
@@ -765,17 +819,29 @@ export default async function handler(req: Request) {
 
       const dataToHash = `${prn},${merchantCode}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
+      console.log(`[debug] QR verify HMAC data: "${dataToHash}"`)
+      console.log(`[debug] QR verify dataValidation: "${dataValidation.slice(0, 32)}..."`)
 
       let fonepayResult: Record<string, unknown>
       try {
+        const verifyPayload = { prn, merchantCode, dataValidation, username, password }
+        console.log(`[debug] QR verify request: ${JSON.stringify(verifyPayload)}`)
         const res = await fetchWithTimeout(ENDPOINTS.qrStatus, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
+          body: JSON.stringify(verifyPayload),
         })
-        if (!res.ok) throw new Error(`Fonepay API error: ${res.status}`)
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "(unreadable)")
+          console.error(`Fonepay QR status check failed [${res.status}]: ${errBody}`)
+          await db.from("payments").update({ response_msg: `qr_status_failed: ${res.status} ${errBody}` }).eq("id", existingPayment.id)
+          return _err(`Fonepay status error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+        }
         fonepayResult = await res.json()
-      } catch {
+        console.log(`[debug] QR verify response: ${JSON.stringify(fonepayResult)}`)
+      } catch (verifyErr) {
+        const msg = verifyErr instanceof Error ? verifyErr.message : String(verifyErr)
+        console.error(`[debug] QR verify fetch exception: ${msg}`)
         return _err("Payment verification failed. Please try again.", 502)
       }
 
@@ -847,21 +913,32 @@ export default async function handler(req: Request) {
 
       const dvString = `${PID},${callbackAmount},${prn},${BID},${uid}`
       const DV = await hmacSha512(merchantSecret, dvString)
+      console.log(`[debug] Web verify HMAC data: "${dvString}"`)
+      console.log(`[debug] Web verify DV: "${DV.slice(0, 32)}..."`)
 
       const params = new URLSearchParams({ PRN: prn, PID, BID, AMT: callbackAmount, UID: uid, DV })
       const verificationUrl = `${ENDPOINTS.webVerify}?${params}`
+      console.log(`[debug] Web verify URL: ${verificationUrl}`)
 
       let fonepayResult: Record<string, unknown>
       try {
         const res = await fetchWithTimeout(verificationUrl, {
           headers: { "Content-Type": "application/json", "User-Agent": "PaymentGateway/1.0" },
         })
-        if (!res.ok) throw new Error(`Verification API error: ${res.status}`)
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "(unreadable)")
+          console.error(`Fonepay web verification failed [${res.status}]: ${errBody}`)
+          await db.from("payments").update({ response_msg: `web_verify_failed: ${res.status} ${errBody}` }).eq("id", existingPayment.id)
+          return _err(`Verification API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+        }
         const xmlText = await res.text()
         const { parse } = await import("https://deno.land/x/xml@2.1.1/mod.ts")
         const jsonResult = parse(xmlText) as Record<string, unknown>
         fonepayResult = (jsonResult?.response || jsonResult) as Record<string, unknown>
-      } catch {
+        console.log(`[debug] Web verify parsed response: ${JSON.stringify(fonepayResult)}`)
+      } catch (verifyErr) {
+        const msg = verifyErr instanceof Error ? verifyErr.message : String(verifyErr)
+        console.error(`[debug] Web verify fetch exception: ${msg}`)
         return _err("Payment verification failed. Please try again.", 502)
       }
 
@@ -950,6 +1027,7 @@ export default async function handler(req: Request) {
 
       const dataToHash = `${fonepayTraceId},${prn},${invoiceNumber},${invoiceDate},${transactionAmount},${merchantCode}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
+      console.log(`[debug] Tax refund HMAC data: "${dataToHash}"`)
 
       const payload = {
         fonepayTraceId: String(fonepayTraceId),
@@ -962,6 +1040,7 @@ export default async function handler(req: Request) {
         username,
         password,
       }
+      console.log(`[debug] Tax refund request: ${JSON.stringify(payload)}`)
 
       let result: Record<string, unknown>
       try {
@@ -970,9 +1049,17 @@ export default async function handler(req: Request) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
-        if (!res.ok) throw new Error(`Fonepay tax refund API error: ${res.status}`)
+        if (!res.ok) {
+          const errBody = await res.text().catch(() => "(unreadable)")
+          console.error(`Fonepay tax refund failed [${res.status}]: ${errBody}`)
+          await db.from("payments").update({ response_msg: `tax_refund_failed: ${res.status} ${errBody}` }).eq("prn", prn)
+          return _err(`Tax refund API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+        }
         result = await res.json()
-      } catch {
+        console.log(`[debug] Tax refund response: ${JSON.stringify(result)}`)
+      } catch (refundErr) {
+        const msg = refundErr instanceof Error ? refundErr.message : String(refundErr)
+        console.error(`[debug] Tax refund fetch exception: ${msg}`)
         return _err("Tax refund failed. Please try again.", 502)
       }
 
