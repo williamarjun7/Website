@@ -286,6 +286,13 @@ const Booking = () => {
                 total_price: bookingData.total_price,
                 advance_amount: bookingData.advance_amount,
                 balance_amount: bookingData.balance_amount,
+                guest_name: data.guest_name,
+                guest_email: data.guest_email,
+                guest_phone: data.guest_phone,
+                check_in: checkIn,
+                check_out: checkOut,
+                guests,
+                room: activeRoom ? { id: activeRoom.id, name: activeRoom.name, room_number: activeRoom.room_number, room_type: activeRoom.room_type } : null,
             }));
             await processPayment(bookingData.id, data.paymentMethod);
         } else {
@@ -479,6 +486,7 @@ const Booking = () => {
                         checkIn={checkIn}
                         checkOut={checkOut}
                         guests={guests}
+                        paymentMethod={selectedPaymentMethod}
                     />
                 )}
             </div>

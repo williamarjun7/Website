@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { z } from 'zod';
-import { Check, X, Loader } from 'lucide-react';
+import { X, Loader } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
+import BookingConfirmation, { ConfirmedBookingData, storeConfirmedBooking } from '../components/booking/BookingConfirmation';
 
 const paymentParamSchema = z.object({
   prn: z.string().min(1, 'Missing PRN'),
@@ -13,19 +14,12 @@ const paymentParamSchema = z.object({
   bc: z.string().default(''),
 });
 
-interface BookingInfo {
-  total: number;
-  advance: number;
-  balance: number;
-}
-
 const PaymentResult = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [message, setMessage] = useState('');
-  const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
-  const [bookingId, setBookingId] = useState('');
+  const [confirmedData, setConfirmedData] = useState<ConfirmedBookingData | null>(null);
 
   useEffect(() => {
     const verify = async () => {
@@ -47,26 +41,37 @@ const PaymentResult = () => {
       const { data, error } = await verifyWebPayment(prn, uid, amount, pid, bc);
 
       if (data?.success && (data.response_code === 'successful' || data.status === 'success')) {
-        setStatus('success');
         const stored = sessionStorage.getItem('pendingBookingData');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            setBookingInfo({
-              total: Number(parsed.total_price),
-              advance: Number(parsed.advance_amount) || Number(parsed.total_price),
-              balance: Number(parsed.balance_amount) || 0,
-            });
-          } catch {
-            // stored data is malformed, ignore
-          }
-          sessionStorage.removeItem('pendingBookingData');
-        }
         const pendingId = sessionStorage.getItem('pendingBookingId');
-        if (pendingId) {
-          setBookingId(pendingId);
-          sessionStorage.removeItem('pendingBookingId');
+        sessionStorage.removeItem('pendingBookingData');
+        sessionStorage.removeItem('pendingBookingId');
+
+        let parsedStored: Record<string, unknown> = {};
+        if (stored) {
+          try { parsedStored = JSON.parse(stored); } catch { /* ignore */ }
         }
+
+        const confData: ConfirmedBookingData = {
+          id: pendingId || '',
+          guest_name: String(parsedStored.guest_name || ''),
+          guest_email: String(parsedStored.guest_email || ''),
+          guest_phone: String(parsedStored.guest_phone || ''),
+          check_in: String(parsedStored.check_in || ''),
+          check_out: String(parsedStored.check_out || ''),
+          guests: Number(parsedStored.guests) || 1,
+          room: (parsedStored.room as ConfirmedBookingData['room']) || { id: '', name: 'Selected Room' },
+          total_price: Number(parsedStored.total_price) || 0,
+          advance_amount: parsedStored.advance_amount ? Number(parsedStored.advance_amount) : undefined,
+          balance_amount: parsedStored.balance_amount ? Number(parsedStored.balance_amount) : undefined,
+          payment_method: 'fonepay_web',
+          transaction_id: prn,
+          payment_status: 'paid',
+          booking_status: 'confirmed',
+        };
+
+        storeConfirmedBooking(confData);
+        setConfirmedData(confData);
+        setStatus('success');
         setMessage('Payment successful! Your booking is confirmed.');
       } else {
         setStatus('failed');
@@ -78,62 +83,23 @@ const PaymentResult = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
+    <div className="min-h-screen pt-24 pb-16">
       <Helmet>
         <title>Payment Status | Highlands Motel & Cafe</title>
       </Helmet>
-      <div className="card max-w-md mx-auto text-center">
+      <div className="container-custom max-w-2xl">
         {status === 'verifying' && (
-          <>
+          <div className="card max-w-md mx-auto text-center">
             <Loader className="animate-spin mx-auto mb-4 text-amber-600" size={48} />
             <h2 className="font-heading text-2xl font-bold mb-2">Verifying Payment</h2>
             <p className="text-gray-600">Please wait while we verify your payment...</p>
-          </>
+          </div>
         )}
-        {status === 'success' && (
-          <>
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="text-green-600" size={40} />
-            </div>
-            <h2 className="font-heading text-2xl font-bold mb-2">Payment Successful</h2>
-            <p className="text-gray-600 mb-6">{message}</p>
-            {bookingId && (
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                <p className="text-xs text-amber-700 mb-1">Booking Reference</p>
-                <p className="font-mono text-sm font-bold text-primary break-all">{bookingId}</p>
-              </div>
-            )}
-            {bookingInfo && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left text-sm space-y-2">
-                <p className="font-semibold text-gray-900 mb-2">Payment Summary</p>
-                <div className="flex justify-between text-gray-700">
-                  <span>Total Booking Amount</span>
-                  <span className="font-medium">NPR {bookingInfo.total.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-amber-700">
-                  <span>Advance Paid (60%)</span>
-                  <span className="font-medium">NPR {bookingInfo.advance.toLocaleString()}</span>
-                </div>
-                {bookingInfo.balance > 0 && (
-                  <div className="flex justify-between text-green-700 border-t border-gray-200 pt-2">
-                    <span>Balance at Property (40%)</span>
-                    <span className="font-medium">NPR {bookingInfo.balance.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-            )}
-            <div className="space-y-3">
-              <button onClick={() => navigate('/booking')} className="btn-primary w-full">
-                View My Booking
-              </button>
-              <button onClick={() => navigate('/')} className="btn-secondary w-full">
-                Return to Home
-              </button>
-            </div>
-          </>
+        {status === 'success' && confirmedData && (
+          <BookingConfirmation bookingData={confirmedData} />
         )}
         {status === 'failed' && (
-          <>
+          <div className="card max-w-md mx-auto text-center">
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <X className="text-red-600" size={40} />
             </div>
@@ -147,7 +113,7 @@ const PaymentResult = () => {
                 Return to Home
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
