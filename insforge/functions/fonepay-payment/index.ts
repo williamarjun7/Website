@@ -430,11 +430,19 @@ export default async function handler(req: Request) {
 
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
-  const baseUrl = Deno.env.get("FONEPAY_PG_URL") || ""
-  const dynamicQrUrl = (Deno.env.get("FONEPAY_DYNAMICQR_URL") || "").trim().replace(/\/+$/, "")
   const username = Deno.env.get("FONEPAY_USERNAME") || ""
   const password = Deno.env.get("FONEPAY_PASSWORD") || ""
   const callbackUrl = Deno.env.get("FONEPAY_PG_CALLBACK_URL") || ""
+
+  const merchantBase = (Deno.env.get("FONEPAY_MERCHANT_BASE") || "https://merchantapi.fonepay.com").replace(/\/+$/, "")
+  const clientBase = (Deno.env.get("FONEPAY_CLIENT_BASE") || "https://clientapi.fonepay.com").replace(/\/+$/, "")
+  const ENDPOINTS = {
+    qrDownload: `${merchantBase}/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`,
+    qrStatus: `${merchantBase}/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`,
+    taxRefund: `${merchantBase}/api/merchant/merchantDetailsForThirdParty/thirdPartyPostTaxRefund`,
+    webRedirect: `${clientBase}/api/merchantRequest`,
+    webVerify: `${clientBase}/api/merchantRequest/verificationMerchant`,
+  }
 
     if (!merchantCode || !merchantSecret) {
       return _err("Payment gateway not configured", 500, corsHeaders)
@@ -558,7 +566,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetchWithTimeout(`https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(ENDPOINTS.qrDownload, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -695,7 +703,7 @@ export default async function handler(req: Request) {
       const concat = `${paymentData.PID},${paymentData.MD},${paymentData.PRN},${paymentData.AMT},${paymentData.CRN},${paymentData.DT},${paymentData.R1},${paymentData.R2},${paymentData.RU}`
       const dv = await hmacSha512(merchantSecret, concat)
 
-      const paymentUrl = `${baseUrl}/api/merchantRequest?PID=${paymentData.PID}&MD=${paymentData.MD}&PRN=${paymentData.PRN}&AMT=${paymentData.AMT}&CRN=${paymentData.CRN}&DT=${encodeURIComponent(paymentData.DT)}&R1=${encodeURIComponent(paymentData.R1)}&R2=${encodeURIComponent(paymentData.R2)}&DV=${dv}&RU=${encodeURIComponent(paymentData.RU)}`
+      const paymentUrl = `${ENDPOINTS.webRedirect}?PID=${paymentData.PID}&MD=${paymentData.MD}&PRN=${paymentData.PRN}&AMT=${paymentData.AMT}&CRN=${paymentData.CRN}&DT=${encodeURIComponent(paymentData.DT)}&R1=${encodeURIComponent(paymentData.R1)}&R2=${encodeURIComponent(paymentData.R2)}&DV=${dv}&RU=${encodeURIComponent(paymentData.RU)}`
 
       // Create payment record in pending state
       const { error: payInsertErr } = await db
@@ -760,7 +768,7 @@ export default async function handler(req: Request) {
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+        const res = await fetchWithTimeout(ENDPOINTS.qrStatus, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
@@ -841,7 +849,7 @@ export default async function handler(req: Request) {
       const DV = await hmacSha512(merchantSecret, dvString)
 
       const params = new URLSearchParams({ PRN: prn, PID, BID, AMT: callbackAmount, UID: uid, DV })
-      const verificationUrl = `${baseUrl}/api/merchantRequest/verificationMerchant?${params}`
+      const verificationUrl = `${ENDPOINTS.webVerify}?${params}`
 
       let fonepayResult: Record<string, unknown>
       try {
@@ -957,7 +965,7 @@ export default async function handler(req: Request) {
 
       let result: Record<string, unknown>
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyPostTaxRefund`, {
+        const res = await fetchWithTimeout(ENDPOINTS.taxRefund, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

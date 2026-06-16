@@ -17,6 +17,11 @@ const EXTEND_MS = 5 * 60 * 1000
 const RECONCILIATION_TIMEOUT_MS = 60_000
 const PENDING_PAYMENT_AGE_MS = 5 * 60 * 1000
 
+const merchantBase = (Deno.env.get("FONEPAY_MERCHANT_BASE") || "https://merchantapi.fonepay.com").replace(/\/+$/, "")
+const ENDPOINTS = {
+  qrStatus: `${merchantBase}/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`,
+}
+
 // Rate limiting (in-memory, per deployment)
 interface RateEntry { count: number; expires: number }
 const rateStore = new Map<string, RateEntry>()
@@ -75,7 +80,6 @@ async function checkFonepayStatus(
   prn: string,
   merchantCode: string,
   merchantSecret: string,
-  dynamicQrUrl: string,
   username: string,
   password: string,
 ): Promise<{ status: 'success' | 'failed' | 'pending' | 'unreachable'; fonepayResult?: Record<string, unknown> }> {
@@ -83,7 +87,7 @@ async function checkFonepayStatus(
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
-    const res = await fetch(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
+    const res = await fetch(ENDPOINTS.qrStatus, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
@@ -141,7 +145,6 @@ export default async function handler(req: Request) {
 
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
-  const dynamicQrUrl = (Deno.env.get("FONEPAY_DYNAMICQR_URL") || "").trim().replace(/\/+$/, "")
   const username = Deno.env.get("FONEPAY_USERNAME") || ""
   const password = Deno.env.get("FONEPAY_PASSWORD") || ""
 
@@ -191,7 +194,7 @@ export default async function handler(req: Request) {
       }
 
       try {
-        const status = await checkFonepayStatus(payment.prn, merchantCode, merchantSecret, dynamicQrUrl, username, password)
+        const status = await checkFonepayStatus(payment.prn, merchantCode, merchantSecret, username, password)
 
         if (status.status === 'unreachable') {
           continue
@@ -309,7 +312,7 @@ export default async function handler(req: Request) {
               continue
             }
 
-            const status = await checkFonepayStatus(prn, merchantCode, merchantSecret, dynamicQrUrl, username, password)
+            const status = await checkFonepayStatus(prn, merchantCode, merchantSecret, username, password)
 
             if (status.status === 'unreachable') {
               const elapsed = Date.now() - new Date(booking.hold_expires_at).getTime() + EXTEND_MS
