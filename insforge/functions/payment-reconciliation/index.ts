@@ -141,7 +141,7 @@ export default async function handler(req: Request) {
 
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
-  const dynamicQrUrl = Deno.env.get("FONEPAY_DYNAMICQR_URL") || ""
+  const dynamicQrUrl = (Deno.env.get("FONEPAY_DYNAMICQR_URL") || "").trim().replace(/\/+$/, "")
   const username = Deno.env.get("FONEPAY_USERNAME") || ""
   const password = Deno.env.get("FONEPAY_PASSWORD") || ""
 

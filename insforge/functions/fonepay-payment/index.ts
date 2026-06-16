@@ -431,7 +431,7 @@ export default async function handler(req: Request) {
   const merchantCode = Deno.env.get("FONEPAY_PG_MERCHANT_CODE") || ""
   const merchantSecret = Deno.env.get("FONEPAY_PG_MERCHANT_SECRET") || ""
   const baseUrl = Deno.env.get("FONEPAY_PG_URL") || ""
-  const dynamicQrUrl = Deno.env.get("FONEPAY_DYNAMICQR_URL") || ""
+  const dynamicQrUrl = (Deno.env.get("FONEPAY_DYNAMICQR_URL") || "").trim().replace(/\/+$/, "")
   const username = Deno.env.get("FONEPAY_USERNAME") || ""
   const password = Deno.env.get("FONEPAY_PASSWORD") || ""
   const callbackUrl = Deno.env.get("FONEPAY_PG_CALLBACK_URL") || ""
@@ -558,7 +558,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(`https://merchantapi.fonepay.com/api/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
