@@ -61,19 +61,30 @@ const GuestInfoStep: React.FC<GuestInfoStepProps> = ({
             </div>
 
             <div>
-                <label className="block text-sm font-medium mb-2">Payment Method</label>
-                <div className="space-y-3">
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="radio" value="pay_at_property" {...register('paymentMethod')} className="w-4 h-4" />
-                        <span>Pay at Property</span>
+                <label className="block text-sm font-medium mb-3">Payment Method</label>
+                <div className="grid gap-3">
+                    <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedPaymentMethod === 'pay_at_property' ? 'border-amber-900 bg-amber-50 shadow-sm' : 'border-gray-200 bg-white hover:border-amber-300'}`}>
+                        <input type="radio" value="pay_at_property" {...register('paymentMethod')} className="mt-1 w-4 h-4 accent-amber-900" />
+                        <div className="flex-1">
+                            <span className="font-heading font-bold text-gray-900">Pay at Property</span>
+                            <p className="text-sm text-gray-500 mt-0.5">Pay 60% advance now, remaining 40% at the property</p>
+                        </div>
                     </label>
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="radio" value="fonepay_qr" {...register('paymentMethod')} className="w-4 h-4" />
-                        <QrCode size={18} /><span>Fonepay QR</span>
+                    <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedPaymentMethod === 'fonepay_qr' ? 'border-amber-900 bg-amber-50 shadow-sm' : 'border-gray-200 bg-white hover:border-amber-300'}`}>
+                        <input type="radio" value="fonepay_qr" {...register('paymentMethod')} className="mt-1 w-4 h-4 accent-amber-900" />
+                        <QrCode size={20} className="mt-0.5 text-amber-700 shrink-0" />
+                        <div className="flex-1">
+                            <span className="font-heading font-bold text-gray-900">Fonepay QR</span>
+                            <p className="text-sm text-gray-500 mt-0.5">Pay instantly by scanning a QR code with Fonepay app</p>
+                        </div>
                     </label>
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                        <input type="radio" value="fonepay_web" {...register('paymentMethod')} className="w-4 h-4" />
-                        <ExternalLink size={18} /><span>Fonepay Web Payment</span>
+                    <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedPaymentMethod === 'fonepay_web' ? 'border-amber-900 bg-amber-50 shadow-sm' : 'border-gray-200 bg-white hover:border-amber-300'}`}>
+                        <input type="radio" value="fonepay_web" {...register('paymentMethod')} className="mt-1 w-4 h-4 accent-amber-900" />
+                        <ExternalLink size={20} className="mt-0.5 text-amber-700 shrink-0" />
+                        <div className="flex-1">
+                            <span className="font-heading font-bold text-gray-900">Fonepay Web Payment</span>
+                            <p className="text-sm text-gray-500 mt-0.5">Pay online via Fonepay web payment gateway</p>
+                        </div>
                     </label>
                 </div>
             </div>

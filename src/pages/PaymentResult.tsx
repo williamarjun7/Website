@@ -25,6 +25,7 @@ const PaymentResult = () => {
   const [status, setStatus] = useState<'verifying' | 'success' | 'failed'>('verifying');
   const [message, setMessage] = useState('');
   const [bookingInfo, setBookingInfo] = useState<BookingInfo | null>(null);
+  const [bookingId, setBookingId] = useState('');
 
   useEffect(() => {
     const verify = async () => {
@@ -61,7 +62,11 @@ const PaymentResult = () => {
           }
           sessionStorage.removeItem('pendingBookingData');
         }
-        sessionStorage.removeItem('pendingBookingId');
+        const pendingId = sessionStorage.getItem('pendingBookingId');
+        if (pendingId) {
+          setBookingId(pendingId);
+          sessionStorage.removeItem('pendingBookingId');
+        }
         setMessage('Payment successful! Your booking is confirmed.');
       } else {
         setStatus('failed');
@@ -92,6 +97,12 @@ const PaymentResult = () => {
             </div>
             <h2 className="font-heading text-2xl font-bold mb-2">Payment Successful</h2>
             <p className="text-gray-600 mb-6">{message}</p>
+            {bookingId && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                <p className="text-xs text-amber-700 mb-1">Booking Reference</p>
+                <p className="font-mono text-sm font-bold text-primary break-all">{bookingId}</p>
+              </div>
+            )}
             {bookingInfo && (
               <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left text-sm space-y-2">
                 <p className="font-semibold text-gray-900 mb-2">Payment Summary</p>
@@ -111,9 +122,14 @@ const PaymentResult = () => {
                 )}
               </div>
             )}
-            <button onClick={() => navigate('/booking')} className="btn-primary w-full">
-              View My Booking
-            </button>
+            <div className="space-y-3">
+              <button onClick={() => navigate('/booking')} className="btn-primary w-full">
+                View My Booking
+              </button>
+              <button onClick={() => navigate('/')} className="btn-secondary w-full">
+                Return to Home
+              </button>
+            </div>
           </>
         )}
         {status === 'failed' && (
@@ -123,9 +139,14 @@ const PaymentResult = () => {
             </div>
             <h2 className="font-heading text-2xl font-bold mb-2">Payment Failed</h2>
             <p className="text-gray-600 mb-6">{message}</p>
-            <button onClick={() => navigate('/booking')} className="btn-primary w-full">
-              Try Again
-            </button>
+            <div className="space-y-3">
+              <button onClick={() => navigate('/booking')} className="btn-primary w-full">
+                Try Again
+              </button>
+              <button onClick={() => navigate('/')} className="btn-secondary w-full">
+                Return to Home
+              </button>
+            </div>
           </>
         )}
       </div>

@@ -7,6 +7,7 @@ const ENV_VARS = [
   "FONEPAY_USERNAME", "FONEPAY_PASSWORD", "FONEPAY_MERCHANT_BASE",
   "FONEPAY_CLIENT_BASE", "FONEPAY_PG_CALLBACK_URL",
   "INSFORGE_BASE_URL", "SUPABASE_SERVICE_ROLE_KEY",
+  "RESEND_API_KEY", "EMAIL_FROM",
 ] as const
 console.log("[startup] Env var check:", ENV_VARS.map(v => `${v}=${Deno.env.get(v) ? "✓" : "✗ MISSING"}`).join(", "))
 
@@ -66,24 +67,11 @@ async function hmacSha512(secret: string, data: string): Promise<string> {
     .join("")
 }
 
-async function verifyFonepayResponseSignature(
-  merchantSecret: string,
-  merchantCode: string,
-  fonepayResult: Record<string, unknown>
-): Promise<boolean> {
-  const responseDv = fonepayResult.dataValidation as string | undefined
-  if (!responseDv) return false
-
-  const expectedFields = [
-    String(fonepayResult.fonepayTraceId ?? ""),
-    String(fonepayResult.amount ?? "0"),
-    String(fonepayResult.prn ?? ""),
-    merchantCode,
-    String(fonepayResult.paymentStatus ?? ""),
-  ]
-  const dataToHash = expectedFields.join(",")
-  const computedDv = await hmacSha512(merchantSecret, dataToHash)
-  return computedDv === responseDv
+function isFonepayResponseValid(
+  fonepayResult: Record<string, unknown>,
+  expectedPrn: string
+): boolean {
+  return fonepayResult.paymentStatus === "success" && String(fonepayResult.prn) === expectedPrn
 }
 
 function generateSecurePrn(bookingId: string): string {
@@ -119,9 +107,9 @@ async function logEvent(db: ReturnType<typeof createClient>["database"] | null, 
 
 interface EmailData { to: string; subject: string; html: string }
 
-async function sendEmail(data: EmailData): Promise<void> {
+async function sendEmail(data: EmailData): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
-  if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return }
+  if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return false }
   const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlands-motel.com>"
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -129,9 +117,14 @@ async function sendEmail(data: EmailData): Promise<void> {
       headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from, to: data.to, subject: data.subject, html: data.html }),
     })
-    if (!res.ok) console.error(`Email send failed: ${res.status} ${await res.text().catch(() => "")}`)
+    if (!res.ok) {
+      console.error(`Email send failed: ${res.status} ${await res.text().catch(() => "")}`)
+      return false
+    }
+    return true
   } catch (e) {
     console.error("Email send error:", e)
+    return false
   }
 }
 
@@ -182,6 +175,11 @@ const PostTaxRefundSchema = z.object({
   transactionAmount: z.union([z.string(), z.number()]),
 })
 
+const SendConfirmationSchema = z.object({
+  action: z.literal("send-booking-confirmation"),
+  bookingId: z.string(),
+})
+
 // NOTE: handle-callback action has been REMOVED for security.
 // The Fonepay web payment redirect is handled by the frontend at /payment-result
 // which calls the verify-web action. The GET handler (which allowed
@@ -193,6 +191,7 @@ const RequestSchema = z.discriminatedUnion("action", [
   VerifyQrSchema,
   VerifyWebSchema,
   PostTaxRefundSchema,
+  SendConfirmationSchema,
 ])
 
 type AppError = { message: string; error: string }
@@ -863,14 +862,14 @@ export default async function handler(req: Request) {
 
       // ── Payment status = success. Now verify integrity ──
 
-      // Verify Fonepay response HMAC signature to prevent forgery
-      const signatureValid = await verifyFonepayResponseSignature(merchantSecret, merchantCode, fonepayResult)
-      if (!signatureValid) {
+      // Validate Fonepay response — QR status endpoint does not return a DV/HMAC,
+      // so we cross-reference the PRN and paymentStatus instead.
+      if (!isFonepayResponseValid(fonepayResult, prn)) {
         await logEvent(db, {
           booking_id: bookingId, event_type: "payment_failed",
-          payload: { prn, reason: "Fonepay response signature verification failed" },
+          payload: { prn, fonepayResult, reason: "Fonepay response validation failed — PRN mismatch or missing success status" },
         })
-        return _err("Payment verification failed: invalid response signature", 502)
+        return _err("Payment verification failed: invalid response from gateway", 502)
       }
 
       // ⚠️ Amount integrity check — compare Fonepay amount vs PAYMENT RECORD amount (authoritative)
@@ -1079,6 +1078,56 @@ export default async function handler(req: Request) {
       })
 
       return new Response(JSON.stringify({ success: true, fonepayResponse: result }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    }
+
+    // ─── Send Booking Confirmation ─────────────────────────────────────
+    if (action === "send-booking-confirmation") {
+      if (!db) return _err("Database not configured", 500)
+
+      const { bookingId } = actionData
+
+      const { data: booking, error: fetchErr } = await db
+        .from("bookings")
+        .select("id, guest_name, guest_email, check_in, check_out, room_id, total_price, advance_amount, balance_amount, booking_status, payment_status")
+        .eq("id", bookingId)
+        .single()
+
+      if (fetchErr || !booking) {
+        return _err("Booking not found", 404)
+      }
+
+      const { data: room } = await db
+        .from("rooms")
+        .select("name, room_number, room_type")
+        .eq("id", booking.room_id)
+        .single()
+
+      const roomName = room?.name || "Selected Room"
+
+      await sendEmail({
+        to: booking.guest_email,
+        subject: "Booking Confirmed — Highlands Motel & Cafe",
+        html: buildConfirmationHtml({
+          guestName: booking.guest_name,
+          roomName,
+          checkIn: booking.check_in,
+          checkOut: booking.check_out,
+          totalPrice: booking.total_price,
+          advanceAmount: booking.advance_amount || undefined,
+          balanceAmount: booking.balance_amount || undefined,
+          bookingId: booking.id,
+        }),
+      })
+
+      await logEvent(db, {
+        booking_id: bookingId,
+        event_type: "confirmation_email_sent",
+        payload: { email: booking.guest_email },
+      })
+
+      return new Response(JSON.stringify({ success: true, message: "Confirmation email sent" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       })
     }

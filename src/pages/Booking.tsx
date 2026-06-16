@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import QRCode from 'qrcode';
 import { getAvailableRooms, checkRoomAvailability, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice } from '../services/bookingService';
-import { generateQrPayment, generateWebPayment, verifyQrPayment } from '../services/fonepayService';
+import { generateQrPayment, generateWebPayment, verifyQrPayment, sendBookingConfirmation } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
 import { useWebSocket } from '../hooks/useWebSocket';
 import ProgressSteps from '../components/booking/ProgressSteps';
@@ -61,6 +61,8 @@ const Booking = () => {
     // ── Payment state ──────────────────────────────────────────────────
     const [bookingId, setBookingId] = useState('');
     const [confirmedEmail, setConfirmedEmail] = useState('');
+    const [guestName, setGuestName] = useState('');
+    const [guestPhone, setGuestPhone] = useState('');
     const [paymentLoading, setPaymentLoading] = useState(false);
     const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
     const [paymentPrn, setPaymentPrn] = useState('');
@@ -251,6 +253,8 @@ const Booking = () => {
             }
         } else {
             setStep(4);
+            // Trigger confirmation email for pay-at-property
+            sendBookingConfirmation(bookingId);
         }
     };
 
@@ -276,6 +280,8 @@ const Booking = () => {
         if (bookingData) {
             setBookingId(bookingData.id);
             setConfirmedEmail(data.guest_email);
+            setGuestName(data.guest_name);
+            setGuestPhone(data.guest_phone);
             sessionStorage.setItem('pendingBookingData', JSON.stringify({
                 total_price: bookingData.total_price,
                 advance_amount: bookingData.advance_amount,
@@ -467,6 +473,12 @@ const Booking = () => {
                     <ConfirmationStep
                         confirmedEmail={confirmedEmail} bookingId={bookingId}
                         getTotalPrice={getTotalPrice}
+                        selectedRoom={activeRoom}
+                        guestName={guestName}
+                        guestPhone={guestPhone}
+                        checkIn={checkIn}
+                        checkOut={checkOut}
+                        guests={guests}
                     />
                 )}
             </div>

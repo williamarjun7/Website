@@ -115,6 +115,21 @@ export interface PostTaxRefundData {
   transactionAmount: string | number;
 }
 
+export const sendBookingConfirmation = async (bookingId: string) => {
+  try {
+    const { data, error } = await insforge.functions.invoke('fonepay-payment', {
+      body: {
+        action: 'send-booking-confirmation',
+        bookingId,
+      }
+    });
+    if (error) throw error;
+    return { data: data as { success: boolean; message: string }, error: null };
+  } catch (error) {
+    return handleInsforgeError(error);
+  }
+};
+
 export const postTaxRefund = async (refundData: PostTaxRefundData) => {
   try {
     const { data, error } = await insforge.functions.invoke('fonepay-payment', {
