@@ -203,10 +203,11 @@ const Booking = () => {
         setQrError('');
         if (method === 'fonepay_qr') {
             setPaymentLoading(true);
+            const shortId = bookingId.replace(/-/g, '').slice(0, 8);
             const { data: qrResult, error: qrErr } = await generateQrPayment(
                 bookingId,
                 'Room Booking',
-                `Booking ${bookingId}`
+                `BK-${shortId}`
             );
             setPaymentLoading(false);
 
@@ -215,6 +216,7 @@ const Booking = () => {
                     const dataUrl = await QRCode.toDataURL(qrResult.qrMessage, {
                         width: 300, margin: 2,
                         color: { dark: '#1a1a1a', light: '#ffffff' },
+                        errorCorrectionLevel: 'H',
                     });
                     setQrCodeDataUrl(dataUrl);
                 } catch {
@@ -232,10 +234,11 @@ const Booking = () => {
             }
         } else if (method === 'fonepay_web') {
             setPaymentLoading(true);
+            const shortId = bookingId.replace(/-/g, '').slice(0, 8);
             const { data: webResult, error: webError } = await generateWebPayment(
                 bookingId,
                 'Room Booking',
-                `Booking ${bookingId}`
+                `BK-${shortId}`
             );
             setPaymentLoading(false);
 

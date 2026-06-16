@@ -4,7 +4,7 @@ import { z } from "https://esm.sh/zod@3.22.4"
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",
   "https://highlands-motel.com",
-  "https://highalndsmotelinn.netlify.app",
+  "https://highlandsmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -78,18 +78,9 @@ async function verifyFonepayResponseSignature(
 }
 
 function generateSecurePrn(bookingId: string): string {
-  const ts = Date.now()
-  const rand = crypto.randomUUID().replace(/-/g, "")
-  return `HIGHLANDS_${bookingId}_${ts}_${rand}`
-}
-
-function extractBookingId(prn: string): string | null {
-  const prefix = "HIGHLANDS_"
-  if (!prn.startsWith(prefix)) return null
-  const afterPrefix = prn.slice(prefix.length)
-  const idx = afterPrefix.indexOf("_")
-  if (idx <= 0) return null
-  return afterPrefix.slice(0, idx)
+  const shortId = bookingId.replace(/-/g, "").slice(0, 8)
+  const rand = crypto.randomUUID().replace(/-/g, "").slice(0, 8)
+  return `HL${shortId}${rand}`.toUpperCase()
 }
 
 async function logEvent(db: ReturnType<typeof createClient>["database"] | null, event: {
@@ -147,14 +138,14 @@ const GenerateQrSchema = z.object({
   action: z.literal("generate-qr"),
   orderId: z.string(),
   remarks1: z.string().optional().default("Payment"),
-  remarks2: z.string().optional().default(""),
+  remarks2: z.string().optional().default("-"),
 })
 
 const GenerateWebSchema = z.object({
   action: z.literal("generate-web"),
   orderId: z.string(),
   remarks1: z.string().optional().default("Payment"),
-  remarks2: z.string().optional().default(""),
+  remarks2: z.string().optional().default("-"),
 })
 
 const VerifyQrSchema = z.object({
@@ -567,7 +558,7 @@ export default async function handler(req: Request) {
 
       let qrData: unknown
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrDownload`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrDownload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -747,17 +738,29 @@ export default async function handler(req: Request) {
     // ─── Verify QR ────────────────────────────────────────────────────────
     if (action === "verify-qr") {
       const { prn } = actionData
-      const bookingId = extractBookingId(prn)
-      if (!bookingId) {
-        return _err("Invalid PRN format", 400)
+
+      // Look up payment record by PRN first (PRN is unique — authoritative booking ID source)
+      if (!db) return _err("Database not configured", 500)
+
+      const { data: existingPayment } = await db
+        .from("payments")
+        .select("id, booking_id, status, amount")
+        .eq("prn", prn)
+        .maybeSingle()
+
+      if (!existingPayment) {
+        await logEvent(db, { booking_id: "", event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
+        return _err("Payment session not found", 404)
       }
+
+      const bookingId = existingPayment.booking_id
 
       const dataToHash = `${prn},${merchantCode}`
       const dataValidation = await hmacSha512(merchantSecret, dataToHash)
 
       let fonepayResult: Record<string, unknown>
       try {
-        const res = await fetchWithTimeout(`${dynamicQrUrl}/merchant/merchantDetailsForThirdParty/thirdPartyDynamicQrGetStatus`, {
+        const res = await fetchWithTimeout(`${dynamicQrUrl}/thirdPartyDynamicQrGetStatus`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prn, merchantCode, dataValidation, username, password }),
@@ -786,8 +789,6 @@ export default async function handler(req: Request) {
 
       // ── Payment status = success. Now verify integrity ──
 
-      if (!db) return _err("Database not configured", 500)
-
       // Verify Fonepay response HMAC signature to prevent forgery
       const signatureValid = await verifyFonepayResponseSignature(merchantSecret, merchantCode, fonepayResult)
       if (!signatureValid) {
@@ -796,28 +797,6 @@ export default async function handler(req: Request) {
           payload: { prn, reason: "Fonepay response signature verification failed" },
         })
         return _err("Payment verification failed: invalid response signature", 502)
-      }
-
-      // Find existing payment record (created at QR generation time)
-      // IMPORTANT: read amount from payment record, not recalculated from booking
-      const { data: existingPayment } = await db
-        .from("payments")
-        .select("id, booking_id, status, amount")
-        .eq("prn", prn)
-        .maybeSingle()
-
-      if (!existingPayment) {
-        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
-        return _err("Payment session not found", 404)
-      }
-
-      // Integrity: payment record must belong to this booking
-      if (existingPayment.booking_id !== bookingId) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "payment_failed",
-          payload: { prn, paymentBookingId: existingPayment.booking_id, reason: "Payment record booking_id mismatch" },
-        })
-        return _err("Payment session mismatch", 409)
       }
 
       // ⚠️ Amount integrity check — compare Fonepay amount vs PAYMENT RECORD amount (authoritative)
@@ -839,11 +818,22 @@ export default async function handler(req: Request) {
     // ─── Verify Web ───────────────────────────────────────────────────────
     if (action === "verify-web") {
       const { prn, uid, amount: callbackAmount, pid, bankCode } = actionData
-      const bookingId = extractBookingId(prn)
-      if (!bookingId) {
-        return _err("Invalid PRN format", 400)
+
+      if (!db) return _err("Database not configured", 500)
+
+      // Look up payment record by PRN first (PRN is unique — authoritative booking ID source)
+      const { data: existingPayment } = await db
+        .from("payments")
+        .select("id, booking_id, status, amount")
+        .eq("prn", prn)
+        .maybeSingle()
+
+      if (!existingPayment) {
+        await logEvent(db, { booking_id: "", event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
+        return _err("Payment session not found", 404)
       }
 
+      const bookingId = existingPayment.booking_id
       const PID = pid || merchantCode
       const BID = bankCode
 
@@ -887,29 +877,6 @@ export default async function handler(req: Request) {
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         })
-      }
-
-      if (!db) return _err("Database not configured", 500)
-
-      // Find existing payment record (read amount from stored record)
-      const { data: existingPayment } = await db
-        .from("payments")
-        .select("id, booking_id, status, amount")
-        .eq("prn", prn)
-        .maybeSingle()
-
-      if (!existingPayment) {
-        await logEvent(db, { booking_id: bookingId, event_type: "payment_failed", payload: { prn, reason: "Payment record not found" } })
-        return _err("Payment session not found", 404)
-      }
-
-      // Integrity: payment record must belong to this booking
-      if (existingPayment.booking_id !== bookingId) {
-        await logEvent(db, {
-          booking_id: bookingId, event_type: "payment_failed",
-          payload: { prn, paymentBookingId: existingPayment.booking_id, reason: "Payment record booking_id mismatch" },
-        })
-        return _err("Payment session mismatch", 409)
       }
 
       // Verify the callback amount matches the stored payment amount (authoritative at generation time)
