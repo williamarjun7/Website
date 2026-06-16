@@ -94,7 +94,11 @@ async function checkFonepayStatus(
       signal: controller.signal,
     })
     clearTimeout(timer)
-    if (!res.ok) return { status: 'unreachable' }
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "(unreadable)")
+      console.error(`Reconciliation: Fonepay status check failed [${res.status}] for PRN ${prn}: ${errBody}`)
+      return { status: 'unreachable' }
+    }
     const result = await res.json() as Record<string, unknown>
     const rawStatus = String(result.paymentStatus || "").toLowerCase()
     if (rawStatus === "success") return { status: 'success', fonepayResult: result }
