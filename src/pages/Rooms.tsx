@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { getRooms, Room } from '../services/roomService';
 import RoomCarousel from '../components/RoomCarousel';
+import { SkeletonRoomCard } from '../components/common/Skeleton';
 
 const Rooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -202,9 +203,10 @@ const Rooms = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <div className="spinner mb-4" />
-                        <p className="text-gray-400 font-medium">Finding the best rooms for you...</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+                        {[1, 2, 3, 4].map((i) => (
+                            <SkeletonRoomCard key={i} />
+                        ))}
                     </div>
                 ) : filteredRooms.length === 0 ? (
                     <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">

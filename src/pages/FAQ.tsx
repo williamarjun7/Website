@@ -70,7 +70,7 @@ const FAQ = () => {
         // Cafe & Dining
         {
             question: 'What are the cafe hours?',
-            answer: 'Our on-site cafe is open daily from 7:00 AM to 9:00 PM. Room service is available during cafe hours.',
+            answer: 'Our on-site cafe is open daily from 7:00 AM to 8:00 PM. Room service is available during cafe hours.',
             category: 'Cafe & Dining',
             icon: Coffee
         },

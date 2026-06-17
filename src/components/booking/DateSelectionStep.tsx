@@ -2,6 +2,7 @@ import React from 'react';
 import { Users } from 'lucide-react';
 import { Room } from '../../services/roomService';
 import { calculateTotalPrice } from '../../services/bookingService';
+import Skeleton from '../common/Skeleton';
 
 interface DateSelectionStepProps {
     checkIn: string;
@@ -62,7 +63,29 @@ const DateSelectionStep: React.FC<DateSelectionStepProps> = ({
                         Available Rooms ({nights} {nights === 1 ? 'night' : 'nights'})
                     </h3>
                     {loading ? (
-                        <div className="flex justify-center py-12"><div className="spinner" /></div>
+                        <div className="space-y-4">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="border border-gray-200 rounded-lg p-4">
+                                    <div className="flex items-start space-x-4">
+                                        <Skeleton className="w-32 h-24 rounded-lg flex-shrink-0" />
+                                        <div className="flex-1 space-y-2">
+                                            <Skeleton className="h-6 w-48" />
+                                            <Skeleton className="h-4 w-full" />
+                                            <Skeleton className="h-4 w-3/4" />
+                                            <div className="flex items-center space-x-3">
+                                                <Skeleton className="h-4 w-24" />
+                                                <Skeleton className="h-5 w-14 rounded-full" />
+                                            </div>
+                                        </div>
+                                        <div className="text-right space-y-2">
+                                            <Skeleton className="h-7 w-28" />
+                                            <Skeleton className="h-4 w-20 ml-auto" />
+                                            <Skeleton className="h-9 w-28 rounded-lg ml-auto" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     ) : availableRooms.length === 0 ? (
                         <div className="text-center py-12 bg-gray-50 rounded-lg">
                             <p className="text-gray-500">No rooms available for selected dates.</p>

@@ -15,6 +15,7 @@ import {
     type SiteImage
 } from '../../services/contentService';
 import { uploadImage } from '../../services/storageService';
+import Skeleton from '../../components/common/Skeleton';
 
 interface SiteImageData {
     id: string;
@@ -151,8 +152,17 @@ const SiteImages = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center p-12">
-                    <div className="spinner" />
+                <div className="space-y-12">
+                    {['hero', 'gallery', 'cafe', 'exterior'].map((section) => (
+                        <div key={section} className="space-y-4">
+                            <Skeleton className="h-6 w-32" />
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                {[1, 2, 3, 4].map((i) => (
+                                    <Skeleton key={i} className="aspect-square rounded-xl" />
+                                ))}
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className="space-y-12">

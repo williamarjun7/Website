@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getAllBookings, getUpcomingCheckIns, updateBookingStatus, type Booking } from '../../services/bookingService';
 import { getAllRoomsForAdmin } from '../../services/roomService';
+import Skeleton from '../../components/common/Skeleton';
 
 interface DashboardBooking {
     id: string;
@@ -141,8 +142,80 @@ const AdminDashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <div className="space-y-8 animate-pulse">
+                <div>
+                    <Skeleton className="h-8 w-64" />
+                    <Skeleton className="h-4 w-80 mt-2" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                            <div className="flex items-center justify-between mb-4">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-10 rounded-lg" />
+                            </div>
+                            <Skeleton className="h-8 w-32" />
+                        </div>
+                    ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <Skeleton className="h-5 w-32 mb-6" />
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="mb-4">
+                                <div className="flex justify-between mb-1">
+                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-4 w-8" />
+                                </div>
+                                <Skeleton className="h-2 w-full rounded-full" />
+                            </div>
+                        ))}
+                    </div>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100">
+                            <Skeleton className="h-5 w-32" />
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <div key={i} className="p-4 flex items-center justify-between">
+                                    <div className="flex items-center space-x-4">
+                                        <Skeleton className="h-10 w-10 rounded-full" />
+                                        <div className="space-y-1">
+                                            <Skeleton className="h-4 w-28" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                    </div>
+                                    <div className="text-right space-y-1">
+                                        <Skeleton className="h-4 w-20" />
+                                        <Skeleton className="h-4 w-16 ml-auto" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100">
+                            <Skeleton className="h-5 w-36" />
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="p-4 flex items-center justify-between">
+                                    <div className="flex items-center space-x-3">
+                                        <Skeleton className="h-5 w-5 rounded" />
+                                        <div className="space-y-1">
+                                            <Skeleton className="h-4 w-28" />
+                                            <Skeleton className="h-3 w-20" />
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-2">
+                                        <Skeleton className="h-8 w-8 rounded-full" />
+                                        <Skeleton className="h-8 w-8 rounded-full" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

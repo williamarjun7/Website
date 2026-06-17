@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { z } from 'zod';
-import { X, Loader } from 'lucide-react';
+import { X } from 'lucide-react';
 import { verifyWebPayment } from '../services/fonepayService';
 import BookingConfirmation, { ConfirmedBookingData, storeConfirmedBooking } from '../components/booking/BookingConfirmation';
+import Skeleton from '../components/common/Skeleton';
 
 const paymentParamSchema = z.object({
   prn: z.string().min(1, 'Missing PRN'),
@@ -89,10 +90,29 @@ const PaymentResult = () => {
       </Helmet>
       <div className="container-custom max-w-2xl">
         {status === 'verifying' && (
-          <div className="card max-w-md mx-auto text-center">
-            <Loader className="animate-spin mx-auto mb-4 text-amber-600" size={48} />
-            <h2 className="font-heading text-2xl font-bold mb-2">Verifying Payment</h2>
-            <p className="text-gray-600">Please wait while we verify your payment...</p>
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-primary to-amber-700 p-8 text-center">
+                <Skeleton className="h-10 w-10 mx-auto mb-4 rounded-full bg-white/30" />
+                <Skeleton className="h-7 w-48 mx-auto mb-2 bg-white/30" />
+                <Skeleton className="h-4 w-64 mx-auto bg-white/20" />
+              </div>
+              <div className="p-8 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-1">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-5 w-36" />
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t pt-6 space-y-4">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-10 w-full rounded-xl" />
+                  <Skeleton className="h-10 w-full rounded-xl bg-gray-100" />
+                </div>
+              </div>
+            </div>
           </div>
         )}
         {status === 'success' && confirmedData && (

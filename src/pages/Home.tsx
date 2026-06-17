@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
+import Skeleton from '../components/common/Skeleton';
 
 import { getSiteImagesByType, SiteImage } from '../services/contentService';
 
@@ -219,8 +220,24 @@ const Home = () => {
                     </div>
 
                     {loading ? (
-                        <div className="flex justify-center py-12">
-                            <div className="spinner" />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="card">
+                                    <Skeleton className="aspect-video w-full rounded-lg mb-4" />
+                                    <div className="space-y-3">
+                                        <div className="flex items-center space-x-2">
+                                            <Skeleton className="h-6 w-40" />
+                                            <Skeleton className="h-4 w-12" />
+                                        </div>
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                        <div className="flex items-center justify-between pt-2">
+                                            <Skeleton className="h-8 w-28" />
+                                            <Skeleton className="h-10 w-24 rounded-lg" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

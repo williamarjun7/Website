@@ -1,6 +1,7 @@
 import React from 'react';
 import { QrCode, Check, Wifi, WifiOff, Smartphone, Clock, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Skeleton from '../common/Skeleton';
 
 interface PaymentStepProps {
     paymentLoading: boolean;
@@ -24,9 +25,22 @@ const PaymentStep: React.FC<PaymentStepProps> = ({
     if (paymentLoading) {
         return (
             <div className="card text-center">
-                <div className="animate-spin w-12 h-12 border-4 border-amber-600 border-t-transparent rounded-full mx-auto mb-4" />
-                <h2 className="font-heading text-2xl font-bold mb-2">Processing Payment</h2>
-                <p className="text-gray-600">Please wait while we generate your payment...</p>
+                <Skeleton className="w-20 h-20 rounded-full mx-auto mb-4" />
+                <Skeleton className="h-8 w-56 mx-auto mb-2" />
+                <Skeleton className="h-4 w-72 mx-auto" />
+                <div className="mt-8 flex justify-center">
+                    <Skeleton className="w-72 h-72 rounded-xl" />
+                </div>
+                <div className="mt-6 bg-gray-50 rounded-lg p-4 space-y-3 max-w-sm mx-auto">
+                    <div className="flex justify-between">
+                        <Skeleton className="h-4 w-16" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                    <div className="flex justify-between">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-32" />
+                    </div>
+                </div>
             </div>
         );
     }

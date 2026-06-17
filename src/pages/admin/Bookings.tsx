@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { getAllBookings, updateBookingStatus, type Booking } from '../../services/bookingService';
 import { exportToCsv } from '../../utils/csv';
+import { SkeletonTableRow } from '../../components/common/Skeleton';
 
 interface AdminBooking {
     id: string;
@@ -246,11 +247,9 @@ const Bookings = () => {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {loading ? (
-                                    <tr>
-                                        <td colSpan={9} className="px-6 py-8 text-center">
-                                            <div className="spinner mx-auto" />
-                                        </td>
-                                    </tr>
+                                    Array.from({ length: 8 }).map((_, i) => (
+                                        <SkeletonTableRow key={i} cols={9} />
+                                    ))
                                 ) : filteredBookings.length === 0 ? (
                                     <tr>
                                         <td colSpan={9} className="px-6 py-8 text-center text-gray-500">

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Printer, Home, Phone } from 'lucide-react';
-import { Room } from '../../services/roomService';
+import {
+  Check, Printer, Home, Phone, Mail, MapPin,
+  QrCode, Globe, Wallet, Clock, CheckCircle,
+  XCircle, CalendarDays, User, Receipt, Building, Info,
+} from 'lucide-react';
 import { getBookingById } from '../../services/bookingService';
 
 export interface ConfirmedBookingData {
@@ -45,6 +48,82 @@ function loadConfirmedBooking(): ConfirmedBookingData | null {
   } catch {
     return null;
   }
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric',
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatStatusLabel(status: string, type: 'booking' | 'payment'): string {
+  if (type === 'payment' && status === 'pay_at_property') return 'Pending';
+  if (status === 'pending_payment') return 'Pending';
+  if (status === 'confirmed') return 'Confirmed';
+  if (status === 'completed') return 'Completed';
+  return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function StatusBadge({ status, type }: { status: string; type: 'booking' | 'payment' }) {
+  const isPositive = ['paid', 'completed', 'confirmed'].includes(status);
+  const isWarning = ['pending', 'pay_at_property', 'pending_payment'].includes(status);
+
+  const Icon = isPositive ? CheckCircle : isWarning ? Clock : XCircle;
+  const bg = isPositive ? 'bg-green-100' : isWarning ? 'bg-amber-100' : 'bg-red-100';
+  const text = isPositive ? 'text-green-800' : isWarning ? 'text-amber-800' : 'text-red-800';
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${bg} ${text}`}>
+      <Icon size={14} />
+      {formatStatusLabel(status, type)}
+    </span>
+  );
+}
+
+function SectionCard({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`bg-white border border-gray-200 rounded-xl p-5 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHeading({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+  return (
+    <h3 className="font-heading text-base font-semibold text-gray-900 mb-1">
+      <span className="inline-flex items-center gap-2">
+        <Icon size={16} className="text-amber-700" /> {label}
+      </span>
+    </h3>
+  );
+}
+
+function DetailGrid({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+      {children}
+    </div>
+  );
+}
+
+function DetailItem({ label, value, mono, fullWidth }: {
+  label: string;
+  value: string | number;
+  mono?: boolean;
+  fullWidth?: boolean;
+}) {
+  return (
+    <div className={fullWidth ? 'sm:col-span-2' : ''}>
+      <p className="text-gray-500 text-xs mb-0.5">{label}</p>
+      <p className={`font-medium text-gray-900 break-words ${mono ? 'font-mono text-sm' : 'text-sm'}`}>
+        {value}
+      </p>
+    </div>
+  );
 }
 
 const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({ bookingData: propData }) => {
@@ -104,138 +183,231 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
 
   if (loading) {
     return (
-      <div className="card text-center">
+      <div className="bg-white rounded-2xl shadow-md p-8 text-center max-w-2xl mx-auto">
         <div className="animate-spin w-12 h-12 border-4 border-amber-600 border-t-transparent rounded-full mx-auto mb-4" />
-        <h2 className="font-heading text-2xl font-bold mb-2">Loading Confirmation</h2>
-        <p className="text-gray-600">Please wait...</p>
+        <h2 className="font-heading text-2xl font-bold mb-2">Reservation Confirmed</h2>
+        <p className="text-gray-600">Loading your reservation details...</p>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="card text-center">
-        <h2 className="font-heading text-2xl font-bold mb-2">Booking Not Found</h2>
-        <p className="text-gray-600 mb-6">We couldn't find your booking details. Please contact us for assistance.</p>
-        <button onClick={() => navigate('/')} className="btn-primary w-full">Return to Home</button>
+      <div className="bg-white rounded-2xl shadow-md p-8 text-center max-w-2xl mx-auto">
+        <h2 className="font-heading text-2xl font-bold mb-2">Reservation Not Found</h2>
+        <p className="text-gray-600 mb-6">We couldn't find your reservation details. Please contact us for assistance.</p>
+        <button onClick={() => navigate('/')} className="btn-primary w-full">Return Home</button>
       </div>
     );
   }
 
   const isPayAtProperty = data.payment_method === 'pay_at_property';
-  const isPaid = data.payment_status === 'paid' || data.payment_status === 'completed' || data.booking_status === 'confirmed';
+
+  const paymentConfig = {
+    icon: isPayAtProperty ? Wallet : data.payment_method === 'fonepay_qr' ? QrCode : Globe,
+    label: isPayAtProperty ? 'Advance Payment Reservation' : data.payment_method === 'fonepay_qr' ? 'Fonepay QR' : 'Fonepay Web',
+    cardClass: isPayAtProperty ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200',
+    iconWrapClass: isPayAtProperty ? 'bg-amber-100' : 'bg-green-100',
+    iconClass: isPayAtProperty ? 'text-amber-700' : 'text-green-700',
+  };
+  const PayIcon = paymentConfig.icon;
+
+  const nights = Math.max(1, Math.round(
+    (new Date(data.check_out).getTime() - new Date(data.check_in).getTime()) / (1000 * 60 * 60 * 24)
+  ));
 
   return (
-    <div className="max-w-2xl mx-auto print:mx-0">
-      <div className="card text-center print:shadow-none print:border print:border-gray-300 print:p-6 print:rounded-none">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6 print:hidden">
-          <Check className="text-green-600" size={40} />
+    <div className="max-w-2xl mx-auto space-y-5 print:mx-0 print:space-y-4">
+      <div className="bg-white rounded-2xl shadow-md p-6 md:p-8 border border-amber-50 print:shadow-none print:border print:border-gray-300 print:rounded-none print:p-6">
+        {/* ── Success Header ── */}
+        <div className="text-center mb-7 print:mb-5">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4 print:hidden">
+            <Check className="text-green-600" size="32" />
+          </div>
+          <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Reservation Confirmed
+          </h1>
+          <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto leading-relaxed">
+            {isPayAtProperty
+              ? 'Your reservation has been successfully created. Please review your reservation details below.'
+              : 'Your payment has been received and your reservation is confirmed.'
+            }
+          </p>
         </div>
-        <h2 className="font-heading text-3xl font-bold mb-2">Booking Confirmed!</h2>
-        <p className="text-gray-600 mb-6 print:text-sm">
-          {isPayAtProperty
-            ? `Your booking has been reserved. We've sent a confirmation to ${data.guest_email}. Please pay at the property to confirm.`
-            : `Your booking has been confirmed. We've sent a confirmation email to ${data.guest_email}.`
-          }
-        </p>
 
-        {/* Booking Reference + Statuses */}
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-5 mb-6 print:bg-gray-50 print:border-gray-300">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-            <div>
-              <p className="text-xs text-amber-700 mb-0.5">Booking Reference</p>
-              <p className="font-mono text-sm font-bold text-primary break-all">{data.id}</p>
-            </div>
-            <div>
-              <p className="text-xs text-amber-700 mb-0.5">Booking Status</p>
-              <p className="font-semibold text-sm capitalize">{data.booking_status.replace(/_/g, ' ')}</p>
-            </div>
-            <div>
-              <p className="text-xs text-amber-700 mb-0.5">Payment Status</p>
-              <p className={`font-semibold text-sm capitalize ${isPaid ? 'text-green-700' : 'text-amber-700'}`}>
-                {isPaid ? 'Paid' : data.payment_status.replace(/_/g, ' ')}
+        {/* ── Reservation Reference ── */}
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100/60 border border-amber-200 rounded-xl p-5 md:p-6 mb-5 print:bg-gray-50 print:border-gray-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2">
+                Reservation Reference
+              </p>
+              <p className="font-mono text-xl md:text-2xl font-bold text-primary break-all leading-tight">
+                {data.id}
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* Guest Information */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 text-left text-sm space-y-2.5 print:border-gray-300">
-          <p className="font-semibold text-gray-900 text-base">Guest Information</p>
-          <div className="flex justify-between"><span className="text-gray-500">Name</span><span className="font-medium">{data.guest_name}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-medium">{data.guest_email}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Phone</span><span className="font-medium">{data.guest_phone}</span></div>
-        </div>
-
-        {/* Stay Details */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 text-left text-sm space-y-2.5 print:border-gray-300">
-          <p className="font-semibold text-gray-900 text-base">Stay Details</p>
-          <div className="flex justify-between"><span className="text-gray-500">Room</span><span className="font-medium">{data.room.name}{data.room.room_number ? ` (#${data.room.room_number})` : ''}</span></div>
-          {data.room.room_type && <div className="flex justify-between"><span className="text-gray-500">Room Type</span><span className="font-medium capitalize">{data.room.room_type}</span></div>}
-          <div className="flex justify-between"><span className="text-gray-500">Check-In</span><span className="font-medium">{new Date(data.check_in).toLocaleDateString()}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Check-Out</span><span className="font-medium">{new Date(data.check_out).toLocaleDateString()}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Guests</span><span className="font-medium">{data.guests}</span></div>
-        </div>
-
-        {/* Payment Details */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6 text-left text-sm space-y-2.5 print:border-gray-300">
-          <p className="font-semibold text-gray-900 text-base">Payment Details</p>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Payment Method</span>
-            <span className="font-medium capitalize">
-              {data.payment_method === 'pay_at_property' ? 'Pay at Property' : data.payment_method === 'fonepay_qr' ? 'Fonepay QR' : 'Fonepay Web'}
-            </span>
-          </div>
-
-          {data.transaction_id && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Transaction ID</span>
-              <span className="font-mono text-xs font-medium">{data.transaction_id}</span>
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <StatusBadge status={data.booking_status} type="booking" />
+              <StatusBadge status={data.payment_status} type="payment" />
             </div>
-          )}
-
-          {isPayAtProperty ? (
-            <>
-              <div className="flex justify-between text-amber-700 pt-2 border-t border-gray-100">
-                <span>Advance Payment (60%) — Due Now</span>
-                <span className="font-medium">NPR {advance.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-green-700">
-                <span>Balance at Property (40%)</span>
-                <span className="font-medium">NPR {balance.toLocaleString()}</span>
-              </div>
-              <div className="bg-amber-50 rounded-lg p-3 mt-2 text-xs text-amber-800">
-                Payment is pending. Please pay the advance amount at the property to confirm your reservation.
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="flex justify-between font-semibold text-gray-900 pt-2 border-t border-gray-100">
-                <span>Total Paid</span>
-                <span>NPR {total.toLocaleString()}</span>
-              </div>
-              <div className="bg-green-50 rounded-lg p-3 mt-2 text-xs text-green-800">
-                Payment successful. Your booking is fully confirmed.
-              </div>
-            </>
-          )}
+          </div>
         </div>
 
-        {/* Hotel Contact */}
-        <div className="text-xs text-gray-400 mb-6 leading-relaxed print:text-gray-600 print:border-t print:border-gray-300 print:pt-4">
-          <p className="font-semibold text-gray-500">Highlands Motel & Cafe</p>
-          <p>Surkhet, Nepal</p>
-          <p>Phone: +977-98XXXXXXXX</p>
-          <p>Email: info@highlands-motel.com</p>
-        </div>
+        {/* ── Reservation Details ── */}
+        <SectionCard className="mb-4 print:border-gray-300">
+          <SectionHeading icon={CalendarDays} label="Reservation Details" />
+          <DetailGrid>
+            <DetailItem label="Room" value={data.room.name + (data.room.room_number ? ` #${data.room.room_number}` : '')} />
+            {data.room.room_type && (
+              <DetailItem label="Room Type" value={data.room.room_type.charAt(0).toUpperCase() + data.room.room_type.slice(1)} />
+            )}
+            <DetailItem label="Check-In Date" value={formatDate(data.check_in)} />
+            <DetailItem label="Check-Out Date" value={formatDate(data.check_out)} />
+            <DetailItem label="Number of Nights" value={`${nights} Night${nights !== 1 ? 's' : ''}`} />
+            <DetailItem label="Number of Guests" value={`${data.guests} Guest${data.guests !== 1 ? 's' : ''}`} />
+          </DetailGrid>
+        </SectionCard>
 
-        {/* Actions */}
-        <div className="space-y-3 print:hidden">
-          <button onClick={() => window.print()} className="btn-primary w-full flex items-center justify-center gap-2">
-            <Printer size={18} /><span>Print Confirmation</span>
+        {/* ── Guest Information ── */}
+        <SectionCard className="mb-4 print:border-gray-300">
+          <SectionHeading icon={User} label="Guest Information" />
+          <DetailGrid>
+            <DetailItem label="Guest Name" value={data.guest_name} />
+            <DetailItem label="Email Address" value={data.guest_email} />
+            <DetailItem label="Phone Number" value={data.guest_phone} />
+          </DetailGrid>
+        </SectionCard>
+
+        {/* ── Payment Information ── */}
+        <SectionCard className="mb-5 print:border-gray-300">
+          <SectionHeading icon={Receipt} label="Payment Information" />
+
+          <div className={`flex items-center gap-3 border rounded-xl px-4 py-3 mt-3 ${paymentConfig.cardClass}`}>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${paymentConfig.iconWrapClass}`}>
+              <PayIcon size="20" className={paymentConfig.iconClass} />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-gray-900">{paymentConfig.label}</p>
+              {data.transaction_id && (
+                <p className="text-xs text-gray-500 font-mono mt-0.5 break-all">Transaction ID: {data.transaction_id}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+            {isPayAtProperty ? (
+              <>
+                <div className="sm:col-span-2 border-b border-gray-100 pb-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <span className="text-gray-500 text-sm">Reservation Total</span>
+                    <span className="font-semibold text-gray-900 text-sm text-right">NPR {total.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs mb-0.5">Advance Payment Required</p>
+                  <p className="text-xs text-amber-600 font-medium mb-1">60% of reservation total</p>
+                  <p className="font-semibold text-amber-700 text-sm">NPR {advance.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs mb-0.5">Balance Due At Check-In</p>
+                  <p className="text-xs text-green-600 font-medium mb-1">40% of reservation total</p>
+                  <p className="font-semibold text-green-700 text-sm">NPR {balance.toLocaleString()}</p>
+                </div>
+                <div className="sm:col-span-2 bg-amber-50 rounded-lg p-3 mt-2 text-xs text-amber-800 leading-relaxed">
+                  <p className="font-medium mb-1">Your reservation has been secured.</p>
+                  <p>The advance payment amount is required to confirm the booking.</p>
+                  <p className="mt-1">The remaining balance will be paid during check-in at the property.</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <DetailItem label="Payment Status" value="Paid" />
+                <DetailItem label="Amount Paid" value={`NPR ${total.toLocaleString()}`} />
+                {data.transaction_id && (
+                  <DetailItem label="Transaction ID" value={data.transaction_id} mono fullWidth />
+                )}
+                <div className="sm:col-span-2 bg-green-50 rounded-lg p-3 mt-2 text-xs text-green-800 leading-relaxed">
+                  <p className="font-medium">Payment completed successfully via {data.payment_method === 'fonepay_qr' ? 'Fonepay QR' : 'Fonepay Web'}.</p>
+                </div>
+              </>
+            )}
+          </div>
+        </SectionCard>
+
+        {/* ── Hotel Contact ── */}
+        <SectionCard className="mb-4 print:border-gray-300 print:bg-gray-50">
+          <SectionHeading icon={Building} label="Need Assistance?" />
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2.5">
+              <p className="font-semibold text-gray-900 text-sm">Highlands Motel & Cafe</p>
+              <div className="flex items-start gap-2 text-sm text-gray-600">
+                <MapPin size="14" className="mt-0.5 shrink-0 text-gray-400" />
+                <span>Surkhet, Nepal</span>
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-2 text-sm text-gray-600">
+                <Phone size="14" className="mt-0.5 shrink-0 text-gray-400" />
+                <span>+977-98XXXXXXXX</span>
+              </div>
+              <div className="flex items-start gap-2 text-sm text-gray-600 break-all">
+                <Mail size="14" className="mt-0.5 shrink-0 text-gray-400" />
+                <span>info@highlands-motel.com</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-4 print:hidden">
+            <a
+              href="tel:+977-98XXXXXXXX"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              <Phone size="14" />
+              Call Hotel
+            </a>
+            <a
+              href="mailto:info@highlands-motel.com"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+            >
+              <Mail size="14" />
+              Send Email
+            </a>
+          </div>
+        </SectionCard>
+
+        {/* ── Important Information ── */}
+        <SectionCard className="mb-5 print:border-gray-300">
+          <SectionHeading icon={Info} label="Important Information" />
+          <ul className="mt-3 space-y-2.5 text-sm text-gray-600">
+            <li className="flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
+              <span>Please bring a valid government-issued ID during check-in.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
+              <span>Check-in and check-out times are subject to hotel policy.</span>
+            </li>
+            <li className="flex items-start gap-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
+              <span>For any reservation changes, please contact the hotel directly.</span>
+            </li>
+          </ul>
+        </SectionCard>
+
+        {/* ── Actions ── */}
+        <div className="flex flex-col sm:flex-row gap-3 print:hidden">
+          <button
+            onClick={() => window.print()}
+            className="btn-primary flex-1 flex items-center justify-center gap-2"
+          >
+            <Printer size={18} />
+            <span>Print Confirmation</span>
           </button>
-          <button onClick={() => navigate('/')} className="btn-secondary w-full flex items-center justify-center gap-2">
-            <Home size={18} /><span>Return to Home</span>
+          <button
+            onClick={() => navigate('/')}
+            className="btn-secondary flex-1 flex items-center justify-center gap-2"
+          >
+            <Home size={18} />
+            <span>Return Home</span>
           </button>
         </div>
       </div>

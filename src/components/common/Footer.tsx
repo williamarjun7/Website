@@ -192,8 +192,8 @@ const Footer = memo(() => {
                                     <span className="font-medium text-white">12:00 PM</span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t border-amber-700/50">
-                                    <span>Cafe Service:</span>
-                                    <span className="font-medium text-green-300">24/7</span>
+                                    <span>Cafe Hours:</span>
+                                    <span className="font-medium text-green-300">7:00 AM - 8:00 PM</span>
                                 </div>
                             </div>
                         </div>

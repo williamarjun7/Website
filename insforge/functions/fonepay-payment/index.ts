@@ -110,7 +110,7 @@ interface EmailData { to: string; subject: string; html: string }
 async function sendEmail(data: EmailData): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return false }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Motel <noreply@highlands-motel.com>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn Management <noreply@highlands-motel.com>"
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

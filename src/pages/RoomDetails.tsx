@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getRoomById, getRooms, Room } from '../services/roomService';
 import RoomCarousel from '../components/RoomCarousel';
+import Skeleton from '../components/common/Skeleton';
 
 const RoomDetails = () => {
     const { id } = useParams<{ id: string }>();
@@ -54,8 +55,52 @@ const RoomDetails = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="spinner" />
+            <div className="min-h-screen pt-24 pb-16 bg-gray-50/50">
+                <div className="container-custom">
+                    <Skeleton className="h-5 w-40 mb-8" />
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <div className="lg:col-span-2 space-y-8">
+                            <Skeleton className="aspect-video w-full rounded-2xl" />
+                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-2">
+                                        <div className="flex gap-2">
+                                            <Skeleton className="h-5 w-24 rounded-full" />
+                                            <Skeleton className="h-5 w-16 rounded-full" />
+                                        </div>
+                                        <Skeleton className="h-9 w-72" />
+                                    </div>
+                                    <div className="text-right space-y-1">
+                                        <Skeleton className="h-8 w-32" />
+                                        <Skeleton className="h-4 w-16 ml-auto" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[1, 2, 3, 4].map((i) => (
+                                        <Skeleton key={i} className="h-24 rounded-xl" />
+                                    ))}
+                                </div>
+                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                            </div>
+                        </div>
+                        <div className="space-y-8">
+                            <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 space-y-4">
+                                <Skeleton className="h-7 w-48" />
+                                {[1, 2, 3].map((i) => (
+                                    <Skeleton key={i} className="h-5 w-full" />
+                                ))}
+                                <Skeleton className="h-12 w-full rounded-xl" />
+                            </div>
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className="aspect-square w-full rounded-xl" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

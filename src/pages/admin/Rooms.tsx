@@ -23,6 +23,7 @@ import {
 } from '../../services/roomService';
 import { uploadImage } from '../../services/storageService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import Skeleton from '../../components/common/Skeleton';
 
 const Rooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -343,8 +344,28 @@ const Rooms = () => {
             </div>
 
             {loading && rooms.length === 0 ? (
-                <div className="flex justify-center p-12">
-                    <div className="spinner" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="card">
+                            <Skeleton className="aspect-video w-full rounded-lg mb-4" />
+                            <div className="space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <Skeleton className="h-6 w-36" />
+                                    <Skeleton className="h-5 w-16 rounded-full" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Skeleton className="h-5 w-16 rounded" />
+                                    <Skeleton className="h-5 w-12 rounded" />
+                                </div>
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-3/4" />
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex justify-between">
+                                    <Skeleton className="h-6 w-24" />
+                                    <Skeleton className="h-4 w-16" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : rooms.length === 0 ? (
                 <div className="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">

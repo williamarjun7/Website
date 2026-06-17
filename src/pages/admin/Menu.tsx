@@ -22,6 +22,7 @@ import {
     MenuItem
 } from '../../services/menuService';
 import { uploadImage } from '../../services/storageService';
+import Skeleton from '../../components/common/Skeleton';
 
 interface MenuCategoryData {
     id: string;
@@ -192,8 +193,45 @@ const Menu = () => {
             </div>
 
             {loading ? (
-                <div className="flex justify-center p-12">
-                    <div className="spinner" />
+                <div className="space-y-8">
+                    {[1, 2, 3].map((cat) => (
+                        <div key={cat} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                                <div className="flex justify-between items-center">
+                                    <Skeleton className="h-6 w-40" />
+                                    <div className="flex items-center space-x-2">
+                                        <Skeleton className="h-5 w-5" />
+                                        <Skeleton className="h-5 w-5" />
+                                        <div className="w-px h-6 bg-gray-300 mx-2" />
+                                        <Skeleton className="h-4 w-16" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {[1, 2, 3].map((item) => (
+                                        <div key={item} className="flex p-3 rounded-lg border border-gray-200">
+                                            <Skeleton className="w-20 h-20 rounded-md flex-shrink-0 mr-4" />
+                                            <div className="flex-1 space-y-2">
+                                                <div className="flex justify-between">
+                                                    <Skeleton className="h-5 w-28" />
+                                                    <Skeleton className="h-6 w-6" />
+                                                </div>
+                                                <Skeleton className="h-4 w-full" />
+                                                <div className="flex justify-between items-end mt-2">
+                                                    <Skeleton className="h-5 w-20" />
+                                                    <div className="flex space-x-1">
+                                                        <Skeleton className="h-6 w-6" />
+                                                        <Skeleton className="h-6 w-6" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : (
                 <div className="space-y-8">

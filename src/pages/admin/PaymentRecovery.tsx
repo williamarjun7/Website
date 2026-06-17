@@ -21,6 +21,7 @@ import {
   StuckBooking,
   PaymentRecord,
 } from '../../services/adminRecoveryService';
+import { SkeletonTableRow } from '../../components/common/Skeleton';
 
 const PaymentRecovery = () => {
   const [stuckBookings, setStuckBookings] = useState<StuckBooking[]>([]);
@@ -328,7 +329,9 @@ const PaymentRecovery = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {loading ? (
-                <tr><td colSpan={7} className="px-6 py-8 text-center"><div className="spinner mx-auto" /></td></tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonTableRow key={i} cols={7} />
+                ))
               ) : stuckBookings.length === 0 ? (
                 <tr><td colSpan={7} className="px-6 py-8 text-center text-gray-500">No stuck payments found.</td></tr>
               ) : (

@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
 import menuImg from '../assets/menu.png';
+import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
 interface MenuCategory {
     id: string;
@@ -107,15 +108,43 @@ const Cafe = () => {
                             <span>Open Daily</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <span className="font-semibold">7:00 AM - 9:00 PM</span>
+                            <span className="font-semibold">7:00 AM - 8:00 PM</span>
                         </div>
                     </div>
                 </div>
 
                 <div id="menu-section">
                     {loading ? (
-                        <div className="flex justify-center py-12">
-                            <div className="spinner" />
+                        <div className="max-w-4xl mx-auto">
+                            <Skeleton className="h-8 w-48 mx-auto mb-8" />
+                            <div className="space-y-8">
+                                <div>
+                                    <Skeleton className="h-6 w-32 mx-auto mb-4" />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {[1, 2, 3, 4].map((i) => (
+                                            <SkeletonMenuItem key={i} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <Skeleton className="h-7 w-32 mx-auto mt-16 mb-8" />
+                            <div className="space-y-6">
+                                {[1, 2, 3].map((cat) => (
+                                    <div key={cat}>
+                                        <Skeleton className="h-5 w-40 mb-4" />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {[1, 2].map((item) => (
+                                                <div key={item} className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
+                                                    <div className="space-y-1 flex-1 mr-3">
+                                                        <Skeleton className="h-5 w-36" />
+                                                        <Skeleton className="h-4 w-20" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         <div className="mb-12">

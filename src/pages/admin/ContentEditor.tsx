@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Save, RefreshCw } from 'lucide-react';
 import { z } from 'zod';
 import { getAllSiteContent, updateSiteContent } from '../../services/contentService';
+import Skeleton from '../../components/common/Skeleton';
 
 const FIELD_SCHEMAS: Record<string, z.ZodString> = {
   hero_title: z.string().min(2, 'Must be at least 2 characters').max(200),
@@ -125,8 +126,20 @@ const ContentEditor = () => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="spinner" />
+        <div className="space-y-4">
+          {CONTENT_KEYS.map((field) => (
+            <div key={field.key} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-3">
+              <Skeleton className="h-4 w-40" />
+              {field.type === 'textarea' ? (
+                <Skeleton className="h-32 w-full" />
+              ) : (
+                <Skeleton className="h-10 w-full" />
+              )}
+              <div className="flex justify-end">
+                <Skeleton className="h-9 w-20 rounded-lg" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-4">
