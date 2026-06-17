@@ -189,7 +189,7 @@ const Contact = () => {
                         <h2 className="font-heading text-2xl font-bold mb-6">Location</h2>
                         <div className="rounded-2xl overflow-hidden shadow-lg h-[600px]">
                             <iframe
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d723.8087843630261!2d81.62689922997156!3d28.58480041587717!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285d85625ba11%3A0x7d8a767e3791b71b!2sS.k.t%20suppliers!5e1!3m2!1sen!2snp!4v1770808330587!5m2!1sen!2snp"
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3790.895914228358!2d81.6242909112496!3d28.584789186145482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285b5b738260f%3A0xb0fb170f840c8984!2sHighlands%20Cafe%20%26%20Motel%20Inn!5e1!3m2!1sen!2snp!4v1781669869342!5m2!1sen!2snp"
                                 width="100%"
                                 height="100%"
                                 style={{ border: 0 }}
@@ -205,6 +205,86 @@ const Contact = () => {
                                 We're located in the scenic region of Surkhet, easily accessible
                                 from the main city area. Free private parking is available for all our guests.
                             </p>
+                        </div>
+
+                        {/* Location Assistance */}
+                        <div className="mt-10">
+                            <h2 className="font-heading text-2xl font-bold mb-2 flex items-center gap-2">
+                                <span>Location Assistance</span>
+                                <span className="text-2xl">📍</span>
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                Having trouble locating us? The Google Maps pin is accurate, but nearby landmarks and
+                                building visuals may not always reflect current conditions. For the easiest arrival
+                                experience, please watch the location video below, which shows the route, surroundings,
+                                and exact property entrance. If you need additional assistance, feel free to call or
+                                WhatsApp us at <strong>+977 9763215874</strong>.
+                            </p>
+
+                            {/* Video Embed */}
+                            <div className="rounded-2xl overflow-hidden shadow-lg bg-black mb-6">
+                                <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                                    <iframe
+                                        src="https://www.tiktok.com/embed/v2/7636374767192263956"
+                                        className="absolute inset-0 w-full h-full"
+                                        style={{ border: 0 }}
+                                        allowFullScreen
+                                        loading="lazy"
+                                        title="Highlands Cafe & Motel Inn Location Video"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Contact Card */}
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+                                <h3 className="font-heading text-xl font-bold text-amber-900 mb-4">
+                                    Highlands Cafe & Motel Inn
+                                </h3>
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mt-0.5">
+                                            <Phone size={18} className="text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Phone & WhatsApp</p>
+                                            <a
+                                                href="https://wa.me/9779763215874"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-gray-800 hover:text-primary transition-colors font-medium"
+                                            >
+                                                +977 9763215874
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mt-0.5">
+                                            <Mail size={18} className="text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Email</p>
+                                            <a
+                                                href="mailto:highlandscafemotelinn@gmail.com"
+                                                className="text-gray-800 hover:text-primary transition-colors font-medium break-all"
+                                            >
+                                                highlandscafemotelinn@gmail.com
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mt-0.5">
+                                            <MapPin size={18} className="text-primary" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-gray-500">Address</p>
+                                            <p className="text-gray-800 font-medium">
+                                                Birendranagar-07, Khajura<br />
+                                                Surkhet, Karnali Province, Nepal
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
