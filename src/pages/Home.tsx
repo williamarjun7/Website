@@ -356,7 +356,7 @@ const Home = () => {
             </section>
 
             {/* TikTok Feed */}
-            <TikTokFeed username="highlandscafe1" maxVideos={6} />
+            <TikTokFeed />
 
             {/* CTA Section */}
             <section className="py-16 bg-gradient-to-r from-amber-900 to-amber-800 text-white">
