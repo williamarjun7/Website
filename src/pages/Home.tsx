@@ -37,6 +37,10 @@ const Home = () => {
                 setRooms(sorted.slice(0, 3));
             }
 
+            if (cafeRes.data && cafeRes.data.length > 0) {
+                setCafeImg(cafeRes.data[0].image_url);
+            }
+
             if (heroRes.data && heroRes.data.length > 0) {
                                 setHeroSlides(heroRes.data.map((img: SiteImage) => ({
                                     image: img.image_url,

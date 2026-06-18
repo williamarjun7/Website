@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
-import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
+import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
 import menuImg from '../assets/menu.png';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 

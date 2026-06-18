@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Coffee, Heart, Award, CheckCircle, Star } from 'lucide-react';
-import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
+import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
 
 const About = () => {
     const [activeTab, setActiveTab] = useState('story');

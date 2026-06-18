@@ -61,7 +61,7 @@ export const resendVerification = async (email: string) => {
     try {
         const { data, error } = await insforge.auth.resendVerificationEmail({
             email,
-            redirectTo: `${window.location.origin}/admin/login`,
+            options: { emailRedirectTo: `${window.location.origin}/admin/login` },
         });
 
         if (error) throw error;
@@ -110,7 +110,6 @@ export const resetPassword = async (email: string) => {
     try {
         const { data, error } = await insforge.auth.sendResetPasswordEmail({
             email,
-            redirectTo: `${window.location.origin}/admin/login`,
         });
         if (error) throw error;
         return { data, error: null };
