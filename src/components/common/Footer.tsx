@@ -176,7 +176,7 @@ const Footer = memo(() => {
                                     className={`p-3 bg-white/10 rounded-xl hover:bg-white/20 ${social.color} transition-all duration-300 transform hover:scale-110 hover:rotate-3 cursor-pointer`}
                                     aria-label={social.label}
                                 >
-                                    {social.icon({ size: 20 })}
+                                    <social.icon size={20} />
                                 </a>
                             ))}
                         </div>
