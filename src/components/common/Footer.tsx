@@ -1,9 +1,19 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee } from 'lucide-react';
+import { getSiteContentMap } from '../../services/contentService';
 
 const Footer = memo(() => {
+    const [content, setContent] = useState<Record<string, string>>({});
     const currentYear = new Date().getFullYear();
+
+    useEffect(() => {
+        getSiteContentMap().then(({ data }) => {
+            if (data) setContent(data);
+        }).catch(() => {});
+    }, []);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
 
     return (
         <footer className="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white mt-20 overflow-hidden">
@@ -32,7 +42,7 @@ const Footer = memo(() => {
                         </div>
 
                         <p className="text-amber-100 text-sm leading-relaxed mb-6">
-                            Experience cozy comfort in the heart of the highlands. Your perfect retreat with breathtaking views, warm hospitality, and unforgettable memories waiting to be created.
+                            {C('footer_text', 'Experience cozy comfort in the heart of the highlands. Your perfect retreat with breathtaking views, warm hospitality, and unforgettable memories waiting to be created.')}
                         </p>
 
                         {/* Enhanced Amenities */}
@@ -114,7 +124,7 @@ const Footer = memo(() => {
                                         <Phone size={18} className="text-amber-300" />
                                     </div>
                                     <div>
-                                        <div className="font-medium">+977 9763215874</div>
+                                        <div className="font-medium">{C('contact_phone', '+977 9763215874')}</div>
                                         <div className="text-xs text-amber-200">Call & WhatsApp</div>
                                     </div>
                                 </a>
@@ -128,7 +138,7 @@ const Footer = memo(() => {
                                         <Mail size={18} className="text-amber-300" />
                                     </div>
                                     <div>
-                                        <div className="font-medium break-all">highlandscafemotelinn@gmail.com</div>
+                                        <div className="font-medium break-all">{C('contact_email', 'highlandscafemotelinn@gmail.com')}</div>
                                         <div className="text-xs text-amber-200">Quick Response</div>
                                     </div>
                                 </a>
@@ -139,8 +149,8 @@ const Footer = memo(() => {
                                         <MapPin size={18} className="text-amber-300" />
                                     </div>
                                     <div>
-                                        <div className="font-medium">Birendranagar-07, Khajura</div>
-                                        <div className="text-xs text-amber-200">Surkhet, Karnali Province, Nepal</div>
+                                        <div className="font-medium">{C('contact_address', 'Birendranagar-07, Khajura, Surkhet')}</div>
+                                        <div className="text-xs text-amber-200">Karnali Province, Nepal</div>
                                     </div>
                                 </div>
                             </li>
@@ -190,15 +200,15 @@ const Footer = memo(() => {
                             <div className="space-y-2 text-sm text-amber-100">
                                 <div className="flex justify-between">
                                     <span>Check-in:</span>
-                                    <span className="font-medium text-white">2:00 PM</span>
+                                    <span className="font-medium text-white">{C('checkin_time', '2:00 PM')}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Check-out:</span>
-                                    <span className="font-medium text-white">12:00 PM</span>
+                                    <span className="font-medium text-white">{C('checkout_time', '12:00 PM')}</span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t border-amber-700/50">
                                     <span>Cafe Hours:</span>
-                                    <span className="font-medium text-green-300">7:00 AM - 8:00 PM</span>
+                                    <span className="font-medium text-green-300">{C('cafe_hours_text', '7:00 AM - 8:00 PM')}</span>
                                 </div>
                             </div>
                         </div>

@@ -1,7 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Calendar, CreditCard, Shield, Users, AlertCircle, FileText, RefreshCw } from 'lucide-react';
+import { getSiteImagesByType } from '../services/contentService';
 
 const Terms = () => {
+    const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=1200');
+
+    useEffect(() => {
+        getSiteImagesByType('hero').then(({ data }) => {
+            if (data && data.length > 0) setHeroBg(data[0].image_url);
+        }).catch(() => {});
+    }, []);
 
     return (
         <div className="min-h-screen pt-24 pb-16">
@@ -10,10 +19,10 @@ const Terms = () => {
                 <meta name="description" content="Read the Terms of Service for Highlands Motel & Cafe. Learn about booking policies, cancellation, payment terms, and guest responsibilities." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-64 mb-16">
+            <section className="relative h-80 mb-16 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
                     <img
-                        src="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=1200"
+                        src={heroBg}
                         alt="Terms of Service"
                         className="w-full h-full object-cover opacity-30"
                     />

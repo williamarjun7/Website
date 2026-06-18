@@ -246,7 +246,7 @@ const Rooms = () => {
         setLoading(true);
 
         const floorNum = formData.room_number
-            ? parseInt(formData.room_number.charAt(0))
+            ? Number(formData.room_number.charAt(0))
             : formData.floor_number
                 ? Number(formData.floor_number)
                 : undefined;
@@ -329,8 +329,8 @@ const Rooms = () => {
                             is_active: true,
                             room_number: '',
                             has_ac: false,
-                            floor_number: '',
                             featured: false,
+                            floor_number: '',
                             discount_percent: '0',
                             maintenance: false
                         });
@@ -749,7 +749,7 @@ const Rooms = () => {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={loading && !editingRoom}
+                                        disabled={loading}
                                         className="btn-primary min-w-[140px]"
                                     >
                                         {editingRoom ? 'Update Room' : 'Create Room'}

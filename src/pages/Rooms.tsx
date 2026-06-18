@@ -267,7 +267,7 @@ const Rooms = () => {
                                                     {room.name}
                                                 </h2>
                                                 <div className="flex items-center space-x-2">
-                                                    <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || 'Deluxe Room'}</span>
+                                                    <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || 'Standard Room'}</span>
                                                     {room.room_number && (
                                                         <span className="text-gray-400 text-xs">• #{room.room_number}</span>
                                                     )}

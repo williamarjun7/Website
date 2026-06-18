@@ -33,18 +33,27 @@ const AdminSignup = () => {
         }
 
         try {
-            const { data, error } = await adminSignup();
+            const { data, error } = await adminSignup(email, password);
 
             if (error) {
                 throw new Error(error);
             }
 
-            if (data) {
-                // Save email for verification page
+            if (data?.requireEmailVerification) {
                 localStorage.setItem('pending_verify_email', email);
                 setSuccess('Account created! Please check your email for the verification code.');
                 setTimeout(() => {
                     navigate('/admin/verify', { state: { email } });
+                }, 2000);
+            } else if (data?.accessToken) {
+                setSuccess('Account created! Redirecting to dashboard...');
+                setTimeout(() => {
+                    navigate('/admin/dashboard');
+                }, 1000);
+            } else {
+                setSuccess('Account created! You can now sign in.');
+                setTimeout(() => {
+                    navigate('/admin/login');
                 }, 2000);
             }
         } catch (err: unknown) {

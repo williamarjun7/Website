@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, ExternalLink } from 'lucide-react';
-import { useState } from 'react';
 import { z } from 'zod';
+import { getSiteContentMap } from '../services/contentService';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
@@ -10,6 +11,16 @@ const contactSchema = z.object({
 });
 
 const Contact = () => {
+    const [content, setContent] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        getSiteContentMap().then(({ data }) => {
+            if (data) setContent(data);
+        }).catch(() => {});
+    }, []);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
+
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
     const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
@@ -80,7 +91,7 @@ const Contact = () => {
                                         rel="noopener noreferrer"
                                         className="text-gray-600 hover:text-primary transition-colors"
                                     >
-                                        +977 9763215874
+                                        {C('contact_phone', '+977 9763215874')}
                                     </a>
                                 </div>
                             </div>
@@ -91,10 +102,10 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                                     <a
-                                        href="mailto:highlandscafemotelinn@gmail.com"
+                                        href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
                                         className="text-gray-600 hover:text-primary transition-colors break-all"
                                     >
-                                        highlandscafemotelinn@gmail.com
+                                        {C('contact_email', 'highlandscafemotelinn@gmail.com')}
                                     </a>
                                     <p className="text-sm text-gray-400 mt-0.5">Quick response within 24 hours</p>
                                 </div>
@@ -106,8 +117,7 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                                     <p className="text-gray-600">
-                                        Birendranagar-07, Khajura<br />
-                                        Surkhet, Karnali Province, Nepal
+                                        {C('contact_address', 'Birendranagar-07, Khajura, Surkhet, Karnali Province, Nepal')}
                                     </p>
                                 </div>
                             </div>
@@ -118,7 +128,7 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">Check-in / Check-out</h3>
                                     <p className="text-gray-600">
-                                        Check-in: 2:00 PM &nbsp;|&nbsp; Check-out: 12:00 PM
+                                        Check-in: {C('checkin_time', '2:00 PM')} &nbsp;|&nbsp; Check-out: {C('checkout_time', '12:00 PM')}
                                     </p>
                                     <p className="text-sm text-gray-400 mt-0.5">
                                         Early check-in and late check-out available upon request

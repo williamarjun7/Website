@@ -24,9 +24,20 @@ export const adminLogin = async (email: string, password: string) => {
     }
 };
 
-// Admin signup — disabled
-export const adminSignup = async () => {
-    return { data: null, error: 'Admin signup is disabled. Contact the system administrator to create an account.' };
+// Admin signup
+export const adminSignup = async (email: string, password: string) => {
+    try {
+        const { data, error } = await insforge.auth.signUp({
+            email,
+            password,
+        });
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        console.error('Admin signup failed:', error);
+        return handleInsforgeError(error);
+    }
 };
 
 // Verify email
@@ -50,6 +61,7 @@ export const resendVerification = async (email: string) => {
     try {
         const { data, error } = await insforge.auth.resendVerificationEmail({
             email,
+            redirectTo: `${window.location.origin}/admin/login`,
         });
 
         if (error) throw error;
@@ -74,9 +86,9 @@ export const adminLogout = async () => {
 // Get current admin session
 export const getAdminSession = async () => {
     try {
-        const { data, error } = await insforge.auth.getCurrentSession();
+        const { data, error } = await insforge.auth.getCurrentUser();
         if (error) throw error;
-        return { data, error: null };
+        return { data: { session: data?.user ? { user: data.user } : null }, error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }
@@ -93,10 +105,13 @@ export const getCurrentAdmin = async () => {
     }
 };
 
-// Reset password
+// Reset password (sends reset email)
 export const resetPassword = async (email: string) => {
     try {
-        const { data, error } = await insforge.auth.resetPasswordForEmail(email);
+        const { data, error } = await insforge.auth.sendResetPasswordEmail({
+            email,
+            redirectTo: `${window.location.origin}/admin/login`,
+        });
         if (error) throw error;
         return { data, error: null };
     } catch (error) {

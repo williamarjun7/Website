@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
+import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
 import menuImg from '../assets/menu.png';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
@@ -23,15 +24,27 @@ interface MenuItem {
 
 const Cafe = () => {
     const [menu, setMenu] = useState<MenuCategory[]>([]);
+    const [heroImg, setHeroImg] = useState('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200');
+    const [content, setContent] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
 
     useEffect(() => {
         let cancelled = false;
-        getFullMenu().then(({ data }) => {
+        Promise.all([
+            getFullMenu(),
+            getSiteImagesByType('cafe'),
+            getSiteContentMap(),
+        ]).then(([menuRes, cafeRes, contentRes]) => {
             if (!cancelled) {
-                if (data && data.length > 0) {
-                    setMenu(data);
+                if (menuRes.data && menuRes.data.length > 0) {
+                    setMenu(menuRes.data);
                 }
+                if (cafeRes.data && cafeRes.data.length > 0) {
+                    setHeroImg(cafeRes.data[0].image_url);
+                }
+                if (contentRes.data) setContent(contentRes.data);
                 setLoading(false);
             }
         }).catch(() => {
@@ -58,9 +71,9 @@ const Cafe = () => {
                 <meta name="description" content="Savor authentic local cuisine at our cafe in Surkhet." />
             </Helmet>
 
-            <section className="relative h-[560px] mb-16">
+            <section className="relative h-[560px] mb-16 overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200"
+                    src={heroImg}
                     alt="Highlands Cafe"
                     className="w-full h-full object-cover"
                 />
@@ -69,10 +82,10 @@ const Cafe = () => {
                     <div className="container-custom text-white">
                         <Coffee size={48} className="mx-auto mb-4" />
                         <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-                            Highlands Cafe
+                            {C('cafe_hero_title', 'Highlands Cafe')}
                         </h1>
                         <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto mb-8">
-                            Savor authentic local cuisine with breathtaking mountain views
+                            {C('cafe_hero_subtitle', 'Savor authentic local cuisine with breathtaking mountain views')}
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                             <a
@@ -98,17 +111,15 @@ const Cafe = () => {
             <div className="container-custom">
                 <div className="max-w-3xl mx-auto text-center mb-16">
                     <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                        Our on-site cafe serves fresh, locally-sourced dishes prepared with love.
-                        Start your day with a hearty breakfast or enjoy a relaxing meal while taking
-                        in the stunning highland scenery.
+                        {C('cafe_description', 'Our on-site cafe serves fresh, locally-sourced dishes prepared with love. Start your day with a hearty breakfast or enjoy a relaxing meal while taking in the stunning highland scenery.')}
                     </p>
                     <div className="flex items-center justify-center space-x-8 text-gray-700">
                         <div className="flex items-center space-x-2">
                             <Clock size={20} />
-                            <span>Open Daily</span>
+                            <span>{C('cafe_hours', 'Open Daily')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                            <span className="font-semibold">7:00 AM - 8:00 PM</span>
+                            <span className="font-semibold">{C('cafe_hours_text', '7:00 AM - 8:00 PM')}</span>
                         </div>
                     </div>
                 </div>

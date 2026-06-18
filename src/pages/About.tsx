@@ -1,9 +1,26 @@
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useState } from 'react';
 import { MapPin, Coffee, Heart, Award, CheckCircle, Star } from 'lucide-react';
+import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
 
 const About = () => {
     const [activeTab, setActiveTab] = useState('story');
+    const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200');
+    const [content, setContent] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        Promise.all([
+            getSiteImagesByType('hero'),
+            getSiteContentMap(),
+        ]).then(([imgRes, contentRes]) => {
+            if (imgRes.data && imgRes.data.length > 0) {
+                setHeroBg(imgRes.data[0].image_url);
+            }
+            if (contentRes.data) setContent(contentRes.data);
+        }).catch(() => {});
+    }, []);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
 
     return (
         <div className="min-h-screen pt-24 pb-16">
@@ -12,10 +29,10 @@ const About = () => {
                 <meta name="description" content="Learn the story behind Highlands Motel & Cafe in Surkhet. Discover our mission, values, and the team dedicated to making your stay memorable." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-[560px] mb-16">
+            <section className="relative h-[560px] mb-16 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
                     <img
-                        src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200"
+                        src={heroBg}
                         alt="Highlands Cafe & Motel Inn"
                         className="w-full h-full object-cover opacity-40"
                     />
@@ -24,10 +41,10 @@ const About = () => {
                     <div className="container-custom text-center text-white">
                         <Heart className="mx-auto mb-4" size={48} />
                         <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-                            Our Story
+                            {C('about_hero_title', 'Our Story')}
                         </h1>
                         <p className="text-xl text-white/90 max-w-2xl mx-auto">
-                            Discover the passion behind Highlands Cafe & Motel Inn
+                            {C('about_hero_subtitle', 'Discover the passion behind Highlands Cafe & Motel Inn')}
                         </p>
                     </div>
                 </div>

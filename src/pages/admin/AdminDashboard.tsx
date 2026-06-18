@@ -66,10 +66,13 @@ const AdminDashboard = () => {
             const checkIns = checkInsRes.data || [];
 
             const totalRevenue = bookings
-                .filter((b: DashboardBooking) => b.payment_status === 'paid' || b.booking_status === 'checked_out' || b.payment_status === 'pay_at_property')
+                .filter((b: DashboardBooking) =>
+                    b.payment_status === 'paid' || b.payment_status === 'pay_at_property'
+                )
                 .reduce((sum: number, b: DashboardBooking) => {
                     if (b.payment_status === 'pay_at_property') {
-                        return sum + Number(b.advance_amount || Math.round(Number(b.total_price) * 60) / 100);
+                        const advance = b.advance_amount != null ? b.advance_amount : Math.round(Number(b.total_price) * 60) / 100;
+                        return sum + Number(advance);
                     }
                     return sum + Number(b.total_price);
                 }, 0);
@@ -131,12 +134,20 @@ const AdminDashboard = () => {
         checked_in: 'bg-blue-500',
         checked_out: 'bg-gray-500',
         cancelled: 'bg-red-500',
+        pending_payment: 'bg-amber-500',
+        paid: 'bg-teal-500',
+        failed: 'bg-rose-500',
+        expired: 'bg-purple-500',
     };
     const statusLabels: Record<string, string> = {
         confirmed: 'Confirmed',
         checked_in: 'Checked In',
         checked_out: 'Checked Out',
         cancelled: 'Cancelled',
+        pending_payment: 'Pending Payment',
+        paid: 'Paid',
+        failed: 'Failed',
+        expired: 'Expired',
     };
     const maxCount = Math.max(...Object.values(bookingStatusCounts), 1);
 

@@ -1,6 +1,7 @@
+import { useEffect, useState, type ComponentType } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useState, type ComponentType } from 'react';
 import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Car, Coffee } from 'lucide-react';
+import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
 
 interface FAQItem {
     question: string;
@@ -11,8 +12,37 @@ interface FAQItem {
 
 const FAQ = () => {
     const [openItems, setOpenItems] = useState<string[]>([]);
+    const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200');
+    const [content, setContent] = useState<Record<string, string>>({});
 
-    const faqData: FAQItem[] = [
+    useEffect(() => {
+        Promise.all([
+            getSiteImagesByType('hero'),
+            getSiteContentMap(),
+        ]).then(([imgRes, contentRes]) => {
+            if (imgRes.data && imgRes.data.length > 0) setHeroBg(imgRes.data[0].image_url);
+            if (contentRes.data) setContent(contentRes.data);
+        }).catch(() => {});
+    }, []);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
+
+    const getFAQ = (): FAQItem[] => {
+        try {
+            const raw = C('faq_questions', '');
+            if (raw.trim()) {
+                const parsed = JSON.parse(raw) as Array<{ question: string; answer: string; category?: string }>;
+                return parsed.map((item) => ({
+                    question: item.question,
+                    answer: item.answer,
+                    category: item.category || 'General',
+                }));
+            }
+        } catch {}
+        return defaultFAQ;
+    };
+
+    const defaultFAQ: FAQItem[] = [
         // Booking & Reservations
         {
             question: 'How do I make a reservation?',
@@ -119,10 +149,11 @@ const FAQ = () => {
         );
     };
 
-    const categories = Array.from(new Set(faqData.map(item => item.category)));
-    const groupedFAQs = categories.map(category => ({
+    const FAQ_ITEMS = getFAQ();
+    const categories = Array.from(new Set(FAQ_ITEMS.map((item: FAQItem) => item.category)));
+    const groupedFAQs = categories.map((category: string) => ({
         category,
-        items: faqData.filter(item => item.category === category)
+        items: FAQ_ITEMS.filter((item: FAQItem) => item.category === category)
     }));
 
     return (
@@ -132,10 +163,10 @@ const FAQ = () => {
                 <meta name="description" content="Find answers to frequently asked questions about booking, rooms, amenities, check-in/out, payments, and more at Highlands Motel & Cafe." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-64 mb-16">
+            <section className="relative h-80 mb-16 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
                     <img
-                        src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=1200"
+                        src={heroBg}
                         alt="FAQ"
                         className="w-full h-full object-cover opacity-30"
                     />

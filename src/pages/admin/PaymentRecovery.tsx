@@ -91,7 +91,10 @@ const PaymentRecovery = () => {
   };
 
   const getHoldAge = (holdExpiresAt: string, now: number) => {
-    const diff = now - new Date(holdExpiresAt).getTime();
+    const holdTime = new Date(holdExpiresAt).getTime();
+    if (isNaN(holdTime)) return 'N/A';
+    const diff = now - holdTime;
+    if (diff < 0) return 'Not yet expired';
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;
     const hours = Math.floor(mins / 60);

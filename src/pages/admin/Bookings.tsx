@@ -181,8 +181,8 @@ const Bookings = () => {
                                 'Check Out': new Date(b.check_out).toLocaleDateString(),
                                 'Status': b.booking_status,
                                 'Total (NPR)': b.total_price,
-                                'Advance Paid (NPR)': b.advance_amount || (b.payment_status === 'pay_at_property' ? b.total_price * 0.6 : b.total_price),
-                                'Balance at Property (NPR)': b.balance_amount || 0,
+                                'Advance Paid (NPR)': b.advance_amount != null ? b.advance_amount : (b.payment_status === 'pay_at_property' ? Math.round(b.total_price * 0.6) : b.total_price),
+                                'Balance at Property (NPR)': b.balance_amount != null ? b.balance_amount : 0,
                                 'Payment Status': b.payment_status,
                                 'Created': new Date(b.created_at).toLocaleDateString(),
                             })),
@@ -291,14 +291,14 @@ const Bookings = () => {
                                             NPR {booking.total_price.toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-amber-700">
-                                            {booking.advance_amount
+                                            {booking.advance_amount != null
                                                 ? `NPR ${booking.advance_amount.toLocaleString()}`
                                                 : booking.payment_status === 'pay_at_property'
                                                     ? `NPR ${Math.round(booking.total_price * 60 / 100).toLocaleString()}`
                                                     : '—'}
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-green-700">
-                                            {booking.balance_amount
+                                            {booking.balance_amount != null
                                                 ? `NPR ${booking.balance_amount.toLocaleString()}`
                                                 : booking.payment_status === 'pay_at_property'
                                                     ? `NPR ${Math.round(booking.total_price * 40 / 100).toLocaleString()}`
@@ -333,7 +333,11 @@ const Bookings = () => {
                                                         <LogOut size={18} />
                                                     </button>
                                                 )}
-                                                <button className="p-1 text-gray-400 hover:text-gray-600 rounded">
+                                                <button
+                                                    className="p-1 text-gray-400 hover:text-gray-600 rounded cursor-default"
+                                                    title="More actions (coming soon)"
+                                                    tabIndex={-1}
+                                                >
                                                     <MoreVertical size={18} />
                                                 </button>
                                             </div>

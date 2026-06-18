@@ -124,7 +124,14 @@ const SiteImages = () => {
         }
     };
 
-    const sections = ['hero', 'gallery', 'cafe', 'exterior', 'other'];
+    const sections = ['hero', 'gallery', 'cafe', 'exterior', 'other'] as const;
+    const sectionLabels: Record<string, string> = {
+        hero: 'Home Page Hero Section',
+        gallery: 'Gallery Images',
+        cafe: 'Cafe & Restaurant',
+        exterior: 'Exterior & Property',
+        other: 'Other Images',
+    };
 
     return (
         <div className="space-y-6">
@@ -153,7 +160,7 @@ const SiteImages = () => {
 
             {loading ? (
                 <div className="space-y-12">
-                    {['hero', 'gallery', 'cafe', 'exterior'].map((section) => (
+                    {['hero', 'gallery', 'cafe', 'exterior', 'other'].map((section) => (
                         <div key={section} className="space-y-4">
                             <Skeleton className="h-6 w-32" />
                             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -172,8 +179,8 @@ const SiteImages = () => {
 
                         return (
                             <div key={section} className="space-y-4">
-                                <h2 className="text-lg font-bold font-heading capitalize border-b-2 border-primary/20 pb-2 inline-block">
-                                    {section} Images
+                                <h2 className="text-lg font-bold font-heading border-b-2 border-primary/20 pb-2 inline-block">
+                                    {sectionLabels[section] || section}
                                 </h2>
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     {sectionImages.map(img => (
@@ -242,7 +249,7 @@ const SiteImages = () => {
                                     className="input w-full"
                                 >
                                     {sections.map(s => (
-                                        <option key={s} value={s} className="capitalize">{s} Section</option>
+                                        <option key={s} value={s}>{sectionLabels[s] || s}</option>
                                     ))}
                                 </select>
                             </div>

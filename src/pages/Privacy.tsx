@@ -1,7 +1,17 @@
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Shield, Eye, Database, Lock, User, Globe, Cookie } from 'lucide-react';
+import { getSiteImagesByType } from '../services/contentService';
 
 const Privacy = () => {
+    const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200');
+
+    useEffect(() => {
+        getSiteImagesByType('hero').then(({ data }) => {
+            if (data && data.length > 0) setHeroBg(data[0].image_url);
+        }).catch(() => {});
+    }, []);
+
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
@@ -9,10 +19,10 @@ const Privacy = () => {
                 <meta name="description" content="Read the Privacy Policy of Highlands Motel & Cafe. Learn how we collect, use, and protect your personal information." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-64 mb-16">
+            <section className="relative h-80 mb-16 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
                     <img
-                        src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200"
+                        src={heroBg}
                         alt="Privacy Policy"
                         className="w-full h-full object-cover opacity-30"
                     />

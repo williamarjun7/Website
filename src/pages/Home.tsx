@@ -6,40 +6,47 @@ import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
 import Skeleton from '../components/common/Skeleton';
 
-import { getSiteImagesByType, SiteImage } from '../services/contentService';
+import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
 
 const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
+    const [cafeImg, setCafeImg] = useState('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800');
+    const [content, setContent] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const loadData = async () => {
         setLoading(true);
         try {
-            const [roomsRes, heroRes] = await Promise.all([
+            const [roomsRes, heroRes, cafeRes, contentRes] = await Promise.all([
                 getRooms(),
-                getSiteImagesByType('hero')
+                getSiteImagesByType('hero'),
+                getSiteImagesByType('cafe'),
+                getSiteContentMap(),
             ]);
+            if (contentRes.data) setContent(contentRes.data);
 
             if (roomsRes.data) {
                 setRooms(roomsRes.data.slice(0, 3));
             }
 
             if (heroRes.data && heroRes.data.length > 0) {
-                setHeroSlides(heroRes.data.map((img: SiteImage) => ({
-                    image: img.image_url,
-                    title: img.title || 'Welcome to Highlands',
-                    subtitle: 'Experience Cozy Comfort in Heart of Highlands'
-                })));
+                                setHeroSlides(heroRes.data.map((img: SiteImage) => ({
+                                    image: img.image_url,
+                                    title: img.title || C('hero_title', 'Welcome to Highlands'),
+                                    subtitle: C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')
+                                })));
             } else {
                 // Add sample hero slides for demonstration
                 setHeroSlides([
                     {
                         image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200',
-                        title: 'Welcome to Highlands',
-                        subtitle: 'Experience Cozy Comfort in Heart of Highlands'
+                        title: C('hero_title', 'Welcome to Highlands'),
+                        subtitle: C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')
                     },
                     {
                         image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200',
@@ -83,7 +90,7 @@ const Home = () => {
                 <meta name="description" content="Experience a warm, cozy stay at Highlands Motel & Cafe. Book comfortable rooms and enjoy great food." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-[600px] md:h-[700px] overflow-hidden mt-20">
+            <section className="relative h-[600px] md:h-[700px] overflow-hidden">
                 {heroSlides.length > 0 ? (
                     <>
                         {heroSlides.map((slide, index) => (
@@ -149,8 +156,8 @@ const Home = () => {
                         <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
                         <div className="absolute inset-0 flex items-center justify-center text-center">
                             <div className="text-center">
-                                <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">Welcome to Highlands</h1>
-                                <p className="text-xl mb-8">Experience Cozy Comfort</p>
+                                <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">{C('hero_title', 'Welcome to Highlands')}</h1>
+                                <p className="text-xl mb-8">{C('hero_subtitle', 'Experience Cozy Comfort')}</p>
 
                                 {/* CTA Buttons */}
                                 <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -180,27 +187,27 @@ const Home = () => {
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
                                 <MapPin className="text-primary" size={32} />
                             </div>
-                            <h3 className="font-heading text-xl font-semibold mb-2">Prime Location</h3>
+                            <h3 className="font-heading text-xl font-semibold mb-2">{C('home_feature_1_title', 'Prime Location')}</h3>
                             <p className="text-gray-600">
-                                Nestled in the highlands with stunning mountain views
+                                {C('home_feature_1_desc', 'Nestled in the highlands with stunning mountain views')}
                             </p>
                         </div>
                         <div className="text-center">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
                                 <Coffee className="text-primary" size={32} />
                             </div>
-                            <h3 className="font-heading text-xl font-semibold mb-2">On-Site Cafe</h3>
+                            <h3 className="font-heading text-xl font-semibold mb-2">{C('home_feature_2_title', 'On-Site Cafe')}</h3>
                             <p className="text-gray-600">
-                                Enjoy authentic local cuisine and fresh coffee daily
+                                {C('home_feature_2_desc', 'Enjoy authentic local cuisine and fresh coffee daily')}
                             </p>
                         </div>
                         <div className="text-center">
                             <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
                                 <Users className="text-primary" size={32} />
                             </div>
-                            <h3 className="font-heading text-xl font-semibold mb-2">Warm Hospitality</h3>
+                            <h3 className="font-heading text-xl font-semibold mb-2">{C('home_feature_3_title', 'Warm Hospitality')}</h3>
                             <p className="text-gray-600">
-                                Experience genuine care and personalized service
+                                {C('home_feature_3_desc', 'Experience genuine care and personalized service')}
                             </p>
                         </div>
                     </div>
@@ -212,10 +219,10 @@ const Home = () => {
                 <div className="container-custom">
                     <div className="text-center mb-12">
                         <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-                            Our Rooms
+                            {C('home_rooms_title', 'Our Rooms')}
                         </h2>
                         <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                            Choose from our selection of comfortable and well-appointed rooms
+                            {C('home_rooms_desc', 'Choose from our selection of comfortable and well-appointed rooms')}
                         </p>
                     </div>
 
@@ -296,11 +303,10 @@ const Home = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div>
                             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-                                Highlands Cafe
+                                {C('home_cafe_title', 'Highlands Cafe')}
                             </h2>
                             <p className="text-gray-600 text-lg mb-6 leading-relaxed">
-                                Start your day with a delicious breakfast or unwind with authentic local cuisine.
-                                Our on-site cafe serves fresh, locally-sourced dishes with breathtaking mountain views.
+                                {C('home_cafe_desc', 'Start your day with a delicious breakfast or unwind with authentic local cuisine. Our on-site cafe serves fresh, locally-sourced dishes with breathtaking mountain views.')}
                             </p>
                             <ul className="space-y-3 mb-8">
                                 <li className="flex items-center space-x-3">
@@ -322,7 +328,7 @@ const Home = () => {
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-xl">
                             <img
-                                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800"
+                                src={cafeImg}
                                 alt="Highlands Cafe"
                                 className="w-full h-full object-cover"
                             />
@@ -335,10 +341,10 @@ const Home = () => {
             <section className="py-16 bg-gradient-to-r from-amber-900 to-amber-800 text-white">
                 <div className="container-custom text-center">
                     <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-                        Ready for Your Highland Escape?
+                        {C('home_cta_title', 'Ready for Your Highland Escape?')}
                     </h2>
                     <p className="text-xl mb-8 text-white/90">
-                        Book your stay today and experience the warmth of the highlands
+                        {C('home_cta_desc', 'Book your stay today and experience the warmth of the highlands')}
                     </p>
                     <Link to="/booking" className="btn-primary inline-block">
                         Book Now

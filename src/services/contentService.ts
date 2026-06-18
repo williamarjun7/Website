@@ -125,6 +125,26 @@ export const deleteSiteImage = async (id: string) => {
     }
 };
 
+// Get all site content as a key-value map
+export const getSiteContentMap = async () => {
+    try {
+        const { data, error } = await insforge.database
+            .from('site_content')
+            .select('key, value');
+
+        if (error) throw error;
+        const map: Record<string, string> = {};
+        if (data) {
+            for (const item of data) {
+                if (item.key) map[item.key] = item.value;
+            }
+        }
+        return { data: map, error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
 // Admin: Toggle image active status
 export const toggleImageActive = async (id: string, isActive: boolean) => {
     try {

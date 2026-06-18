@@ -438,14 +438,17 @@ const Menu = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1 text-gray-700">Category</label>
-                                <input
-                                    type="text"
+                                <select
                                     required
                                     value={itemForm.category}
                                     onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
                                     className="input w-full"
-                                    placeholder="e.g. starters, mains, beverages"
-                                />
+                                >
+                                    <option value="" disabled>Select category</option>
+                                    {menu.map(cat => (
+                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>

@@ -201,7 +201,7 @@ const AdminLogin = () => {
 
                 {/* Footer */}
                 {!showReset && (
-                <div className="bg-gray-50 px-8 py-4 text-center border-t border-gray-100">
+                <div className="bg-gray-50 px-8 py-4 text-center border-t border-gray-100 space-y-2">
                     <p className="text-xs text-gray-500">
                         Forgot password?{' '}
                         <button
@@ -210,6 +210,16 @@ const AdminLogin = () => {
                             className="text-primary hover:underline font-medium"
                         >
                             Reset it here
+                        </button>
+                    </p>
+                    <p className="text-xs text-gray-500">
+                        Don't have an account?{' '}
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/signup')}
+                            className="text-primary hover:underline font-medium"
+                        >
+                            Create one
                         </button>
                     </p>
                 </div>
