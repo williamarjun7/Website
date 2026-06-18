@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
-import { MapPin, Users, Coffee, Heart, Award, CheckCircle, Star } from 'lucide-react';
+import { MapPin, Coffee, Heart, Award, CheckCircle, Star } from 'lucide-react';
 
 const About = () => {
     const [activeTab, setActiveTab] = useState('story');
@@ -40,7 +40,6 @@ const About = () => {
                         {[
                             { id: 'story', label: 'Our Story', icon: Heart },
                             { id: 'mission', label: 'Mission & Values', icon: Award },
-                            { id: 'team', label: 'Our Team', icon: Users },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -182,69 +181,6 @@ const About = () => {
                                     </div>
                                 ))}
                             </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'team' && (
-                    <div className="space-y-16">
-                        {/* Team Introduction */}
-                        <div className="text-center max-w-4xl mx-auto">
-                            <h2 className="font-heading text-3xl font-bold mb-6 text-amber-900">
-                                Meet Our Team
-                            </h2>
-                            <p className="text-lg text-gray-700 leading-relaxed">
-                                Our dedicated team of professionals brings together years of experience in hospitality,
-                                culinary arts, and customer service to create exceptional experiences for every guest.
-                            </p>
-                        </div>
-
-                        {/* Team Members */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {[
-                                {
-                                    name: "Kushal Neupane",
-                                    role: "Manager",
-                                    bio: "Worked as a chef at Yak & Yeti Hotel and Shuva Hotel. Experienced in hospitality management and customer service."
-                                },
-                                {
-                                    name: "Shirish Singh",
-                                    role: "Barista",
-                                    bio: "Skilled barista with experience in coffee preparation, customer interaction, and beverage presentation."
-                                },
-                                {
-                                    name: "Abinash",
-                                    role: "Staff",
-                                    bio: "Dedicated staff member responsible for assisting daily operations and ensuring quality customer service."
-                                }
-                            ].map((member, index) => (
-                                <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-amber-100">
-                                    <div className="p-8 text-center">
-                                        <h3 className="font-heading text-2xl font-bold text-gray-800 mb-2">
-                                            {member.name}
-                                        </h3>
-                                        <p className="text-amber-600 font-bold mb-4 uppercase tracking-wider text-sm">{member.role}</p>
-                                        <div className="w-12 h-1 bg-gradient-to-r from-amber-500 to-orange-500 mx-auto mb-6 rounded-full"></div>
-                                        <p className="text-gray-700 leading-relaxed">
-                                            {member.bio}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Join Our Team */}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-12 text-center">
-                            <h3 className="font-heading text-2xl font-bold mb-4 text-amber-900">
-                                Join Our Family
-                            </h3>
-                            <p className="text-gray-700 mb-6 max-w-2xl mx-auto">
-                                We're always looking for passionate individuals who share our commitment to excellence
-                                and love for hospitality. If you're interested in joining our team, we'd love to hear from you.
-                            </p>
-                            <button className="px-8 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                                View Career Opportunities
-                            </button>
                         </div>
                     </div>
                 )}
