@@ -16,7 +16,7 @@ const Footer = memo(() => {
     const C = (key: string, fallback: string) => content[key] || fallback;
 
     return (
-        <footer className="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white mt-20 overflow-hidden">
+        <footer className="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white overflow-hidden">
             {/* Decorative Background Pattern */}
             <div className="absolute inset-0 opacity-10">
                 <div className="absolute inset-0 bg-repeat" style={{
