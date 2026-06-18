@@ -93,6 +93,18 @@ export const getCurrentAdmin = async () => {
     }
 };
 
+// Reset password
+export const resetPassword = async (email: string) => {
+    try {
+        const { data, error } = await insforge.auth.resetPasswordForEmail(email);
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        console.error('Password reset failed:', error);
+        return handleInsforgeError(error);
+    }
+};
+
 // Check if user is authenticated
 export const isAuthenticated = async (): Promise<boolean> => {
     try {
