@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, AtSign, ArrowLeft, Mail } from 'lucide-react';
 import { adminLogin, resetPassword } from '../../services/authService';
+import { isAuthenticated } from '../../services/authService';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -41,6 +42,11 @@ const AdminLogin = () => {
             }
 
             if (data) {
+                for (let i = 0; i < 5; i++) {
+                    const authed = await isAuthenticated();
+                    if (authed) break;
+                    await new Promise(r => setTimeout(r, 200));
+                }
                 navigate('/admin/dashboard');
             }
         } catch (err: unknown) {

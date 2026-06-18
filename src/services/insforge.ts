@@ -9,7 +9,8 @@ if (!insforgeUrl) {
 
 export const insforge = createClient({
     baseUrl: insforgeUrl,
-    anonKey: insforgeAnonKey || ''
+    anonKey: insforgeAnonKey || '',
+    storage: localStorage
 });
 
 export const handleInsforgeError = <T = null>(error: unknown): { data: T | null; error: string } => {

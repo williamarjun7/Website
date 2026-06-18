@@ -50,43 +50,6 @@ export const getRooms = async () => {
 };
 
 // Fix stale floor_number values (e.g. 30, 40 from old data)
-export const fixFloorNumbers = async () => {
-    try {
-        const { data, error } = await insforge.database
-            .from('rooms')
-            .select('id, room_number, floor_number');
-
-        if (error) throw error;
-        if (!data) return { error: null };
-
-        const updates: { id: string; floor_number: number }[] = [];
-
-        for (const room of data) {
-            if (room.room_number && room.room_number.length > 0) {
-                const correctFloor = parseInt(room.room_number.charAt(0));
-                if (!isNaN(correctFloor) && correctFloor !== room.floor_number) {
-                    updates.push({ id: room.id, floor_number: correctFloor });
-                }
-            } else if (room.floor_number && room.floor_number > 9) {
-                updates.push({ id: room.id, floor_number: 1 });
-            }
-        }
-
-        if (updates.length === 0) return { error: null };
-
-        for (const update of updates) {
-            await insforge.database
-                .from('rooms')
-                .update({ floor_number: update.floor_number })
-                .eq('id', update.id);
-        }
-
-        return { data: updates, error: null };
-    } catch (error) {
-        return handleInsforgeError(error);
-    }
-};
-
 // Admin: Get all rooms (including inactive/hidden)
 export const getAllRoomsForAdmin = async () => {
     try {

@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
+import { getEffectivePricePerNight } from '../services/bookingService';
 import Skeleton from '../components/common/Skeleton';
 
 import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
@@ -275,10 +276,25 @@ const Home = () => {
                                     </p>
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <span className="text-2xl font-bold text-primary">
-                                                NPR {room.price_per_night.toLocaleString()}
-                                            </span>
-                                            <span className="text-gray-500 text-sm ml-1">/night</span>
+                                            {room.discount_percent && room.discount_percent > 0 ? (
+                                                <div>
+                                                    <span className="text-2xl font-bold text-primary">
+                                                        NPR {getEffectivePricePerNight(room).toLocaleString()}
+                                                    </span>
+                                                    <span className="text-gray-500 text-sm ml-1">/night</span>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-xs text-gray-400 line-through">NPR {room.price_per_night.toLocaleString()}</span>
+                                                        <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">{room.discount_percent}% OFF</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span className="text-2xl font-bold text-primary">
+                                                        NPR {room.price_per_night.toLocaleString()}
+                                                    </span>
+                                                    <span className="text-gray-500 text-sm ml-1">/night</span>
+                                                </>
+                                            )}
                                         </div>
                                         <Link to="/booking" className="btn-secondary text-sm px-4 py-2">
                                             Book Now

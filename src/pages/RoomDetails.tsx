@@ -19,6 +19,7 @@ import {
     Layers
 } from 'lucide-react';
 import { getRoomById, getRooms, Room } from '../services/roomService';
+import { getEffectivePricePerNight } from '../services/bookingService';
 import RoomCarousel from '../components/RoomCarousel';
 import Skeleton from '../components/common/Skeleton';
 
@@ -157,7 +158,7 @@ const RoomDetails = () => {
                                 <div>
                                     <div className="flex items-center space-x-2 mb-2">
                                         <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
-                                            {room.room_type || 'Classic Room'}
+                                            {room.room_type || 'Standard Room'}
                                         </span>
                                         {room.has_ac !== undefined && (
                                             <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${room.has_ac ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -169,6 +170,20 @@ const RoomDetails = () => {
                                             <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
                                                 <Star size={12} />
                                                 <span>Featured</span>
+                                            </span>
+                                        )}
+                                        {room.maintenance && (
+                                            <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500 text-white">
+                                                <span>Under Maintenance</span>
+                                            </span>
+                                        )}
+                                        {room.availability_status && room.availability_status !== 'available' && (
+                                            <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                                                room.availability_status === 'occupied' ? 'bg-red-100 text-red-700' :
+                                                room.availability_status === 'reserved' ? 'bg-purple-100 text-purple-700' :
+                                                'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <span>{room.availability_status}</span>
                                             </span>
                                         )}
                                     </div>
@@ -191,8 +206,21 @@ const RoomDetails = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-3xl font-bold text-primary">NPR {room.price_per_night.toLocaleString()}</div>
-                                    <div className="text-gray-400 text-sm">per night</div>
+                                    {room.discount_percent && room.discount_percent > 0 ? (
+                                        <div>
+                                            <div className="text-3xl font-bold text-primary">NPR {getEffectivePricePerNight(room).toLocaleString()}</div>
+                                            <div className="flex items-center justify-end space-x-2 mt-1">
+                                                <span className="text-sm text-gray-400 line-through">NPR {room.price_per_night.toLocaleString()}</span>
+                                                <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">{room.discount_percent}% OFF</span>
+                                            </div>
+                                            <div className="text-gray-400 text-sm">per night</div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="text-3xl font-bold text-primary">NPR {room.price_per_night.toLocaleString()}</div>
+                                            <div className="text-gray-400 text-sm">per night</div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -336,13 +364,19 @@ const RoomDetails = () => {
                                 </div>
                             </div>
 
-                            <Link
-                                to="/booking"
-                                state={{ selectedRoom: room }}
-                                className="btn-primary w-full py-4 text-center text-lg font-bold shadow-lg shadow-primary/20 block"
-                            >
-                                Book This Room
-                            </Link>
+                            {room.maintenance ? (
+                                <span className="btn-primary w-full py-4 text-center text-lg font-bold shadow-lg shadow-primary/20 block opacity-50 cursor-not-allowed">
+                                    Unavailable (Maintenance)
+                                </span>
+                            ) : (
+                                <Link
+                                    to="/booking"
+                                    state={{ selectedRoom: room }}
+                                    className="btn-primary w-full py-4 text-center text-lg font-bold shadow-lg shadow-primary/20 block"
+                                >
+                                    Book This Room
+                                </Link>
+                            )}
 
                             <p className="text-[10px] text-gray-400 text-center mt-4 uppercase font-bold tracking-widest">
                                 No credit card required now
@@ -389,8 +423,15 @@ const RoomDetails = () => {
                                         alt={r.name}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
-                                        NPR {r.price_per_night.toLocaleString()}
+                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
+                                        {r.discount_percent && r.discount_percent > 0 ? (
+                                            <div className="flex items-center space-x-1">
+                                                <span className="text-xs font-bold text-primary">NPR {getEffectivePricePerNight(r).toLocaleString()}</span>
+                                                <span className="text-[9px] bg-red-500 text-white px-1 rounded-full font-bold">{r.discount_percent}% OFF</span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs font-bold text-primary">NPR {r.price_per_night.toLocaleString()}</span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="p-6">

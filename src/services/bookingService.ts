@@ -178,6 +178,14 @@ export const getUpcomingCheckIns = async (days: number = 7) => {
     }
 };
 
+// Get effective price per night considering discount
+export const getEffectivePricePerNight = (room: { price_per_night: number; discount_percent?: number }): number => {
+    if (room.discount_percent && room.discount_percent > 0) {
+        return Math.round(room.price_per_night * (1 - room.discount_percent / 100));
+    }
+    return room.price_per_night;
+};
+
 // Calculate total price based on nights
 export const calculateTotalPrice = (
     pricePerNight: number,

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import QRCode from 'qrcode';
 import { getAvailableRooms, checkRoomAvailability, Room } from '../services/roomService';
-import { createBooking, calculateTotalPrice } from '../services/bookingService';
+import { createBooking, calculateTotalPrice, getEffectivePricePerNight } from '../services/bookingService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment, sendBookingConfirmation } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -303,7 +303,7 @@ const Booking = () => {
 
     const getTotalPrice = () => {
         if (!activeRoom) return 0;
-        return calculateTotalPrice(activeRoom.price_per_night, checkIn, checkOut);
+        return calculateTotalPrice(getEffectivePricePerNight(activeRoom), checkIn, checkOut);
     };
 
     const handleVerifyClick = async () => {
@@ -391,9 +391,9 @@ const Booking = () => {
                                                 <p className="text-sm text-gray-500">Room #{activeRoom.room_number}</p>
                                             )}
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
-                                                <span className="font-medium text-primary uppercase text-xs">{activeRoom.room_type || 'Room'}</span>
+                                                <span className="font-medium text-primary uppercase text-xs">{activeRoom.room_type || 'Standard Room'}</span>
                                                 <span>Up to {activeRoom.max_guests} guests</span>
-                                                <span className="font-semibold text-primary">NPR {activeRoom.price_per_night.toLocaleString()}/night</span>
+                                                <span className="font-semibold text-primary">NPR {getEffectivePricePerNight(activeRoom).toLocaleString()}/night{activeRoom.discount_percent && activeRoom.discount_percent > 0 && <span className="text-[10px] text-red-500 ml-1 font-bold">({activeRoom.discount_percent}% OFF)</span>}</span>
                                             </div>
                                         </div>
                                         <button onClick={() => setShowAvailabilitySearch(true)}
@@ -418,7 +418,7 @@ const Booking = () => {
                                             </p>
                                             {checkIn && checkOut && (
                                                 <p className="text-green-600 text-sm mt-1">
-                                                    Total: NPR {calculateTotalPrice(activeRoom.price_per_night, checkIn, checkOut).toLocaleString()}
+                                                    Total: NPR {calculateTotalPrice(getEffectivePricePerNight(activeRoom), checkIn, checkOut).toLocaleString()}
                                                 </p>
                                             )}
                                         </div>

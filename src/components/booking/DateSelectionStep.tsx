@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 import { Room } from '../../services/roomService';
-import { calculateTotalPrice } from '../../services/bookingService';
+import { calculateTotalPrice, getEffectivePricePerNight } from '../../services/bookingService';
 import Skeleton from '../common/Skeleton';
 
 interface DateSelectionStepProps {
@@ -120,9 +120,14 @@ const DateSelectionStep: React.FC<DateSelectionStepProps> = ({
                                         </div>
                                         <div className="text-right">
                                             <div className="text-2xl font-bold text-primary">
-                                                NPR {calculateTotalPrice(room.price_per_night, checkIn, checkOut).toLocaleString()}
+                                                NPR {calculateTotalPrice(getEffectivePricePerNight(room), checkIn, checkOut).toLocaleString()}
                                             </div>
-                                            <div className="text-sm text-gray-500">NPR {room.price_per_night.toLocaleString()}/night</div>
+                                            <div className="text-sm text-gray-500">
+                                                NPR {getEffectivePricePerNight(room).toLocaleString()}/night
+                                                {room.discount_percent && room.discount_percent > 0 && (
+                                                    <span className="text-[10px] text-red-500 ml-1">({room.discount_percent}% OFF)</span>
+                                                )}
+                                            </div>
                                             <span className="btn-primary mt-2 text-sm px-4 py-2 inline-block">Select Room</span>
                                         </div>
                                     </div>

@@ -12,6 +12,7 @@ import {
     X
 } from 'lucide-react';
 import { getRooms, Room } from '../services/roomService';
+import { getEffectivePricePerNight } from '../services/bookingService';
 import RoomCarousel from '../components/RoomCarousel';
 import { SkeletonRoomCard } from '../components/common/Skeleton';
 
@@ -233,10 +234,17 @@ const Rooms = () => {
                                             roomName={room.name}
                                         />
                                         <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
-                                            <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
-                                                <Star className="text-yellow-400 fill-yellow-400" size={12} />
-                                                <span className="text-[10px] font-bold text-gray-800">New & Popular</span>
-                                            </div>
+                                            {room.featured && (
+                                                <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
+                                                    <Star className="text-yellow-400 fill-yellow-400" size={12} />
+                                                    <span className="text-[10px] font-bold text-gray-800">Featured</span>
+                                                </div>
+                                            )}
+                                            {room.maintenance && (
+                                                <div className="bg-amber-500/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
+                                                    <span className="text-[10px] font-bold text-white">Under Maintenance</span>
+                                                </div>
+                                            )}
                                             {room.has_ac !== undefined && (
                                                 <div className={`px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20 backdrop-blur-md ${room.has_ac ? 'bg-blue-100/90 text-blue-700' : 'bg-gray-100/90 text-gray-600'}`}>
                                                     <Wind size={12} />
@@ -252,11 +260,25 @@ const Rooms = () => {
                                             )}
                                         </div>
                                         <div className="absolute bottom-4 right-4 z-10">
-                                            <div className="bg-primary px-4 py-2 rounded-2xl text-white shadow-xl flex items-baseline space-x-1">
-                                                <span className="text-[10px] font-medium opacity-80">NPR</span>
-                                                <span className="text-xl font-bold">{room.price_per_night.toLocaleString()}</span>
-                                                <span className="text-[10px] font-medium opacity-80">/ night</span>
-                                            </div>
+                                            {room.discount_percent && room.discount_percent > 0 ? (
+                                                <div className="bg-primary px-4 py-2 rounded-2xl text-white shadow-xl">
+                                                    <div className="flex items-baseline space-x-1">
+                                                        <span className="text-[10px] font-medium opacity-80">NPR</span>
+                                                        <span className="text-xl font-bold">{getEffectivePricePerNight(room).toLocaleString()}</span>
+                                                        <span className="text-[10px] font-medium opacity-80">/ night</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2 mt-0.5">
+                                                        <span className="text-xs line-through opacity-70">NPR {room.price_per_night.toLocaleString()}</span>
+                                                        <span className="text-[9px] bg-red-500 px-1.5 py-0.5 rounded-full font-bold">{room.discount_percent}% OFF</span>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="bg-primary px-4 py-2 rounded-2xl text-white shadow-xl flex items-baseline space-x-1">
+                                                    <span className="text-[10px] font-medium opacity-80">NPR</span>
+                                                    <span className="text-xl font-bold">{room.price_per_night.toLocaleString()}</span>
+                                                    <span className="text-[10px] font-medium opacity-80">/ night</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -266,8 +288,9 @@ const Rooms = () => {
                                                 <h2 className="font-heading text-2xl md:text-3xl font-bold text-gray-900 group-hover:text-primary transition-colors mb-1">
                                                     {room.name}
                                                 </h2>
-                                                <div className="flex items-center space-x-2">
+                                                <div className="flex items-center space-x-2 flex-wrap">
                                                     <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || 'Standard Room'}</span>
+                                                    {room.room_size && <span className="text-gray-400 text-xs">• {room.room_size}</span>}
                                                     {room.room_number && (
                                                         <span className="text-gray-400 text-xs">• #{room.room_number}</span>
                                                     )}
@@ -314,13 +337,19 @@ const Rooms = () => {
                                         </div>
 
                                         <div className="flex items-center space-x-4 mt-auto">
-                                            <Link
-                                                to={`/booking`}
-                                                state={{ selectedRoom: room }}
-                                                className="btn-primary flex-1 py-4 text-center text-sm font-bold tracking-wide shadow-lg shadow-primary/10"
-                                            >
-                                                Book Now
-                                            </Link>
+                                            {room.maintenance ? (
+                                                <span className="btn-primary flex-1 py-4 text-center text-sm font-bold tracking-wide shadow-lg shadow-primary/10 opacity-50 cursor-not-allowed">
+                                                    Unavailable
+                                                </span>
+                                            ) : (
+                                                <Link
+                                                    to={`/booking`}
+                                                    state={{ selectedRoom: room }}
+                                                    className="btn-primary flex-1 py-4 text-center text-sm font-bold tracking-wide shadow-lg shadow-primary/10"
+                                                >
+                                                    Book Now
+                                                </Link>
+                                            )}
                                             <Link
                                                 to={`/rooms/${room.id}`}
                                                 className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-900 hover:text-white transition-all group/arrow border border-gray-200"
