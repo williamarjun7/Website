@@ -192,7 +192,7 @@ const Contact = () => {
                     <h2 className="font-heading text-2xl font-bold mb-6">Location</h2>
                     <div className="rounded-2xl overflow-hidden shadow-lg h-[280px] md:h-[400px]">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3790.895914228358!2d81.6242909112496!3d28.584789186145482!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285b5b738260f%3A0xb0fb170f840c8984!2sHighlands%20Cafe%20%26%20Motel%20Inn!5e1!3m2!1sen!2snp!4v1781669869342!5m2!1sen!2snp"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30327.168373915127!2d81.58876419067386!3d28.58478551046912!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285b5b738260f%3A0xb0fb170f840c8984!2sHighlands%20Cafe%20%26%20Motel%20Inn!5e1!3m2!1sen!2snp!4v1781772223538!5m2!1sen!2snp"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -222,15 +222,13 @@ const Contact = () => {
                         <span>Location Assistance</span>
                         <span className="text-2xl">📍</span>
                     </h2>
-                    <p className="text-gray-600 mb-6 max-w-3xl">
-                        Having trouble locating us? The Google Maps pin is accurate, but nearby landmarks and
-                        building visuals may not always reflect current conditions. For the easiest arrival
-                        experience, please watch the location video below, which shows the route, surroundings,
-                        and exact property entrance. If you need additional assistance, feel free to call or
+                    <p className="text-gray-600 mb-4 max-w-3xl">
+                        Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your
+                        phone and follow the navigation. If you need additional assistance, feel free to call or
                         WhatsApp us at <a href="https://wa.me/9779763215874" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">+977 9763215874</a>.
                     </p>
-                    <div className="rounded-xl overflow-hidden shadow-lg bg-black max-w-3xl">
-                        <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                    <div className="rounded-xl overflow-hidden shadow-lg bg-black max-w-sm mx-auto">
+                        <div className="relative" style={{ paddingBottom: '177.78%' }}>
                             <iframe
                                 src="https://www.tiktok.com/embed/v2/7636374767192263956"
                                 className="absolute inset-0 w-full h-full"
