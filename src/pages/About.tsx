@@ -12,7 +12,7 @@ const About = () => {
                 <meta name="description" content="Learn the story behind Highlands Motel & Cafe in Surkhet. Discover our mission, values, and the team dedicated to making your stay memorable." />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-80 mb-16">
+            <section className="relative h-[560px] mb-16">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
                     <img
                         src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200"

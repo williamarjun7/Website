@@ -58,7 +58,7 @@ const Cafe = () => {
                 <meta name="description" content="Savor authentic local cuisine at our cafe in Surkhet." />
             </Helmet>
 
-            <section className="relative h-96 mb-16">
+            <section className="relative h-[560px] mb-16">
                 <img
                     src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200"
                     alt="Highlands Cafe"
