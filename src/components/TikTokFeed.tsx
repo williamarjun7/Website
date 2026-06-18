@@ -34,13 +34,13 @@ export default function TikTokFeed() {
         </div>
 
         <div className="flex justify-center">
-          <div className="w-full max-w-[600px]">
+          <div className="w-full max-w-[780px] min-h-[400px] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <blockquote
               className="tiktok-embed"
               cite={`https://www.tiktok.com/@${TIKTOK_USERNAME}`}
               data-unique-id={TIKTOK_USERNAME}
               data-embed-type="creator"
-              style={{ maxWidth: '600px', minWidth: '288px', width: '100%' }}
+              style={{ maxWidth: '780px', minWidth: '288px', width: '100%' }}
             >
               <section>
                 <a
