@@ -8,6 +8,7 @@ import { getEffectivePricePerNight } from '../services/bookingService';
 import Skeleton from '../components/common/Skeleton';
 
 import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
+import TikTokFeed from '../components/TikTokFeed';
 
 const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -353,6 +354,9 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            {/* TikTok Feed */}
+            <TikTokFeed username="highlandscafe1" maxVideos={6} />
 
             {/* CTA Section */}
             <section className="py-16 bg-gradient-to-r from-amber-900 to-amber-800 text-white">
