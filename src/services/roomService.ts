@@ -1,4 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
+import { deleteImage, extractStorageKey } from './storageService';
 
 export interface Room {
     id: string;
@@ -202,9 +203,22 @@ export const addRoomImage = async (roomImage: Partial<RoomImage>) => {
     }
 };
 
-// Admin: Delete room image
+// Admin: Delete room image (also removes from storage)
 export const deleteRoomImage = async (id: string) => {
     try {
+        const { data: image, error: fetchError } = await insforge.database
+            .from('room_images')
+            .select('image_url')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        if (image?.image_url) {
+            const key = extractStorageKey(image.image_url);
+            if (key) await deleteImage(key);
+        }
+
         const { error } = await insforge.database
             .from('room_images')
             .delete()

@@ -82,10 +82,7 @@ const About = () => {
                                 From Humble Beginnings to Highland Excellence
                             </h2>
                             <p className="text-lg text-gray-700 leading-relaxed mb-8">
-                                Founded with a vision to redefine hospitality in the Karnali region, Highlands Cafe & Motel Inn
-                                is the newest destination for travelers seeking authentic comfort and breathtaking views.
-                                Our journey began with a simple dream: to create a sanctuary that combines modern amenities
-                                with the traditional warmth of local Surkhet hospitality.
+                                {C('about_text', 'Founded with a vision to redefine hospitality in the Karnali region, Highlands Cafe & Motel Inn is the newest destination for travelers seeking authentic comfort and breathtaking views. Our journey began with a simple dream: to create a sanctuary that combines modern amenities with the traditional warmth of local Surkhet hospitality.')}
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
                                 <div className="text-center">

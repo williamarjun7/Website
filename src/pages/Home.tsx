@@ -32,7 +32,8 @@ const Home = () => {
             if (contentRes.data) setContent(contentRes.data);
 
             if (roomsRes.data) {
-                setRooms(roomsRes.data.slice(0, 3));
+                const sorted = [...roomsRes.data].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+                setRooms(sorted.slice(0, 3));
             }
 
             if (heroRes.data && heroRes.data.length > 0) {

@@ -101,12 +101,37 @@ export const getAllBookings = async () => {
     }
 };
 
-// Admin: Update booking status
+const VALID_TRANSITIONS: Record<string, string[]> = {
+    pending_payment: ['confirmed', 'cancelled', 'expired', 'failed'],
+    confirmed: ['paid', 'checked_in', 'cancelled'],
+    paid: ['checked_in', 'cancelled'],
+    checked_in: ['checked_out'],
+    checked_out: [],
+    cancelled: [],
+    expired: [],
+    failed: [],
+};
+
+// Admin: Update booking status with state machine validation
 export const updateBookingStatus = async (
     id: string,
     status: Booking['booking_status']
 ) => {
     try {
+        const { data: current, error: fetchError } = await insforge.database
+            .from('bookings')
+            .select('booking_status')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+        if (!current) throw new Error('Booking not found');
+
+        const allowed = VALID_TRANSITIONS[current.booking_status];
+        if (!allowed || !allowed.includes(status)) {
+            throw new Error(`Cannot transition from "${current.booking_status}" to "${status}"`);
+        }
+
         const { data, error } = await insforge.database
             .from('bookings')
             .update({ booking_status: status })

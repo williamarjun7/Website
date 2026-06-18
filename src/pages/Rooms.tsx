@@ -60,10 +60,10 @@ const Rooms = () => {
         }
 
         if (filters.minPrice) {
-            result = result.filter(r => r.price_per_night >= Number(filters.minPrice));
+            result = result.filter(r => getEffectivePricePerNight(r) >= Number(filters.minPrice));
         }
         if (filters.maxPrice) {
-            result = result.filter(r => r.price_per_night <= Number(filters.maxPrice));
+            result = result.filter(r => getEffectivePricePerNight(r) <= Number(filters.maxPrice));
         }
 
         if (filters.searchQuery.trim()) {
@@ -234,6 +234,11 @@ const Rooms = () => {
                                             roomName={room.name}
                                         />
                                         <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+                                            {room.availability_status && room.availability_status !== 'available' && (
+                                                <div className="bg-primary/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
+                                                    <span className="text-[10px] font-bold text-white">{room.availability_status === 'limited' ? 'Limited Availability' : 'Booked'}</span>
+                                                </div>
+                                            )}
                                             {room.featured && (
                                                 <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
                                                     <Star className="text-yellow-400 fill-yellow-400" size={12} />

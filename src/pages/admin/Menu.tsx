@@ -11,7 +11,7 @@ import {
     X
 } from 'lucide-react';
 import {
-    getFullMenu,
+    getAdminMenu,
     createCategory,
     updateCategory,
     deleteCategory,
@@ -76,7 +76,7 @@ const Menu = () => {
 
     const loadMenu = async () => {
         setLoading(true);
-        const { data } = await getFullMenu();
+        const { data } = await getAdminMenu();
         if (data) {
             setMenu(data);
         }

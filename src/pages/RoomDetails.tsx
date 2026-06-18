@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { getRoomById, getRooms, Room } from '../services/roomService';
 import { getEffectivePricePerNight } from '../services/bookingService';
+import { getSiteContentMap } from '../services/contentService';
 import RoomCarousel from '../components/RoomCarousel';
 import Skeleton from '../components/common/Skeleton';
 
@@ -29,16 +30,22 @@ const RoomDetails = () => {
     const [room, setRoom] = useState<Room | null>(null);
     const [relatedRooms, setRelatedRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
+    const [siteContent, setSiteContent] = useState<Record<string, string>>({});
+    const C = (key: string, fallback: string) => siteContent[key] || fallback;
 
     useEffect(() => {
         if (!id) return;
         let cancelled = false;
 
         const load = async () => {
-            const { data: roomData } = await getRoomById(id);
+            const [roomResult, contentResult] = await Promise.all([
+                getRoomById(id),
+                getSiteContentMap(),
+            ]);
             if (!cancelled) {
-                if (roomData) {
-                    setRoom(roomData);
+                if (contentResult.data) setSiteContent(contentResult.data);
+                if (roomResult.data) {
+                    setRoom(roomResult.data);
                     const { data: allRooms } = await getRooms();
                     if (!cancelled && allRooms) {
                         setRelatedRooms(allRooms.filter(r => r.id !== id).slice(0, 3));
@@ -303,14 +310,14 @@ const RoomDetails = () => {
                                         <Clock className="text-yellow-600 mt-0.5" size={18} />
                                         <div>
                                             <p className="text-sm font-bold text-yellow-800">Check-in / Check-out</p>
-                                            <p className="text-xs text-yellow-700">Check-in: 02:00 PM | Check-out: 11:00 AM</p>
+                                            <p className="text-xs text-yellow-700">{C('checkin_time', 'Check-in: 02:00 PM')} | {C('checkout_time', 'Check-out: 11:00 AM')}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start space-x-3">
                                         <Clock className="text-yellow-600 mt-0.5" size={18} />
                                         <div>
                                             <p className="text-sm font-bold text-yellow-800">Cancellation Policy</p>
-                                            <p className="text-xs text-yellow-700">Free cancellation up to 48 hours before check-in.</p>
+                                            <p className="text-xs text-yellow-700">{C('cancel_policy', 'Free cancellation up to 12 hours before check-in.')}</p>
                                         </div>
                                     </div>
                                     {room.policies && (

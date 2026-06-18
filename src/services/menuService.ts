@@ -19,6 +19,31 @@ export interface MenuItem {
     category: string;
 }
 
+const buildGroupedMenu = (items: any[]) => {
+    const grouped: Record<string, MenuItem[]> = {};
+    for (const item of items || []) {
+        const cat = item.category || 'Other';
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push({
+            id: item.id,
+            name: item.name,
+            description: item.description || '',
+            price: Number(item.price),
+            image: item.image || undefined,
+            available: item.available,
+            category: item.category,
+        });
+    }
+    return Object.entries(grouped).map(([name, items], i) => ({
+        id: name,
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        sort_order: i,
+        is_active: true,
+        created_at: '',
+        items,
+    }));
+};
+
 export const getFullMenu = async () => {
     try {
         const { data: items, error } = await insforge.database
@@ -30,32 +55,23 @@ export const getFullMenu = async () => {
             .order('name', { ascending: true });
 
         if (error) throw error;
+        return { data: buildGroupedMenu(items), error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
 
-        const grouped: Record<string, MenuItem[]> = {};
-        for (const item of items || []) {
-            const cat = item.category || 'Other';
-            if (!grouped[cat]) grouped[cat] = [];
-            grouped[cat].push({
-                id: item.id,
-                name: item.name,
-                description: item.description || '',
-                price: Number(item.price),
-                image: item.image || undefined,
-                available: item.available,
-                category: item.category,
-            });
-        }
+export const getAdminMenu = async () => {
+    try {
+        const { data: items, error } = await insforge.database
+            .from('menu_items')
+            .select('id, name, description, price, image, available, category')
+            .is('deleted_at', null)
+            .order('category', { ascending: true })
+            .order('name', { ascending: true });
 
-        const categories = Object.entries(grouped).map(([name, items], i) => ({
-            id: name,
-            name: name.charAt(0).toUpperCase() + name.slice(1),
-            sort_order: i,
-            is_active: true,
-            created_at: '',
-            items,
-        }));
-
-        return { data: categories, error: null };
+        if (error) throw error;
+        return { data: buildGroupedMenu(items), error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }

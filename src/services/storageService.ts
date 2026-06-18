@@ -23,6 +23,16 @@ export const uploadImage = async (file: File, folder: string = 'rooms') => {
     }
 };
 
+// Extract storage key from a public URL (e.g. ".../public/site-assets/rooms/abc.jpg" -> "rooms/abc.jpg")
+export const extractStorageKey = (url: string): string | null => {
+    try {
+        const match = url.match(/\/public\/site-assets\/(.+)/);
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+};
+
 // Delete a file from storage
 export const deleteImage = async (key: string) => {
     try {

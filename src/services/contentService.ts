@@ -1,4 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
+import { deleteImage, extractStorageKey } from './storageService';
 
 export interface SiteContent {
     id: string;
@@ -110,9 +111,22 @@ export const addSiteImage = async (image: Partial<SiteImage>) => {
     }
 };
 
-// Admin: Delete site image
+// Admin: Delete site image (also removes from storage)
 export const deleteSiteImage = async (id: string) => {
     try {
+        const { data: image, error: fetchError } = await insforge.database
+            .from('site_images')
+            .select('image_url')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+
+        if (image?.image_url) {
+            const key = extractStorageKey(image.image_url);
+            if (key) await deleteImage(key);
+        }
+
         const { error } = await insforge.database
             .from('site_images')
             .delete()

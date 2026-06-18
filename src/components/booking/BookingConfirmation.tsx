@@ -6,6 +6,7 @@ import {
   XCircle, CalendarDays, User, Receipt, Building, Info,
 } from 'lucide-react';
 import { getBookingById } from '../../services/bookingService';
+import { getSiteContentMap } from '../../services/contentService';
 
 export interface ConfirmedBookingData {
   id: string;
@@ -130,8 +131,13 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
   const navigate = useNavigate();
   const [data, setData] = useState<ConfirmedBookingData | null>(propData || null);
   const [loading, setLoading] = useState(!propData);
+  const [contactInfo, setContactInfo] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    getSiteContentMap().then(res => {
+      if (res.data) setContactInfo(res.data);
+    });
+
     if (propData) {
       setData(propData);
       setLoading(false);
@@ -348,24 +354,24 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             <div className="space-y-2.5">
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <Phone size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>+977-98XXXXXXXX</span>
+                <span>{contactInfo['contact_phone'] || '+977-98XXXXXXXX'}</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-600 break-all">
                 <Mail size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>info@highlands-motel.com</span>
+                <span>{contactInfo['contact_email'] || 'info@highlands-motel.com'}</span>
               </div>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-4 print:hidden">
             <a
-              href="tel:+977-98XXXXXXXX"
+              href={`tel:${contactInfo['contact_phone'] || '+977-98XXXXXXXX'}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
             >
               <Phone size="14" />
               Call Hotel
             </a>
             <a
-              href="mailto:info@highlands-motel.com"
+              href={`mailto:${contactInfo['contact_email'] || 'info@highlands-motel.com'}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
             >
               <Mail size="14" />

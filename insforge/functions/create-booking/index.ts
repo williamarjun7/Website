@@ -164,7 +164,7 @@ export default async function (req: Request) {
 
     const { data: room, error: roomError } = await db
       .from("rooms")
-      .select("price_per_night, max_guests, is_active, maintenance")
+      .select("price_per_night, max_guests, is_active, maintenance, discount_percent")
       .eq("id", room_id)
       .single()
 
@@ -195,7 +195,10 @@ export default async function (req: Request) {
     if (nights > 30) {
       throw new Error("Maximum booking duration is 30 nights")
     }
-    const total_price = nights * room.price_per_night
+    const effectivePricePerNight = room.discount_percent && room.discount_percent > 0
+      ? Math.round(room.price_per_night * (1 - room.discount_percent / 100))
+      : room.price_per_night
+    const total_price = nights * effectivePricePerNight
 
     const isPayAtProperty = payment_status === "pay_at_property"
     const advAmount = isPayAtProperty ? Math.round(total_price * 60) / 100 : total_price
