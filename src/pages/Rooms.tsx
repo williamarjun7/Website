@@ -204,7 +204,7 @@ const Rooms = () => {
                 </div>
 
                 {loading ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
                         {[1, 2, 3, 4].map((i) => (
                             <SkeletonRoomCard key={i} />
                         ))}
@@ -225,7 +225,7 @@ const Rooms = () => {
                 ) : (
                     <>
                         <p className="text-sm text-gray-400 mb-6 font-medium">{filteredRooms.length} room{filteredRooms.length !== 1 ? 's' : ''} found</p>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
                             {filteredRooms.map((room) => (
                                 <div key={room.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col">
                                     <div className="relative">

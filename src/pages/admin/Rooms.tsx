@@ -246,6 +246,7 @@ const Rooms = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
+        setUploadError('');
 
         const floorNum = formData.room_number
             ? Number(formData.room_number.charAt(0))
@@ -264,47 +265,58 @@ const Rooms = () => {
 
         let savedRoom: Room | null = null;
 
-        if (editingRoom) {
-            const result = await updateRoom(editingRoom.id, roomData);
-            savedRoom = result.data;
-        } else {
-            const result = await createRoom(roomData);
-            savedRoom = result.data;
-        }
-
-        if (savedRoom && !editingRoom && pendingImages.length > 0) {
-            for (let i = 0; i < pendingImages.length; i++) {
-                await addRoomImage({
-                    room_id: savedRoom.id,
-                    image_url: pendingImages[i].url,
-                    sort_order: i + 1
-                });
+        try {
+            if (editingRoom) {
+                const result = await updateRoom(editingRoom.id, roomData);
+                if (result.error) throw new Error(result.error);
+                savedRoom = result.data;
+            } else {
+                const result = await createRoom(roomData);
+                if (result.error) throw new Error(result.error);
+                savedRoom = result.data;
             }
-        }
 
-        setIsModalOpen(false);
-        setEditingRoom(null);
-        setPendingImages([]);
-        setFormData({
-            name: '',
-            description: '',
-            price_per_night: '',
-            max_guests: '2',
-            room_type: '',
-            amenities: '',
-            room_size: '',
-            bed_type: '',
-            policies: '',
-            is_active: true,
-            room_number: '',
-            has_ac: false,
-            floor_number: '',
-            featured: false,
-            discount_percent: '0',
-            maintenance: false,
-            availability_status: 'available'
-        });
-        loadRooms();
+            if (savedRoom && !editingRoom && pendingImages.length > 0) {
+                for (let i = 0; i < pendingImages.length; i++) {
+                    const result = await addRoomImage({
+                        room_id: savedRoom.id,
+                        image_url: pendingImages[i].url,
+                        sort_order: i + 1
+                    });
+                    if (result.error) throw new Error(result.error);
+                }
+            }
+
+            setIsModalOpen(false);
+            setEditingRoom(null);
+            setPendingImages([]);
+            setFormData({ ...defaultFormData });
+            loadRooms();
+        } catch (err: unknown) {
+            setUploadError(err instanceof Error ? err.message : 'Failed to save room');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const defaultFormData = {
+        name: '',
+        description: '',
+        price_per_night: '',
+        max_guests: '2',
+        room_type: '',
+        amenities: '',
+        room_size: '',
+        bed_type: '',
+        policies: '',
+        is_active: true,
+        room_number: '',
+        has_ac: false,
+        floor_number: '',
+        featured: false,
+        discount_percent: '0',
+        maintenance: false,
+        availability_status: 'available'
     };
 
     return (
@@ -319,25 +331,7 @@ const Rooms = () => {
                         setEditingRoom(null);
                         setPendingImages([]);
                         setUploadError('');
-                        setFormData({
-                            name: '',
-                            description: '',
-                            price_per_night: '',
-                            max_guests: '2',
-                            room_type: '',
-                            amenities: '',
-                            room_size: '',
-                            bed_type: '',
-                            policies: '',
-                            is_active: true,
-                            room_number: '',
-                            has_ac: false,
-                            featured: false,
-                            floor_number: '',
-                            discount_percent: '0',
-                            maintenance: false,
-                            availability_status: 'available'
-                        });
+                        setFormData({ ...defaultFormData });
                         setIsModalOpen(true);
                     }}
                     className="btn-primary flex items-center space-x-2"
