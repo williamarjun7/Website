@@ -175,3 +175,20 @@ export const toggleImageActive = async (id: string, isActive: boolean) => {
         return handleInsforgeError(error);
     }
 };
+
+// Admin: Update site image metadata
+export const updateSiteImage = async (id: string, updates: Partial<SiteImage>) => {
+    try {
+        const { data, error } = await insforge.database
+            .from('site_images')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};

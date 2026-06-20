@@ -44,6 +44,10 @@ async function invokeAdmin<T>(body: Record<string, unknown>): Promise<{ data: T 
     if (error) throw error;
     return { data: data as T, error: null };
   } catch (err) {
+    // 401 auth errors are expected when edge function rejects our session token
+    if (err && typeof err === 'object' && 'statusCode' in err && err.statusCode === 401) {
+      return { data: null, error: 'Authentication required for admin recovery operations' };
+    }
     return handleInsforgeError(err);
   }
 }

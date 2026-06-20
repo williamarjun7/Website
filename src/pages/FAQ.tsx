@@ -159,8 +159,8 @@ const FAQ = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>FAQ | Highlands Motel & Cafe</title>
-                <meta name="description" content="Find answers to frequently asked questions about booking, rooms, amenities, check-in/out, payments, and more at Highlands Motel & Cafe." />
+                <title>{C('faq_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | FAQ')}</title>
+                <meta name="description" content={C('faq_meta_desc', 'Find answers to frequently asked questions about booking, rooms, amenities, check-in/out, payments, and more.')} />
             </Helmet>
             {/* Hero Section */}
             <section className="relative h-80 mb-16 overflow-hidden">
@@ -174,10 +174,10 @@ const FAQ = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center text-white">
                         <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-                            Frequently Asked Questions
+                            {C('faq_hero_title', 'Frequently Asked Questions')}
                         </h1>
                         <p className="text-xl text-white/90 max-w-2xl mx-auto">
-                            Find answers to common questions about your stay at Highlands Cafe & Motel Inn
+                            {C('faq_hero_subtitle', 'Find answers to common questions about your stay')}
                         </p>
                     </div>
                 </div>
@@ -187,14 +187,14 @@ const FAQ = () => {
                 {/* Contact Info */}
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-8 mb-12 text-center">
                     <h2 className="font-heading text-2xl font-bold mb-6 text-amber-900">
-                        Still Have Questions?
+                        {C('faq_default_fallback', 'Still Have Questions?')}
                     </h2>
                     <p className="text-gray-700 mb-6">
-                        Our team is here to help you with any inquiries or special requests
+                        {C('faq_cta_text', 'Our team is here to help you with any inquiries or special requests')}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
                         <a
-                            href="https://wa.me/9779763215874"
+                            href={`https://wa.me/${(() => { const p = C('contact_phone', '+977 9763215874'); return p.replace(/[^0-9]/g, '') })()}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
@@ -203,7 +203,7 @@ const FAQ = () => {
                             <span>WhatsApp Us</span>
                         </a>
                         <a
-                            href="mailto:highlandscafemotelinn@gmail.com"
+                            href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
                             <Mail size={20} />
@@ -265,18 +265,10 @@ const FAQ = () => {
                         Quick Links
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <a href="/booking" className="text-center hover:text-amber-200 transition-colors">
-                            Book a Room
-                        </a>
-                        <a href="/cafe" className="text-center hover:text-amber-200 transition-colors">
-                            View Menu
-                        </a>
-                        <a href="/contact" className="text-center hover:text-amber-200 transition-colors">
-                            Contact Us
-                        </a>
-                        <a href="/about" className="text-center hover:text-amber-200 transition-colors">
-                            About Us
-                        </a>
+                        <a href="/booking" className="text-center hover:text-amber-200 transition-colors">{C('btn_book_stay', 'Book a Room')}</a>
+                        <a href="/cafe" className="text-center hover:text-amber-200 transition-colors">{C('btn_view_menu', 'View Menu')}</a>
+                        <a href="/contact" className="text-center hover:text-amber-200 transition-colors">Contact Us</a>
+                        <a href="/about" className="text-center hover:text-amber-200 transition-colors">About Us</a>
                     </div>
                 </div>
             </div>

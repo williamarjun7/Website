@@ -8,9 +8,9 @@
 
 import { assertEquals, assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts"
 
-const BASE = "https://6aiag3ra.us-east.insforge.app"
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1Njc1Njd9.wYK1TZtfInJm3lbH49QqA9M6owrvjTacAm0edKbMigs"
-const BOOKING_WEBHOOK_SECRET = "whsec_sync_integration_test_key_2026"
+const BASE = Deno.env.get("INSFORGE_BASE_URL") ?? "https://6aiag3ra.us-east.insforge.app"
+const API_KEY = Deno.env.get("TEST_API_KEY") ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1Njc1Njd9.wYK1TZtfInJm3lbH49QqA9M6owrvjTacAm0edKbMigs"
+const BOOKING_WEBHOOK_SECRET = Deno.env.get("TEST_WEBHOOK_SECRET") ?? "whsec_sync_integration_test_key_2026"
 const TEST_PREFIX = `int-test-${Date.now()}`
 const KNOWN_ROOM_ID = "5f4d5e3a-713e-47d0-88b2-e85a48b8591a"
 const SECOND_ROOM_ID = "6ac86da7-46f6-4a78-8cf6-1471fa37a9fe"
@@ -39,10 +39,13 @@ async function sleep(ms: number): Promise<void> {
 Deno.test({
   name: "INT-1: create-booking — creates a valid booking",
   fn: async () => {
+    const d = new Date(); d.setDate(d.getDate() + 200)
+    const checkIn = d.toISOString().slice(0, 10)
+    const checkOut = new Date(d.getTime() + 2 * 86400000).toISOString().slice(0, 10)
     const body = {
       room_id: KNOWN_ROOM_ID,
-      check_in: "2026-07-15",
-      check_out: "2026-07-17",
+      check_in: checkIn,
+      check_out: checkOut,
       guest_name: `${TEST_PREFIX} Guest`,
       guest_email: `${TEST_PREFIX}@example.com`,
       guest_phone: "+977-9800000123",
@@ -437,10 +440,13 @@ Deno.test({
   name: "INT-13: E2E — create booking, trigger sync, verify pipeline",
   fn: async () => {
     // Step 1: Create a booking
+    const d = new Date(); d.setDate(d.getDate() + 205)
+    const checkIn = d.toISOString().slice(0, 10)
+    const checkOut = new Date(d.getTime() + 2 * 86400000).toISOString().slice(0, 10)
     const body = {
       room_id: SECOND_ROOM_ID,
-      check_in: "2026-11-01",
-      check_out: "2026-11-03",
+      check_in: checkIn,
+      check_out: checkOut,
       guest_name: `${TEST_PREFIX} E2E`,
       guest_email: `${TEST_PREFIX}-e2e@example.com`,
       guest_phone: "+977-9800000999",

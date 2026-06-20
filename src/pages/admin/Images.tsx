@@ -6,12 +6,17 @@ import {
     ExternalLink,
     Upload,
     Loader2,
-    X
+    X,
+    Eye,
+    EyeOff,
+    Edit2
 } from 'lucide-react';
 import {
     getAllSiteImages,
     addSiteImage,
     deleteSiteImage,
+    toggleImageActive,
+    updateSiteImage,
     type SiteImage
 } from '../../services/contentService';
 import { uploadImage } from '../../services/storageService';
@@ -36,6 +41,7 @@ const SiteImages = () => {
     const [images, setImages] = useState<SiteImageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingImage, setEditingImage] = useState<SiteImageData | null>(null);
 
     // Form data
     const [formData, setFormData] = useState<ImageFormData>({
@@ -44,6 +50,8 @@ const SiteImages = () => {
         title: '',
         is_active: true
     });
+
+    const [editFormData, setEditFormData] = useState({ title: '', type: 'gallery' as string, is_active: true });
 
     // Upload state
     const [uploading, setUploading] = useState(false);
@@ -117,9 +125,38 @@ const SiteImages = () => {
         loadImages();
     };
 
+    const handleEdit = (img: SiteImageData) => {
+        setEditingImage(img);
+        setEditFormData({ title: img.title || '', type: img.type, is_active: img.is_active });
+    };
+
+    const handleEditSave = async () => {
+        if (!editingImage) return;
+        const { error } = await updateSiteImage(editingImage.id, {
+            title: editFormData.title,
+            type: editFormData.type as SiteImage['type'],
+            is_active: editFormData.is_active,
+        });
+        if (!error) {
+            setEditingImage(null);
+            loadImages();
+        } else {
+            setUploadError(error || 'Failed to update image');
+        }
+    };
+
+    const handleToggleActive = async (id: string, currentActive: boolean) => {
+        const { error } = await toggleImageActive(id, !currentActive);
+        if (!error) loadImages();
+    };
+
     const handleDelete = async (id: string) => {
         if (confirm('Delete this image?')) {
-            await deleteSiteImage(id);
+            const { error } = await deleteSiteImage(id);
+            if (error) {
+                alert('Failed to delete image: ' + error);
+                return;
+            }
             loadImages();
         }
     };
@@ -191,6 +228,20 @@ const SiteImages = () => {
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                                                <button
+                                                    onClick={() => handleEdit(img)}
+                                                    className="p-2 bg-white rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-lg"
+                                                    title="Edit details"
+                                                >
+                                                    <Edit2 size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleActive(img.id, img.is_active)}
+                                                    className={`p-2 bg-white rounded-full transition-colors shadow-lg ${img.is_active ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`}
+                                                    title={img.is_active ? 'Click to hide' : 'Click to show'}
+                                                >
+                                                    {img.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                                                </button>
                                                 <a
                                                     href={img.image_url}
                                                     target="_blank"
@@ -206,6 +257,11 @@ const SiteImages = () => {
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
+                                            {!img.is_active && (
+                                                <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500/90 text-white text-[10px] rounded-full font-bold">
+                                                    Hidden
+                                                </div>
+                                            )}
                                             {img.title && (
                                                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent text-white text-xs font-medium">
                                                     {img.title}
@@ -235,17 +291,132 @@ const SiteImages = () => {
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-xl font-heading">Add New Image</h3>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleSubmit} className="space-y-5">
+                                {/* Category/Type Select */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Display Section</label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as SiteImage['type'] })}
+                                        className="input w-full"
+                                    >
+                                        {sections.map(s => (
+                                            <option key={s} value={s}>{sectionLabels[s] || s}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Title */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="input w-full"
+                                        placeholder="e.g. Beautiful mountain view from balcony"
+                                    />
+                                </div>
+
+                                {/* Image Upload Area */}
+                                <div>
+                                    <label className="block text-sm font-medium mb-2 text-gray-700">Upload Image</label>
+
+                                    {uploadError && (
+                                        <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm mb-3 border border-red-100">
+                                            {uploadError}
+                                        </div>
+                                    )}
+
+                                    {formData.image_url ? (
+                                        <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
+                                            <img src={formData.image_url} alt="Uploaded" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData((prev) => ({ ...prev, image_url: '' }))}
+                                                    className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            onClick={() => !uploading && fileInputRef.current?.click()}
+                                            className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5 hover:shadow-inner'
+                                                }`}
+                                        >
+                                            {uploading ? (
+                                                <div className="flex flex-col items-center text-gray-500">
+                                                    <Loader2 size={32} className="animate-spin mb-3 text-primary" />
+                                                    <span className="font-medium">Uploading to cloud...</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center text-gray-500">
+                                                    <Upload size={36} className="mb-2 text-gray-400" />
+                                                    <span className="text-sm font-bold text-gray-700">Click to select image</span>
+                                                    <span className="text-xs text-gray-400 mt-2 italic">Supports PNG, JPG, WebP up to 5MB</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex space-x-4 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="btn-secondary flex-1"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={uploading || !formData.image_url}
+                                        className={`btn-primary flex-1 ${(!formData.image_url || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        Save Image
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+            )}
+
+            {/* Edit Modal */}
+            {editingImage && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-xl font-heading">Edit Image</h3>
+                            <button onClick={() => setEditingImage(null)} className="text-gray-400 hover:text-gray-600">
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            {/* Category/Type Select */}
+                        <div className="space-y-5">
+                            <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
+                                <img src={editingImage.image_url} alt="" className="w-full h-full object-cover" />
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium mb-1.5 text-gray-700">Display Section</label>
                                 <select
-                                    value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value as SiteImage['type'] })}
+                                    value={editFormData.type}
+                                    onChange={(e) => setEditFormData({ ...editFormData, type: e.target.value })}
                                     className="input w-full"
                                 >
                                     {sections.map(s => (
@@ -254,88 +425,44 @@ const SiteImages = () => {
                                 </select>
                             </div>
 
-                            {/* Title */}
                             <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption (Optional)</label>
+                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption</label>
                                 <input
                                     type="text"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    value={editFormData.title}
+                                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
                                     className="input w-full"
-                                    placeholder="e.g. Beautiful mountain view from balcony"
+                                    placeholder="Image title"
                                 />
                             </div>
 
-                            {/* Image Upload Area */}
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-700">Upload Image</label>
-
-                                {uploadError && (
-                                    <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm mb-3 border border-red-100">
-                                        {uploadError}
-                                    </div>
-                                )}
-
-                                {formData.image_url ? (
-                                    <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
-                                        <img src={formData.image_url} alt="Uploaded" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData((prev) => ({ ...prev, image_url: '' }))}
-                                                className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div
-                                        onClick={() => !uploading && fileInputRef.current?.click()}
-                                        className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5 hover:shadow-inner'
-                                            }`}
-                                    >
-                                        {uploading ? (
-                                            <div className="flex flex-col items-center text-gray-500">
-                                                <Loader2 size={32} className="animate-spin mb-3 text-primary" />
-                                                <span className="font-medium">Uploading to cloud...</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center text-gray-500">
-                                                <Upload size={36} className="mb-2 text-gray-400" />
-                                                <span className="text-sm font-bold text-gray-700">Click to select image</span>
-                                                <span className="text-xs text-gray-400 mt-2 italic">Supports PNG, JPG, WebP up to 5MB</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                            <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
                                 <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
+                                    type="checkbox"
+                                    checked={editFormData.is_active}
+                                    onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                                    className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
                                 />
-                            </div>
+                                <span className="text-sm font-semibold text-gray-700">Visible on website</span>
+                            </label>
 
-                            {/* Action Buttons */}
                             <div className="flex space-x-4 pt-2">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={() => setEditingImage(null)}
                                     className="btn-secondary flex-1"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    type="submit"
-                                    disabled={uploading || !formData.image_url}
-                                    className={`btn-primary flex-1 ${(!formData.image_url || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    type="button"
+                                    onClick={handleEditSave}
+                                    className="btn-primary flex-1"
                                 >
-                                    Save Image
+                                    Save Changes
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}

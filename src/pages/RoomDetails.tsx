@@ -21,6 +21,7 @@ import {
 import { getRoomById, getRooms, Room } from '../services/roomService';
 import { getEffectivePricePerNight } from '../services/bookingService';
 import { getSiteContentMap } from '../services/contentService';
+import { getApprovedReviews, type Review } from '../services/reviewService';
 import RoomCarousel from '../components/RoomCarousel';
 import Skeleton from '../components/common/Skeleton';
 
@@ -31,6 +32,7 @@ const RoomDetails = () => {
     const [relatedRooms, setRelatedRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
     const [siteContent, setSiteContent] = useState<Record<string, string>>({});
+    const [reviews, setReviews] = useState<Review[]>([]);
     const C = (key: string, fallback: string) => siteContent[key] || fallback;
 
     useEffect(() => {
@@ -38,12 +40,14 @@ const RoomDetails = () => {
         let cancelled = false;
 
         const load = async () => {
-            const [roomResult, contentResult] = await Promise.all([
+            const [roomResult, contentResult, reviewsResult] = await Promise.all([
                 getRoomById(id),
                 getSiteContentMap(),
+                getApprovedReviews(id),
             ]);
             if (!cancelled) {
                 if (contentResult.data) setSiteContent(contentResult.data);
+                if (reviewsResult.data) setReviews(reviewsResult.data);
                 if (roomResult.data) {
                     setRoom(roomResult.data);
                     const { data: allRooms } = await getRooms();
@@ -135,8 +139,8 @@ const RoomDetails = () => {
     return (
         <div className="min-h-screen pt-24 pb-16 bg-gray-50/50">
             <Helmet>
-                <title>{room.name} | Highlands Motel & Cafe</title>
-                <meta name="description" content={`Book ${room.name} at Highlands Motel & Cafe in Surkhet. ${room.description?.substring(0, 120)}`} />
+                <title>{room.name} | {C('site_name', 'Highlands Motel & Cafe')}</title>
+                <meta name="description" content={`Book ${room.name}. ${room.description?.substring(0, 120)}`} />
             </Helmet>
             <div className="container-custom">
                 {/* Back Button */}
@@ -145,7 +149,7 @@ const RoomDetails = () => {
                     className="inline-flex items-center text-gray-500 hover:text-primary mb-8 transition-colors group"
                 >
                     <ArrowLeft size={20} className="mr-2 group-hover:-translate-x-1 transition-transform" />
-                    <span className="font-medium">Back to All Rooms</span>
+                    <span className="font-medium">{C('room_back_link', 'Back to All Rooms')}</span>
                 </Link>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -331,23 +335,53 @@ const RoomDetails = () => {
                             </div>
                         </div>
 
-                        {/* Reviews Section (Mock) */}
+                        {/* Reviews Section */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold font-heading text-gray-900">Reviews & Ratings</h3>
-                                <div className="flex items-center space-x-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
-                                    <Star className="text-amber-400 fill-amber-400" size={16} />
-                                    <span className="font-bold text-amber-700">New</span>
-                                </div>
+                                <h3 className="text-xl font-bold font-heading text-gray-900">Guest Reviews</h3>
+                                {reviews.length > 0 && (
+                                    <div className="flex items-center space-x-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
+                                        <Star className="text-amber-400 fill-amber-400" size={16} />
+                                        <span className="font-bold text-amber-700">
+                                            {(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="text-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                <Star className="mx-auto mb-4 text-gray-300" size={40} />
-                                <h4 className="font-bold text-gray-900 mb-2">No reviews yet</h4>
-                                <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                    Be one of our first guests to share your experience at Highlands Cafe & Motel Inn!
-                                </p>
-                            </div>
+                            {reviews.length === 0 ? (
+                                <div className="text-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                                    <Star className="mx-auto mb-4 text-gray-300" size={40} />
+                                    <h4 className="font-bold text-gray-900 mb-2">No reviews yet</h4>
+                                    <p className="text-gray-500 text-sm max-w-xs mx-auto">
+                                        Be one of our first guests to share your experience at Highlands Cafe & Motel Inn!
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {reviews.map((review) => (
+                                        <div key={review.id} className="p-5 bg-gray-50 rounded-xl border border-gray-100">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                                        {review.guest_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-gray-900">{review.guest_name}</p>
+                                                        <p className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex space-x-0.5">
+                                                    {Array.from({ length: 5 }, (_, i) => (
+                                                        <Star key={i} size={14} className={i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -359,21 +393,21 @@ const RoomDetails = () => {
                             <div className="space-y-4 mb-8 text-gray-600">
                                 <div className="flex items-center space-x-3 text-sm">
                                     <CheckCircle2 size={18} className="text-green-500" />
-                                    <span>Instant confirmation</span>
+                                    <span>{C('room_sidebar_feature_1', 'Instant confirmation')}</span>
                                 </div>
                                 <div className="flex items-center space-x-3 text-sm">
                                     <CheckCircle2 size={18} className="text-green-500" />
-                                    <span>Safe and secure payments</span>
+                                    <span>{C('room_sidebar_feature_2', 'Safe and secure payments')}</span>
                                 </div>
                                 <div className="flex items-center space-x-3 text-sm">
                                     <CheckCircle2 size={18} className="text-green-500" />
-                                    <span>Best price guaranteed</span>
+                                    <span>{C('room_sidebar_feature_3', 'Best price guaranteed')}</span>
                                 </div>
                             </div>
 
                             {room.maintenance ? (
                                 <span className="btn-primary w-full py-4 text-center text-lg font-bold shadow-lg shadow-primary/20 block opacity-50 cursor-not-allowed">
-                                    Unavailable (Maintenance)
+                                    {C('room_unavailable_maintenance', 'Unavailable (Maintenance)')}
                                 </span>
                             ) : (
                                 <Link
@@ -381,12 +415,12 @@ const RoomDetails = () => {
                                     state={{ selectedRoom: room }}
                                     className="btn-primary w-full py-4 text-center text-lg font-bold shadow-lg shadow-primary/20 block"
                                 >
-                                    Book This Room
+                                    {C('room_book_this_room', 'Book This Room')}
                                 </Link>
                             )}
 
                             <p className="text-[10px] text-gray-400 text-center mt-4 uppercase font-bold tracking-widest">
-                                No credit card required now
+                                {C('room_no_credit_card_text', 'No credit card required now')}
                             </p>
                         </div>
 
@@ -415,7 +449,7 @@ const RoomDetails = () => {
                 {/* Related Rooms */}
                 <div className="mt-20">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading mb-10 text-gray-900 text-center">
-                        Discover Other Rooms
+                        {C('room_discover_heading', 'Discover Other Rooms')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {relatedRooms.map((r) => (

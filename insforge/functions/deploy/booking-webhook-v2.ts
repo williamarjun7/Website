@@ -1,6 +1,157 @@
 import { createClient } from "npm:@insforge/sdk"
-import { verifyHmac, generateTraceId } from "../_shared/sync-harden.ts"
-import { resolveIdempotencyKey, completeIdempotency } from "../_shared/idempotency.ts"
+
+// ── Inlined from _shared/timing-safe.ts ──
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const encoder = new TextEncoder();
+  const aBuf = encoder.encode(a);
+  const bBuf = encoder.encode(b);
+  if (aBuf.length !== bBuf.length) {
+    return false;
+  }
+  try {
+    return crypto.subtle.timingSafeEqual(aBuf, bBuf);
+  } catch {
+    let result = 0;
+    for (let i = 0; i < aBuf.length; i++) {
+      result |= aBuf[i] ^ bBuf[i];
+    }
+    return result === 0;
+  }
+}
+// ── End inlined ──
+
+// ── Inlined from _shared/sync-harden.ts ──
+
+const HMAC_ALGORITHM = { name: "HMAC", hash: "SHA-256" } as const
+
+async function signHmac(
+  secret: string,
+  payload: string,
+  timestampMs: number,
+): Promise<string> {
+  const encoder = new TextEncoder()
+  const input = `${payload}.${timestampMs}`
+  const cryptoKey = await crypto.subtle.importKey("raw", encoder.encode(secret), HMAC_ALGORITHM, false, ["sign"])
+  const sig = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(input))
+  return Array.from(new Uint8Array(sig))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+async function verifyHmac(
+  secret: string,
+  payload: string,
+  signature: string,
+  timestampMs: string,
+): Promise<{ valid: boolean; reason?: string }> {
+  const now = Date.now()
+  const ts = parseInt(timestampMs, 10)
+  if (isNaN(ts)) {
+    return { valid: false, reason: "invalid_timestamp" }
+  }
+  if (Math.abs(now - ts) > 300_000) {
+    return { valid: false, reason: "timestamp_out_of_tolerance" }
+  }
+  const expected = await signHmac(secret, payload, ts)
+  if (!timingSafeEqual(expected, signature)) {
+    return { valid: false, reason: "signature_mismatch" }
+  }
+  return { valid: true }
+}
+
+function generateTraceId(): string {
+  return crypto.randomUUID()
+}
+// ── End inlined ──
+
+// ── Inlined from _shared/idempotency.ts ──
+
+type DatabaseClient = ReturnType<typeof createClient>["database"]
+
+interface IdempotencyResult {
+  cached: boolean
+  data: Record<string, unknown> | null
+}
+
+async function resolveIdempotencyKey(
+  db: DatabaseClient,
+  operation: string,
+  entityId: string,
+  payloadHash?: string,
+): Promise<IdempotencyResult> {
+  const salt = payloadHash || "v1"
+  const keyHash = await sha256(`${operation}:${entityId}:${salt}`)
+
+  const { data: existing } = await db
+    .from("idempotency_keys")
+    .select("result, completed_at")
+    .eq("key_hash", keyHash)
+    .maybeSingle()
+
+  if (existing?.completed_at) {
+    return { cached: true, data: existing.result as Record<string, unknown> | null }
+  }
+
+  const { error: insertErr } = await db
+    .from("idempotency_keys")
+    .insert({
+      key_hash: keyHash,
+      operation,
+      result: null,
+    })
+    .maybeSingle()
+
+  if (insertErr) {
+    await sleep(200)
+    const { data: retry } = await db
+      .from("idempotency_keys")
+      .select("result, completed_at")
+      .eq("key_hash", keyHash)
+      .maybeSingle()
+
+    if (retry?.completed_at) {
+      return { cached: true, data: retry.result as Record<string, unknown> | null }
+    }
+  }
+
+  return { cached: false, data: null }
+}
+
+async function completeIdempotency(
+  db: DatabaseClient,
+  operation: string,
+  entityId: string,
+  payloadHash: string | undefined,
+  result: Record<string, unknown>,
+): Promise<void> {
+  const salt = payloadHash || "v1"
+  const keyHash = await sha256(`${operation}:${entityId}:${salt}`)
+
+  await db
+    .from("idempotency_keys")
+    .update({
+      result,
+      completed_at: new Date().toISOString(),
+    })
+    .eq("key_hash", keyHash)
+}
+
+async function sha256(input: string): Promise<string> {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(input)
+  const hash = await crypto.subtle.digest("SHA-256", data)
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("")
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+// ── End inlined ──
 
 // Strict HMAC: if BOOKING_WEBHOOK_SECRET is missing, refuse to start.
 const _STARTUP_SECRET_CHECK = (() => {
@@ -373,5 +524,3 @@ export default async function handler(req: Request) {
     })
   }
 }
-
-

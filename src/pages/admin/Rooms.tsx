@@ -59,7 +59,8 @@ const Rooms = () => {
         featured: false,
         discount_percent: '0',
         maintenance: false,
-        availability_status: 'available'
+        availability_status: 'available',
+        seasonal_pricing: ''
     });
 
     useEffect(() => {
@@ -94,7 +95,8 @@ const Rooms = () => {
             featured: room.featured || false,
             discount_percent: room.discount_percent ? room.discount_percent.toString() : '0',
             maintenance: room.maintenance || false,
-            availability_status: room.availability_status || 'available'
+            availability_status: room.availability_status || 'available',
+            seasonal_pricing: room.seasonal_pricing ? JSON.stringify(room.seasonal_pricing, null, 2) : ''
         });
         setPendingImages([]);
         setIsModalOpen(true);
@@ -254,13 +256,25 @@ const Rooms = () => {
                 ? Number(formData.floor_number)
                 : undefined;
 
+        let seasonalPricing: Record<string, unknown> | undefined;
+        if (formData.seasonal_pricing.trim()) {
+            try {
+                seasonalPricing = JSON.parse(formData.seasonal_pricing);
+            } catch {
+                setUploadError('Invalid Seasonal Pricing JSON');
+                setLoading(false);
+                return;
+            }
+        }
+
         const roomData = {
             ...formData,
             price_per_night: Number(formData.price_per_night),
             max_guests: Number(formData.max_guests),
             amenities: formData.amenities.split(',').map(s => s.trim()).filter(Boolean),
             floor_number: floorNum || undefined,
-            discount_percent: formData.discount_percent ? Number(formData.discount_percent) : 0
+            discount_percent: formData.discount_percent ? Number(formData.discount_percent) : 0,
+            seasonal_pricing: seasonalPricing
         };
 
         let savedRoom: Room | null = null;
@@ -316,7 +330,8 @@ const Rooms = () => {
         featured: false,
         discount_percent: '0',
         maintenance: false,
-        availability_status: 'available'
+        availability_status: 'available',
+        seasonal_pricing: ''
     };
 
     return (
@@ -711,6 +726,24 @@ const Rooms = () => {
                                                 />
                                             </div>
                                         </div>
+                                    </div>
+                                    <div className="mt-4">
+                                        <details className="group">
+                                            <summary className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-primary transition-colors list-none flex items-center space-x-2">
+                                                <svg className="w-4 h-4 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                                <span>Seasonal Pricing (JSON)</span>
+                                            </summary>
+                                            <div className="mt-3">
+                                                <label className="block text-xs text-gray-400 mb-1.5">Override base price for specific date ranges</label>
+                                                <textarea
+                                                    rows={4}
+                                                    value={formData.seasonal_pricing}
+                                                    onChange={(e) => setFormData({ ...formData, seasonal_pricing: e.target.value })}
+                                                    className="input w-full font-mono text-xs resize-none"
+                                                    placeholder='[{"label":"Peak Season","start":"2026-04-01","end":"2026-04-15","price":3500}]'
+                                                />
+                                            </div>
+                                        </details>
                                     </div>
                                 </div>
                             </div>

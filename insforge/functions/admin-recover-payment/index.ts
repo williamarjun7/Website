@@ -76,29 +76,41 @@ function successResponse(data: unknown, corsHeaders?: Record<string, string>): R
   })
 }
 
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const payload = token.split(".")[1]
+    return JSON.parse(new TextDecoder().decode(
+      Uint8Array.from(atob(payload), c => c.charCodeAt(0))
+    ))
+  } catch {
+    return null
+  }
+}
+
 async function verifyAdminSession(request: Request): Promise<{ authorized: boolean; error?: string; errorStatus?: number }> {
   const authHeader = request.headers.get("authorization") || ""
   if (!authHeader.startsWith("Bearer ")) {
     return { authorized: false, error: "Unauthorized", errorStatus: 401 }
   }
   const jwt = authHeader.slice(7)
+
+  const payload = decodeJwtPayload(jwt)
+  if (!payload?.sub) {
+    return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
+  }
+
   const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-  if (!insforgeUrl) return { authorized: false, error: "Server configuration error", errorStatus: 500 }
+  const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+  if (!insforgeUrl || !svcKey) {
+    return { authorized: false, error: "Server configuration error", errorStatus: 500 }
+  }
+
   try {
-    const { auth: authClient } = createClient({ baseUrl: insforgeUrl, anonKey: jwt })
-    const { data: userData, error: userErr } = await authClient.getCurrentUser()
-    if (userErr || !userData?.user) {
-      return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
-    }
-
-    const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
-    if (!svcKey) return { authorized: false, error: "Server configuration error", errorStatus: 500 }
-
-    const { database: adminDb } = createClient({ baseUrl: insforgeUrl, anonKey: svcKey })
-    const { data: adminRecord } = await adminDb
+    const { database: db } = createClient({ baseUrl: insforgeUrl, anonKey: svcKey })
+    const { data: adminRecord } = await db
       .from("admins")
       .select("id")
-      .eq("user_id", userData.user.id)
+      .eq("user_id", payload.sub)
       .maybeSingle()
 
     if (!adminRecord) {

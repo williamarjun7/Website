@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import QRCode from 'qrcode';
 import { getAvailableRooms, checkRoomAvailability, Room } from '../services/roomService';
 import { createBooking, calculateTotalPrice, getEffectivePricePerNight } from '../services/bookingService';
+import { getSiteContentMap } from '../services/contentService';
 import { generateQrPayment, generateWebPayment, verifyQrPayment, sendBookingConfirmation } from '../services/fonepayService';
 import { bookingSchema, BookingFormData } from './bookingSchema';
 import { useWebSocket } from '../hooks/useWebSocket';
@@ -41,6 +42,10 @@ const Booking = () => {
     })();
 
     const entryMode = entryRoom ? 'room_card' : 'search';
+
+    const [content, setContent] = useState<Record<string, string>>({});
+    const C = (key: string, fallback: string) => content[key] || fallback;
+    useEffect(() => { getSiteContentMap().then(({ data }) => { if (data) setContent(data); }).catch(() => {}); }, []);
 
     // ── Single source of truth for room selection ──────────────────────
     const [activeRoom, setActiveRoom] = useState<Room | null>(entryRoom || null);
@@ -343,8 +348,8 @@ const Booking = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>Booking | Highlands Motel & Cafe</title>
-                <meta name="description" content="Book your stay at Highlands Motel & Cafe. Select your dates and reserve a comfortable room today." />
+                <title>{C('booking_meta_title', 'Booking | Highlands Motel & Cafe')}</title>
+                <meta name="description" content={C('booking_meta_desc', 'Book your stay. Select your dates and reserve a comfortable room today.')} />
             </Helmet>
 
             {toastMessage && (

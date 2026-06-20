@@ -1,6 +1,14 @@
+// ── Inlined from _shared/sync-harden.ts ──
+
+/**
+ * Generates a v4 UUID (used for trace_id).
+ */
+export function generateTraceId(): string {
+  return crypto.randomUUID()
+}
+// ── End inlined ──
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
-import { generateTraceId } from "../_shared/sync-harden.ts"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://6aiag3ra.insforge.site",

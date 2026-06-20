@@ -10,7 +10,8 @@ import {
     LogOut,
     Menu,
     X,
-    ShieldAlert
+    ShieldAlert,
+    Star
 } from 'lucide-react';
 import { adminLogout } from '../../services/authService';
 
@@ -42,6 +43,7 @@ const AdminLayout = () => {
         { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
         { name: 'Site Images', path: '/admin/images', icon: ImageIcon },
         { name: 'Content', path: '/admin/content', icon: FileText },
+        { name: 'Reviews', path: '/admin/reviews', icon: Star },
         { name: 'Payment Recovery', path: '/admin/payment-recovery', icon: ShieldAlert },
     ];
 

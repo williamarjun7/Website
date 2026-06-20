@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
 import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
-import menuImg from '../assets/menu.png';
+import menuImgFallback from '../assets/menu.png';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
 interface MenuCategory {
@@ -67,8 +67,8 @@ const Cafe = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>Cafe Menu | Highlands Motel & Cafe</title>
-                <meta name="description" content="Savor authentic local cuisine at our cafe in Surkhet." />
+                <title>{C('cafe_meta_title', 'Cafe Menu | Highlands Motel & Cafe')}</title>
+                <meta name="description" content={C('cafe_meta_desc', 'Savor authentic local cuisine at our cafe in Surkhet.')} />
             </Helmet>
 
             <section className="relative h-[560px] mb-16 overflow-hidden">
@@ -253,7 +253,7 @@ const Cafe = () => {
 
                             <div className="text-center mt-12">
                                 <button
-                                    onClick={() => window.open(menuImg, '_blank')}
+                                    onClick={() => window.open(C('view_full_menu_image', menuImgFallback), '_blank')}
                                     className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
                                 >
                                     <MenuIcon size={24} />

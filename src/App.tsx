@@ -17,6 +17,7 @@ const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const RoomDetails = lazy(() => import('./pages/RoomDetails'));
 const PaymentResult = lazy(() => import('./pages/PaymentResult'));
+const Gallery = lazy(() => import('./pages/Gallery'));
 
 // Admin Pages (lazy loaded)
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
@@ -31,6 +32,7 @@ const Menu = lazy(() => import('./pages/admin/Menu'));
 const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
 const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
+const AdminReviews = lazy(() => import('./pages/admin/Reviews'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -69,6 +71,7 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/payment-result" element={<PaymentResult />} />
+            <Route path="/gallery" element={<Gallery />} />
           </Route>
 
           {/* Admin Routes */}
@@ -84,6 +87,7 @@ function App() {
               <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
               <Route path="images" element={<Suspense fallback={<LoadingFallback />}><Images /></Suspense>} />
               <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
+              <Route path="reviews" element={<Suspense fallback={<LoadingFallback />}><AdminReviews /></Suspense>} />
               <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />
             </Route>
           </Route>

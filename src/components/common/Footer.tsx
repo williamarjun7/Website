@@ -1,7 +1,11 @@
 import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee, UtensilsCrossed, Tv, Shield, Sun } from 'lucide-react';
 import { getSiteContentMap } from '../../services/contentService';
+
+const ICON_MAP: Record<string, typeof Wifi> = {
+  Wifi, Car, Coffee, Heart, Tv, UtensilsCrossed, Shield, Sun, Phone, Mail, MapPin, Clock, Star, Facebook, Instagram, MessageCircle,
+};
 
 const Footer = memo(() => {
     const [content, setContent] = useState<Record<string, string>>({});
@@ -31,7 +35,7 @@ const Footer = memo(() => {
                     <div className="md:col-span-2 lg:col-span-2">
                         <div className="relative mb-6">
                             <h3 className="font-heading text-2xl font-bold mb-4 bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
-                                Highlands Cafe & Motel Inn
+                                {C('site_name', 'Highlands Cafe & Motel Inn')}
                             </h3>
                             <div className="flex items-center space-x-1 mb-4">
                                 {[1, 2, 3, 4, 5].map((star) => (
@@ -47,22 +51,20 @@ const Footer = memo(() => {
 
                         {/* Enhanced Amenities */}
                         <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div className="flex items-center space-x-2 text-amber-200 hover:text-white transition-colors">
-                                <Wifi size={18} className="text-amber-300" />
-                                <span className="text-sm font-medium">Free WiFi</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-amber-200 hover:text-white transition-colors">
-                                <Car size={18} className="text-amber-300" />
-                                <span className="text-sm font-medium">Free Parking</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-amber-200 hover:text-white transition-colors">
-                                <Coffee size={18} className="text-amber-300" />
-                                <span className="text-sm font-medium">24/7 Motel</span>
-                            </div>
-                            <div className="flex items-center space-x-2 text-amber-200 hover:text-white transition-colors">
-                                <Heart size={18} className="text-amber-300" />
-                                <span className="text-sm font-medium">Premium Care</span>
-                            </div>
+                            {([
+                                { key: 'footer_amenity_1_label', iconKey: 'footer_amenity_1_icon', fallbackLabel: 'Free WiFi', fallbackIcon: Wifi },
+                                { key: 'footer_amenity_2_label', iconKey: 'footer_amenity_2_icon', fallbackLabel: 'Free Parking', fallbackIcon: Car },
+                                { key: 'footer_amenity_3_label', iconKey: 'footer_amenity_3_icon', fallbackLabel: '24/7 Motel', fallbackIcon: Coffee },
+                                { key: 'footer_amenity_4_label', iconKey: 'footer_amenity_4_icon', fallbackLabel: 'Premium Care', fallbackIcon: Heart },
+                            ] as const).map((amenity, i) => {
+                                const IconComponent = ICON_MAP[C(amenity.iconKey, '')] || amenity.fallbackIcon;
+                                return (
+                                    <div key={i} className="flex items-center space-x-2 text-amber-200 hover:text-white transition-colors">
+                                        <IconComponent size={18} className="text-amber-300" />
+                                        <span className="text-sm font-medium">{C(amenity.key, amenity.fallbackLabel)}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
 
                         {/* CTA Button */}
@@ -70,7 +72,7 @@ const Footer = memo(() => {
                             to="/booking"
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-heading font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
-                            <span>Book Your Stay</span>
+                            <span>{C('btn_book_stay', 'Book Your Stay')}</span>
                             <Heart size={18} className="animate-pulse" />
                         </Link>
                     </div>
@@ -169,10 +171,10 @@ const Footer = memo(() => {
                         {/* Enhanced Social Links */}
                         <div className="flex space-x-3 mb-6">
                             {[
-                                { href: 'https://www.facebook.com/profile.php?id=61587029831121', icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600' },
-                                { href: 'https://www.instagram.com/highlandscafemotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==', icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600' },
-                                { href: 'https://wa.me/9779763215874', icon: MessageCircle, label: 'WhatsApp', color: 'hover:bg-green-600' },
-                                { href: 'https://www.tiktok.com/@highlandscafe1', icon: ({ size = 20 }: { size?: number }) => (
+                                { href: C('footer_social_facebook', 'https://www.facebook.com/profile.php?id=61587029831121'), icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600' },
+                                { href: C('footer_social_instagram', 'https://www.instagram.com/highlandscafemotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='), icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600' },
+                                { href: C('footer_social_whatsapp', 'https://wa.me/9779763215874'), icon: MessageCircle, label: 'WhatsApp', color: 'hover:bg-green-600' },
+                                { href: C('footer_social_tiktok', 'https://www.tiktok.com/@highlandscafe1'), icon: ({ size = 20 }: { size?: number }) => (
                                     <svg viewBox="0 0 24 24" fill="currentColor" width={size} height={size}>
                                         <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                                     </svg>
@@ -220,7 +222,7 @@ const Footer = memo(() => {
                     <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         <div className="text-center md:text-left">
                             <p className="text-amber-200 text-sm">
-                                © {currentYear} Highlands Cafe & Motel Inn. All rights reserved.
+                                © {currentYear} {C('site_name', 'Highlands Cafe & Motel Inn')}. All rights reserved.
                             </p>
                             <p className="text-amber-300 text-xs mt-1">
                                 Made with <Heart size={12} className="inline text-red-400 animate-pulse" /> in Nepal

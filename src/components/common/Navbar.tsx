@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react';
+import { getSiteContentMap } from '../../services/contentService';
 
 import logo from '../../assets/logo.png';
 
@@ -9,6 +10,15 @@ const Navbar = memo(() => {
     const [isScrolled, setIsScrolled] = useState(false);
     const location = useLocation();
     const prevPath = useRef(location.pathname);
+    const [content, setContent] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        getSiteContentMap().then(({ data }) => {
+            if (data) setContent(data);
+        }).catch(() => {});
+    }, []);
+
+    const C = (key: string, fallback: string) => content[key] || fallback;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -31,6 +41,7 @@ const Navbar = memo(() => {
         { name: 'Rooms', path: '/rooms', icon: null },
         { name: 'Cafe', path: '/cafe', icon: null },
         { name: 'About', path: '/about', icon: null },
+        { name: 'Gallery', path: '/gallery', icon: null },
         { name: 'Contact', path: '/contact', icon: null },
     ];
 
@@ -53,7 +64,7 @@ const Navbar = memo(() => {
                         <div className="relative">
                             <img
                                 src={logo}
-                                alt="Highlands Cafe & Motel Inn"
+                                alt={C('site_name', 'Highlands Cafe & Motel Inn')}
                                 className="h-14 w-auto object-contain drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300"
                             />
                             <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full opacity-0 group-hover:opacity-20 blur-lg transition-all duration-300"></div>
@@ -87,8 +98,7 @@ const Navbar = memo(() => {
                         className="relative px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-heading font-bold text-sm shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group hidden lg:block"
                     >
                         <span className="relative z-10 flex items-center space-x-2">
-                            <span>Book Now</span>
-                            <div className="w-0 h-0.5 bg-white transform group-hover:w-4 transition-all duration-300"></div>
+                            <span>{C('btn_book_now', 'Book Now')}</span>
                         </span>
                         <div className="absolute inset-0 bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                     </Link>
@@ -134,22 +144,22 @@ const Navbar = memo(() => {
                                 to="/booking"
                                 className="mt-4 px-6 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-heading font-bold shadow-xl hover:shadow-2xl transform hover:scale-102 transition-all duration-300 text-center"
                             >
-                                Book Now
+                                {C('btn_book_now', 'Book Now')}
                             </Link>
 
                             {/* Mobile Contact Info */}
                             <div className="mt-6 pt-6 border-t border-amber-200 space-y-3">
-                                <a href="https://wa.me/9779763215874" target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
+                                <a href={`https://wa.me/${C('navbar_phone', '+9779763215874').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Phone size={18} className="text-primary" />
-                                    <span className="font-body font-medium">+977 9763215874</span>
+                                    <span className="font-body font-medium">{C('navbar_phone', '+977 9763215874')}</span>
                                 </a>
-                                <a href="mailto:highlandscafemotelinn@gmail.com" className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
+                                <a href={`mailto:${C('navbar_email', 'highlandscafemotelinn@gmail.com')}`} className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Mail size={18} className="text-primary" />
-                                    <span className="font-body font-medium">highlandscafemotelinn@gmail.com</span>
+                                    <span className="font-body font-medium">{C('navbar_email', 'highlandscafemotelinn@gmail.com')}</span>
                                 </a>
                                 <div className="flex items-center space-x-3 text-gray-600">
                                     <MapPin size={18} className="text-primary" />
-                                    <span className="font-body font-medium text-sm">Birendranagar-07, Khajura, Surkhet</span>
+                                    <span className="font-body font-medium text-sm">{C('contact_address', 'Birendranagar-07, Khajura, Surkhet')}</span>
                                 </div>
                             </div>
                         </div>

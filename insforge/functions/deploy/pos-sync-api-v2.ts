@@ -140,7 +140,6 @@ export default async function handler(req: Request) {
   const url = new URL(req.url)
   const path = url.pathname.replace(/^\/functions\/pos-sync-api/, "").replace(/^\/api\/pos-sync/, "").replace(/^\/pos-sync/, "")
 
-  // Verify POS API key (except for GET availability — public for booking form)
   const isAvailabilityGet = req.method === "GET" && path === "/availability"
   if (!isAvailabilityGet && !verifyPosApiKey(req)) {
     return errorResponse("Unauthorized: Invalid or missing POS API key", 401, corsHeaders)
@@ -170,7 +169,6 @@ export default async function handler(req: Request) {
 
     const { database: db } = createClient({ baseUrl, anonKey })
 
-    // ── GET /availability?check_in=...&check_out=... ───────────────────
     if (req.method === "GET" && path === "/availability") {
       const checkIn = url.searchParams.get("check_in")
       const checkOut = url.searchParams.get("check_out")
@@ -200,7 +198,6 @@ export default async function handler(req: Request) {
       })
     }
 
-    // ── GET /rooms ──────────────────────────────────────────────────────
     if (req.method === "GET" && path === "/rooms") {
       const { data: rooms, error } = await db
         .from("rooms")
@@ -214,7 +211,6 @@ export default async function handler(req: Request) {
       })
     }
 
-    // ── GET /bookings ────────────────────────────────────────────────────
     if (req.method === "GET" && path === "/bookings") {
       const rawParams = Object.fromEntries(url.searchParams.entries())
       const queryParams = GetBookingsQuerySchema.safeParse(rawParams)
@@ -239,7 +235,6 @@ export default async function handler(req: Request) {
       })
     }
 
-    // ── GET /bookings/:id ────────────────────────────────────────────────
     const bookingIdMatch = path.match(/^\/bookings\/([a-f0-9-]+)$/)
     if (req.method === "GET" && bookingIdMatch) {
       const { data: booking, error } = await db
@@ -255,7 +250,6 @@ export default async function handler(req: Request) {
       })
     }
 
-    // ── POST /bookings (Create booking from POS) ─────────────────────────
     if (req.method === "POST" && path === "/bookings") {
       const rawBodyText = await req.text()
       if (!(await verifyHmacSignature(req, rawBodyText))) {
@@ -269,8 +263,6 @@ export default async function handler(req: Request) {
         return errorResponse("Invalid JSON body", 400, corsHeaders)
       }
 
-      // ── LOOP PREVENTION ─────────────────────────────────────
-      // Reject events claiming to be from website origin
       if (rawBody.origin_system === "website" || rawBody.source === "website") {
         return errorResponse("Loop detected: origin_system cannot be 'website'", 400, corsHeaders)
       }
@@ -291,14 +283,12 @@ export default async function handler(req: Request) {
 
       const input = parsed.data
 
-      // Validate dates
       const checkInDate = new Date(input.check_in)
       const checkOutDate = new Date(input.check_out)
       if (checkOutDate <= checkInDate) {
         return errorResponse("check_out must be after check_in", 400, corsHeaders)
       }
 
-      // Get room price
       const { data: room, error: roomError } = await db
         .from("rooms")
         .select("price_per_night")
@@ -312,14 +302,6 @@ export default async function handler(req: Request) {
       const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
       const total_price = nights * room.price_per_night
 
-      // ── Double-booking prevention is handled by the DB ─────────
-      // No SELECT conflict check needed. The PostgreSQL EXCLUDE
-      // constraint `no_overlapping_active_bookings` guarantees
-      // zero overlapping bookings per room. If the INSERT fails
-      // with 23P01 (exclusion_constraint), we return 409.
-      // ───────────────────────────────────────────────────────────
-
-      // Insert with source=pos to prevent loop
       const traceId = (rawBody as Record<string, unknown>).trace_id || `pos-${crypto.randomUUID()}`
       const effectiveTotal = input.total_amount || total_price
       const effectiveAdvance = input.advance_amount || (
@@ -373,7 +355,6 @@ export default async function handler(req: Request) {
       })
     }
 
-    // ── PUT /bookings/:id (Update booking from POS) ──────────────────────
     const updateMatch = path.match(/^\/bookings\/([a-f0-9-]+)$/)
     if (req.method === "PUT" && updateMatch) {
       const rawBodyText = await req.text()
@@ -388,7 +369,6 @@ export default async function handler(req: Request) {
         return errorResponse("Invalid JSON body", 400, corsHeaders)
       }
 
-      // ── LOOP PREVENTION ─────────────────────────────────────
       if (rawBody.origin_system === "website" || rawBody.source === "website") {
         return errorResponse("Loop detected: origin_system cannot be 'website'", 400, corsHeaders)
       }
@@ -398,19 +378,14 @@ export default async function handler(req: Request) {
         return errorResponse("Validation: " + parsed.error.errors.map(e => `${e.path.join(".")}: ${e.message}`).join("; "), 400, corsHeaders)
       }
 
-      // Only allow updates that don't re-trigger website sync
-      // Prevent infinite loop: POS updates set source=pos context
       const updates: Record<string, unknown> = { ...parsed.data }
 
-      // Map payment amount fields to Website schema
       if (updates.total_amount) {
         updates.total_price = updates.total_amount
         delete updates.total_amount
       }
 
-      // Calculate advance/balance from paid_amount if payment_status changes
       if (updates.payment_status === "paid" && !updates.advance_amount) {
-        // Fetch current booking to get total_price
         const { data: current } = await db
           .from("bookings")
           .select("total_price")

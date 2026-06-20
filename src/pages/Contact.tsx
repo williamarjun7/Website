@@ -58,18 +58,17 @@ const Contact = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>Contact Us | Highlands Motel & Cafe</title>
-                <meta name="description" content="Get in touch with Highlands Motel & Cafe. Call +977 9763215874, email us, or visit Birendranagar-07, Khajura, Surkhet, Nepal." />
+                <title>{C('contact_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | Contact')}</title>
+                <meta name="description" content={C('contact_meta_desc', 'Get in touch. Call, email, or visit us in Surkhet, Nepal.')} />
             </Helmet>
             <div className="container-custom">
                 {/* Header */}
                 <div className="text-center mb-12">
                     <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-                        Contact Us
+                        {C('contact_heading', 'Contact Us')}
                     </h1>
                     <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                        We're here to help make your stay unforgettable.
-                        Reach out to us for any questions or special requests.
+                        {C('contact_subtitle', "We're here to help make your stay unforgettable. Reach out to us for any questions or special requests.")}
                     </p>
                 </div>
 
@@ -77,14 +76,14 @@ const Contact = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-16">
                     {/* Left: Contact Information — 2/5 width on desktop */}
                     <div className="lg:col-span-2 order-2 lg:order-1">
-                        <h2 className="font-heading text-2xl font-bold mb-6">Get in Touch</h2>
+                        <h2 className="font-heading text-2xl font-bold mb-6">{C('contact_heading', 'Get in Touch')}</h2>
                         <div className="space-y-5">
                             <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
                                     <Phone className="text-primary" size={22} />
                                 </div>
                                 <div className="pt-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">Phone & WhatsApp</h3>
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_phone_label', 'Phone & WhatsApp')}</h3>
                                     <a
                                         href="https://wa.me/9779763215874"
                                         target="_blank"
@@ -100,7 +99,7 @@ const Contact = () => {
                                     <Mail className="text-primary" size={22} />
                                 </div>
                                 <div className="pt-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_email_label', 'Email')}</h3>
                                     <a
                                         href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
                                         className="text-gray-600 hover:text-primary transition-colors break-all"
@@ -115,7 +114,7 @@ const Contact = () => {
                                     <MapPin className="text-primary" size={22} />
                                 </div>
                                 <div className="pt-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_address_label', 'Address')}</h3>
                                     <p className="text-gray-600">
                                         {C('contact_address', 'Birendranagar-07, Khajura, Surkhet, Karnali Province, Nepal')}
                                     </p>
@@ -126,7 +125,7 @@ const Contact = () => {
                                     <Clock className="text-primary" size={22} />
                                 </div>
                                 <div className="pt-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">Check-in / Check-out</h3>
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_checkinout_label', 'Check-in / Check-out')}</h3>
                                     <p className="text-gray-600">
                                         Check-in: {C('checkin_time', '2:00 PM')} &nbsp;|&nbsp; Check-out: {C('checkout_time', '12:00 PM')}
                                     </p>
@@ -141,9 +140,9 @@ const Contact = () => {
                     {/* Right: Quick Message Form — 3/5 width on desktop, first on mobile */}
                     <div className="lg:col-span-3 order-1 lg:order-2">
                         <div className="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-amber-100">
-                            <h2 className="font-heading text-2xl font-bold mb-2">Send Us a Message</h2>
+                            <h2 className="font-heading text-2xl font-bold mb-2">{C('contact_form_heading', 'Send Us a Message')}</h2>
                             <p className="text-gray-500 text-sm mb-6">
-                                Fill in the form below and we'll get back to you shortly.
+                                {C('contact_form_text', "Fill in the form below and we'll get back to you shortly.")}
                             </p>
                             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                                 <div>
@@ -199,10 +198,10 @@ const Contact = () => {
 
                 {/* Secondary: Map Section */}
                 <div className="mb-8">
-                    <h2 className="font-heading text-2xl font-bold mb-6">Location</h2>
+                    <h2 className="font-heading text-2xl font-bold mb-6">{C('contact_location_heading', 'Location')}</h2>
                     <div className="rounded-2xl overflow-hidden shadow-lg h-[280px] md:h-[400px]">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30327.168373915127!2d81.58876419067386!3d28.58478551046912!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285b5b738260f%3A0xb0fb170f840c8984!2sHighlands%20Cafe%20%26%20Motel%20Inn!5e1!3m2!1sen!2snp!4v1781772223538!5m2!1sen!2snp"
+                            src={C('google_maps_url', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30327.168373915127!2d81.58876419067386!3d28.58478551046912!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39a285b5b738260f%3A0xb0fb170f840c8984!2sHighlands%20Cafe%20%26%20Motel%20Inn!5e1!3m2!1sen!2snp!4v1781772223538!5m2!1sen!2snp')}
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -216,10 +215,9 @@ const Contact = () => {
                         <div className="flex items-start gap-3">
                             <MapPin size={20} className="text-primary flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="font-semibold text-gray-900 mb-1">Getting Here</p>
+                                <p className="font-semibold text-gray-900 mb-1">{C('contact_getting_here_title', 'Getting Here')}</p>
                                 <p className="text-gray-600 text-sm leading-relaxed">
-                                    We're located in the scenic region of Surkhet, easily accessible
-                                    from the main city area. Free private parking is available for all our guests.
+                                    {C('contact_getting_here_text', "We're located in the scenic region of Surkhet, easily accessible from the main city area. Free private parking is available for all our guests.")}
                                 </p>
                             </div>
                         </div>
@@ -229,18 +227,16 @@ const Contact = () => {
                 {/* Tertiary: Location Assistance */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-amber-100">
                     <h2 className="font-heading text-2xl font-bold mb-2 flex items-center gap-2">
-                        <span>Location Assistance</span>
+                        <span>{C('contact_location_assistance_heading', 'Location Assistance')}</span>
                         <span className="text-2xl">📍</span>
                     </h2>
                     <p className="text-gray-600 mb-4 max-w-3xl">
-                        Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your
-                        phone and follow the navigation. If you need additional assistance, feel free to call or
-                        WhatsApp us at <a href="https://wa.me/9779763215874" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">+977 9763215874</a>.
+                        {C('contact_location_assistance_text', "Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your phone and follow the navigation. If you need additional assistance, feel free to call or WhatsApp us.")}
                     </p>
                     <div className="rounded-xl overflow-hidden shadow-lg bg-black max-w-sm mx-auto">
                         <div className="relative" style={{ paddingBottom: '177.78%' }}>
                             <iframe
-                                src="https://www.tiktok.com/embed/v2/7636374767192263956"
+                                src={C('tiktok_embed_url', 'https://www.tiktok.com/embed/v2/7636374767192263956')}
                                 className="absolute inset-0 w-full h-full"
                                 style={{ border: 0 }}
                                 allowFullScreen
@@ -254,7 +250,7 @@ const Contact = () => {
                 {/* Final CTA */}
                 <div className="mt-12 text-center">
                     <p className="text-gray-500 text-sm mb-4">
-                        Prefer to talk? Call or WhatsApp us anytime.
+                        {C('contact_cta_text', 'Prefer to talk? Call or WhatsApp us anytime.')}
                     </p>
                     <a
                         href="https://wa.me/9779763215874"

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { getRooms, Room } from '../services/roomService';
 import { getEffectivePricePerNight } from '../services/bookingService';
+import { getSiteContentMap } from '../services/contentService';
 import RoomCarousel from '../components/RoomCarousel';
 import { SkeletonRoomCard } from '../components/common/Skeleton';
 
@@ -20,6 +21,8 @@ const Rooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
+    const [content, setContent] = useState<Record<string, string>>({});
+    const C = (key: string, fallback: string) => content[key] || fallback;
 
     const [filters, setFilters] = useState({
         acFilter: 'all',
@@ -31,15 +34,17 @@ const Rooms = () => {
 
     useEffect(() => {
         let cancelled = false;
-        getRooms().then(({ data }) => {
+        Promise.all([
+            getRooms(),
+            getSiteContentMap(),
+        ]).then(([roomsResult, contentResult]) => {
             if (!cancelled) {
-                if (data) {
-                    setRooms(data);
+                if (contentResult.data) setContent(contentResult.data);
+                if (roomsResult.data) {
+                    setRooms(roomsResult.data);
                 }
                 setLoading(false);
             }
-        }).catch(() => {
-            if (!cancelled) setLoading(false);
         });
         return () => { cancelled = true; };
     }, []);
@@ -95,17 +100,17 @@ const Rooms = () => {
     return (
         <div className="min-h-screen pt-24 pb-16 bg-gray-50/30">
             <Helmet>
-                <title>Rooms | Highlands Motel & Cafe</title>
-                <meta name="description" content="Browse our comfortable rooms in Surkhet, Nepal." />
+                <title>{C('rooms_meta_title', 'Rooms | Highlands Motel & Cafe')}</title>
+                <meta name="description" content={C('rooms_meta_desc', 'Browse our comfortable rooms in Surkhet, Nepal.')} />
             </Helmet>
             <div className="container-custom">
                 <div className="text-center mb-12 max-w-3xl mx-auto">
-                    <span className="text-primary font-bold text-sm uppercase tracking-widest mb-4 block">Our Accommodations</span>
+                    <span className="text-primary font-bold text-sm uppercase tracking-widest mb-4 block">{C('rooms_section_label', 'Our Accommodations')}</span>
                     <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
-                        Experience Premium Comfort & Serenity
+                        {C('rooms_hero_title', 'Experience Premium Comfort & Serenity')}
                     </h1>
                     <p className="text-gray-600 text-lg leading-relaxed">
-                        Handpicked rooms designed for ultimate relaxation. Each space offers a unique blend of local charm and modern amenities.
+                        {C('rooms_hero_desc', 'Handpicked rooms designed for ultimate relaxation. Each space offers a unique blend of local charm and modern amenities.')}
                     </p>
                 </div>
 

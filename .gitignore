@@ -23,12 +23,15 @@ opencode.json
 # Graphify intermediates
 .graphify_*.json
 .graphify_python
+graphify-out/.graphify_*
 graphify-out/cache/
 /src/assets/nul
 
 # Session artifacts
 response.txt
 skills-lock.json
+screenshots/
+cms_audit*.md
 
 # InsForge & AI agent skills
 .agent

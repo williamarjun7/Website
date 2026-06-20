@@ -10,7 +10,7 @@ import {
     XCircle,
     BarChart3
 } from 'lucide-react';
-import { getAllBookings, getUpcomingCheckIns, updateBookingStatus, type Booking } from '../../services/bookingService';
+import { getAllBookings, getUpcomingCheckIns, updateBookingStatus, calculateAdvanceAmount, type Booking } from '../../services/bookingService';
 import { getAllRoomsForAdmin } from '../../services/roomService';
 import Skeleton from '../../components/common/Skeleton';
 
@@ -65,14 +65,16 @@ const AdminDashboard = () => {
             const rooms = roomsRes.data || [];
             const checkIns = checkInsRes.data || [];
 
+            const cancelleds = new Set(['cancelled', 'expired', 'failed']);
             const totalRevenue = bookings
                 .filter((b: DashboardBooking) =>
-                    b.payment_status === 'paid' || b.payment_status === 'pay_at_property'
+                    !cancelleds.has(b.booking_status) &&
+                    (b.payment_status === 'paid' || b.payment_status === 'pay_at_property')
                 )
                 .reduce((sum: number, b: DashboardBooking) => {
                     if (b.payment_status === 'pay_at_property') {
-                        const advance = b.advance_amount != null ? b.advance_amount : Math.round(Number(b.total_price) * 60) / 100;
-                        return sum + Number(advance);
+                        const advance = b.advance_amount != null ? Number(b.advance_amount) : calculateAdvanceAmount(Number(b.total_price));
+                        return sum + advance;
                     }
                     return sum + Number(b.total_price);
                 }, 0);

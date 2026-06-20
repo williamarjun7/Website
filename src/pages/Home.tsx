@@ -5,6 +5,7 @@ import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
 import { getEffectivePricePerNight } from '../services/bookingService';
+import { getFeaturedReviews, type Review } from '../services/reviewService';
 import Skeleton from '../components/common/Skeleton';
 
 import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
@@ -15,6 +16,7 @@ const Home = () => {
     const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
     const [cafeImg, setCafeImg] = useState('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800');
     const [content, setContent] = useState<Record<string, string>>({});
+    const [featuredReviews, setFeaturedReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -24,13 +26,15 @@ const Home = () => {
     const loadData = async () => {
         setLoading(true);
         try {
-            const [roomsRes, heroRes, cafeRes, contentRes] = await Promise.all([
+            const [roomsRes, heroRes, cafeRes, contentRes, reviewsRes] = await Promise.all([
                 getRooms(),
                 getSiteImagesByType('hero'),
                 getSiteImagesByType('cafe'),
                 getSiteContentMap(),
+                getFeaturedReviews(6),
             ]);
             if (contentRes.data) setContent(contentRes.data);
+            if (reviewsRes.data) setFeaturedReviews(reviewsRes.data);
 
             if (roomsRes.data) {
                 const sorted = [...roomsRes.data].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
@@ -93,8 +97,8 @@ const Home = () => {
     return (
         <div className="min-h-screen">
             <Helmet>
-                <title>Highlands Motel & Cafe | Home</title>
-                <meta name="description" content="Experience a warm, cozy stay at Highlands Motel & Cafe. Book comfortable rooms and enjoy great food." />
+                <title>{C('home_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | Home')}</title>
+                <meta name="description" content={C('home_meta_desc', 'Experience a warm, cozy stay. Book comfortable rooms and enjoy great food.')} />
             </Helmet>
             {/* Hero Section */}
             <section className="relative h-[600px] md:h-[700px] overflow-hidden">
@@ -124,7 +128,7 @@ const Home = () => {
                                         {/* CTA Buttons */}
                                         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                                             <Link to="/booking" className="btn-primary inline-block">
-                                                Book Your Stay
+                                                {C('btn_book_stay', 'Book Your Stay')}
                                                 <ArrowRight className="inline ml-2" size={20} />
                                             </Link>
                                             <Link
@@ -132,7 +136,7 @@ const Home = () => {
                                                 className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                                             >
                                                 <Coffee size={20} />
-                                                <span>View Menu</span>
+                                                <span>{C('btn_view_menu', 'View Menu')}</span>
                                             </Link>
                                         </div>
                                     </div>
@@ -169,7 +173,7 @@ const Home = () => {
                                 {/* CTA Buttons */}
                                 <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                                     <Link to="/booking" className="btn-primary inline-block">
-                                        Book Your Stay
+                                        {C('btn_book_stay', 'Book Your Stay')}
                                         <ArrowRight className="inline ml-2" size={20} />
                                     </Link>
                                     <Link
@@ -177,7 +181,7 @@ const Home = () => {
                                         className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                                     >
                                         <Coffee size={20} />
-                                        <span>View Menu</span>
+                                        <span>{C('btn_view_menu', 'View Menu')}</span>
                                     </Link>
                                 </div>
                             </div>
@@ -313,7 +317,7 @@ const Home = () => {
 
                     <div className="text-center mt-8">
                         <Link to="/rooms" className="btn-primary inline-block">
-                            View All Rooms
+                            {C('btn_view_rooms', 'View All Rooms')}
                         </Link>
                     </div>
                 </div>
@@ -331,21 +335,18 @@ const Home = () => {
                                 {C('home_cafe_desc', 'Start your day with a delicious breakfast or unwind with authentic local cuisine. Our on-site cafe serves fresh, locally-sourced dishes with breathtaking mountain views.')}
                             </p>
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-center space-x-3">
-                                    <Star className="text-amber-500" size={20} />
-                                    <span>Authentic Nepali cuisine</span>
-                                </li>
-                                <li className="flex items-center space-x-3">
-                                    <Star className="text-amber-500" size={20} />
-                                    <span>Fresh local ingredients</span>
-                                </li>
-                                <li className="flex items-center space-x-3">
-                                    <Star className="text-amber-500" size={20} />
-                                    <span>Mountain view seating</span>
-                                </li>
+                                {(() => {
+                                    const raw = C('home_cafe_bullets', 'Authentic Nepali cuisine\nFresh local ingredients\nMountain view seating');
+                                    return raw.split('\n').filter(Boolean).map((item, i) => (
+                                        <li key={i} className="flex items-center space-x-3">
+                                            <Star className="text-amber-500" size={20} />
+                                            <span>{item}</span>
+                                        </li>
+                                    ));
+                                })()}
                             </ul>
                             <Link to="/cafe" className="btn-primary inline-block">
-                                View Menu
+                                {C('btn_view_menu', 'View Menu')}
                             </Link>
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-xl">
@@ -372,11 +373,49 @@ const Home = () => {
                         {C('home_cta_desc', 'Book your stay today and experience the warmth of the highlands')}
                     </p>
                     <Link to="/booking" className="btn-primary inline-block">
-                        Book Now
+                        {C('btn_book_now', 'Book Now')}
                         <ArrowRight className="inline ml-2" size={20} />
                     </Link>
                 </div>
             </section>
+
+            {/* Featured Reviews */}
+            {featuredReviews.length > 0 && (
+                <section className="py-16 bg-amber-50/50">
+                    <div className="container-custom">
+                        <div className="text-center mb-12">
+                            <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+                                What Our Guests Say
+                            </h2>
+                            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                                Real stories from real guests at Highlands
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {featuredReviews.map((review) => (
+                                <div key={review.id} className="bg-white p-6 rounded-2xl shadow-md border border-amber-100">
+                                    <div className="flex items-center space-x-1 mb-4">
+                                        {Array.from({ length: 5 }, (_, i) => (
+                                            <Star key={i} size={16} className={i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                                        ))}
+                                    </div>
+                                    <p className="text-gray-600 text-sm leading-relaxed mb-4 italic">"{review.comment}"</p>
+                                    <div className="flex items-center space-x-3 pt-3 border-t border-gray-100">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                            {review.guest_name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-sm text-gray-900">{review.guest_name}</p>
+                                            <p className="text-xs text-gray-400">{new Date(review.created_at).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
         </div>
     );
 };
