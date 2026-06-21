@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -17,7 +17,8 @@ import {
     HelpCircle,
     History,
     Settings,
-    FolderOpen
+    FolderOpen,
+    ChevronDown
 } from 'lucide-react';
 import { adminLogout } from '../../services/authService';
 import { usePermission } from '../../hooks/usePermission';
@@ -30,11 +31,62 @@ interface NavItemDefinition {
     action?: string;
 }
 
+interface NavGroup {
+    label: string;
+    icon: any;
+    items: NavItemDefinition[];
+}
+
+const allGroups: NavGroup[] = [
+    {
+        label: 'Bookings',
+        icon: CalendarDays,
+        items: [
+            { name: 'Bookings', path: '/admin/bookings', icon: CalendarDays },
+            { name: 'Rooms', path: '/admin/rooms', icon: BedDouble },
+            { name: 'Reviews', path: '/admin/reviews', icon: Star },
+            { name: 'Payment Recovery', path: '/admin/payment-recovery', icon: ShieldAlert },
+        ],
+    },
+    {
+        label: 'Content',
+        icon: FileText,
+        items: [
+            { name: 'Pages', path: '/admin/pages', icon: FileSymlink, resource: 'page', action: 'read' },
+            { name: 'Menu Pages', path: '/admin/menu-pages', icon: ImageIcon },
+            { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
+            { name: 'FAQ', path: '/admin/faq', icon: HelpCircle, resource: 'faq', action: 'read' },
+            { name: 'Website Content', path: '/admin/content', icon: FileText },
+        ],
+    },
+    {
+        label: 'Media',
+        icon: FolderOpen,
+        items: [
+            { name: 'Media Library', path: '/admin/media', icon: FolderOpen, resource: 'media', action: 'read' },
+            { name: 'Site Images', path: '/admin/images', icon: ImageIcon, resource: 'media', action: 'read' },
+        ],
+    },
+    {
+        label: 'Settings',
+        icon: Settings,
+        items: [
+            { name: 'Navigation', path: '/admin/navigation', icon: Navigation, resource: 'navigation', action: 'read' },
+            { name: 'Site Settings', path: '/admin/settings', icon: Settings, resource: 'setting', action: 'read' },
+            { name: 'Revisions', path: '/admin/revisions', icon: History, resource: 'revision', action: 'read' },
+        ],
+    },
+];
+
+const dashboardItem: NavItemDefinition = { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard };
+
 const AdminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+    const [filteredGroups, setFilteredGroups] = useState<NavGroup[]>([]);
     const { can, profile, loading: _permLoading } = usePermission();
 
     useEffect(() => {
@@ -47,46 +99,48 @@ const AdminLayout = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        setExpandedGroups(prev => {
+            const next = { ...prev };
+            for (const group of allGroups) {
+                const isActive = group.items.some(i => location.pathname === i.path);
+                if (isActive) next[group.label] = true;
+            }
+            return next;
+        });
+    }, [location.pathname]);
+
     const handleLogout = async () => {
         await adminLogout();
         navigate('/admin/login');
     };
 
-    const allNavItems: NavItemDefinition[] = [
-        { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Bookings', path: '/admin/bookings', icon: CalendarDays },
-        { name: 'Rooms', path: '/admin/rooms', icon: BedDouble },
-        { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
-        { name: 'Menu Pages', path: '/admin/menu-pages', icon: ImageIcon },
-        { name: 'Navigation', path: '/admin/navigation', icon: Navigation, resource: 'navigation', action: 'read' },
-        { name: 'Pages', path: '/admin/pages', icon: FileSymlink, resource: 'page', action: 'read' },
-        { name: 'FAQ', path: '/admin/faq', icon: HelpCircle, resource: 'faq', action: 'read' },
-        { name: 'Media Library', path: '/admin/media', icon: FolderOpen, resource: 'media', action: 'read' },
-        { name: 'Site Images', path: '/admin/images', icon: ImageIcon, resource: 'media', action: 'read' },
-        { name: 'Website Content', path: '/admin/content', icon: FileText },
-        { name: 'Site Settings', path: '/admin/settings', icon: Settings, resource: 'setting', action: 'read' },
-        { name: 'Revisions', path: '/admin/revisions', icon: History, resource: 'revision', action: 'read' },
-        { name: 'Reviews', path: '/admin/reviews', icon: Star },
-        { name: 'Payment Recovery', path: '/admin/payment-recovery', icon: ShieldAlert },
-    ];
+    const toggleGroup = (label: string) => {
+        setExpandedGroups(prev => ({ ...prev, [label]: !prev[label] }));
+    };
 
-    const [filteredNavItems, setFilteredNavItems] = useState<NavItemDefinition[]>([]);
-
-    useEffect(() => {
-        const filterItems = async () => {
-            const filtered: NavItemDefinition[] = [];
-            for (const item of allNavItems) {
+    const filterGroups = useCallback(async () => {
+        const result: NavGroup[] = [];
+        for (const group of allGroups) {
+            const visibleItems: NavItemDefinition[] = [];
+            for (const item of group.items) {
                 if (item.resource && item.action) {
                     const hasAccess = await can(item.resource as any, item.action as any);
-                    if (hasAccess) filtered.push(item);
+                    if (hasAccess) visibleItems.push(item);
                 } else {
-                    filtered.push(item);
+                    visibleItems.push(item);
                 }
             }
-            setFilteredNavItems(filtered);
-        };
-        filterItems();
+            if (visibleItems.length > 0) {
+                result.push({ ...group, items: visibleItems });
+            }
+        }
+        setFilteredGroups(result);
     }, [can]);
+
+    useEffect(() => {
+        filterGroups();
+    }, [filterGroups]);
 
     return (
         <div className="min-h-screen bg-gray-100 flex">
@@ -116,13 +170,14 @@ const AdminLayout = () => {
 
                     {/* Navigation */}
                     <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-                        {filteredNavItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = location.pathname === item.path;
+                        {/* Dashboard - standalone */}
+                        {(() => {
+                            const Icon = dashboardItem.icon;
+                            const isActive = location.pathname === dashboardItem.path;
                             return (
                                 <Link
-                                    key={item.path}
-                                    to={item.path}
+                                    key={dashboardItem.path}
+                                    to={dashboardItem.path}
                                     className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${isActive
                                         ? 'bg-primary text-white shadow-md'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-primary'
@@ -130,8 +185,58 @@ const AdminLayout = () => {
                                     onClick={() => isMobile && setSidebarOpen(false)}
                                 >
                                     <Icon size={20} />
-                                    <span className="font-medium">{item.name}</span>
+                                    <span className="font-medium">{dashboardItem.name}</span>
                                 </Link>
+                            );
+                        })()}
+
+                        {/* Groups */}
+                        {filteredGroups.map((group) => {
+                            const GroupIcon = group.icon;
+                            const isExpanded = expandedGroups[group.label] ?? false;
+                            const isGroupActive = group.items.some(i => location.pathname === i.path);
+                            return (
+                                <div key={group.label} className="space-y-1">
+                                    <button
+                                        onClick={() => toggleGroup(group.label)}
+                                        className={`flex items-center justify-between w-full px-4 py-2.5 rounded-lg transition-colors text-sm font-semibold uppercase tracking-wider ${isGroupActive
+                                            ? 'text-primary'
+                                            : 'text-gray-400 hover:text-gray-600'
+                                            }`}
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            <GroupIcon size={16} />
+                                            <span>{group.label}</span>
+                                        </div>
+                                        <ChevronDown
+                                            size={16}
+                                            className={`transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'
+                                                }`}
+                                        />
+                                    </button>
+                                    {isExpanded && (
+                                        <div className="ml-2 space-y-1 border-l-2 border-gray-100 pl-2">
+                                            {group.items.map((item) => {
+                                                const ItemIcon = item.icon;
+                                                const isActive = location.pathname === item.path;
+                                                return (
+                                                    <Link
+                                                        key={item.path}
+                                                        to={item.path}
+                                                        className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm ${isActive
+                                                            ? 'bg-primary/10 text-primary font-semibold'
+                                                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                                                            }`}
+                                                        onClick={() => isMobile && setSidebarOpen(false)}
+                                                    >
+                                                        <ItemIcon size={16} />
+                                                        <span>{item.name}</span>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
                             );
                         })}
                     </nav>

@@ -140,23 +140,7 @@ const Rooms = () => {
                 if (error) {
                     setUploadError(typeof error === 'string' ? error : 'Failed to upload image');
                 } else if (data) {
-                    if (editingRoom) {
-                        await addRoomImage({
-                            room_id: editingRoom.id,
-                            url: data.url,
-                            sort_order: (editingRoom.room_images?.length || 0) + 1
-                        });
-                    } else {
-                        setPendingImages(prev => [...prev, { url: data.url, key: data.key }]);
-                    }
-                }
-            }
-            if (editingRoom) {
-                const { data } = await getAllRoomsForAdmin();
-                if (data) {
-                    setRooms(data);
-                    const updated = data.find(r => r.id === editingRoom.id);
-                    if (updated) setEditingRoom(updated);
+                    setPendingImages(prev => [...prev, { url: data.url, key: data.key }]);
                 }
             }
         } catch (err: unknown) {
@@ -290,12 +274,15 @@ const Rooms = () => {
                 savedRoom = result.data;
             }
 
-            if (savedRoom && !editingRoom && pendingImages.length > 0) {
+            if (savedRoom && pendingImages.length > 0) {
+                const startOrder = editingRoom
+                    ? (editingRoom.room_images?.length || 0)
+                    : 0;
                 for (let i = 0; i < pendingImages.length; i++) {
                     const result = await addRoomImage({
                         room_id: savedRoom.id,
                         url: pendingImages[i].url,
-                        sort_order: i + 1
+                        sort_order: startOrder + i + 1
                     });
                     if (result.error) throw new Error(result.error);
                 }

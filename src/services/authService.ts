@@ -94,9 +94,11 @@ export const adminLogout = async () => {
 
 export const getAdminSession = async () => {
     try {
-        const { data, error } = await insforge.auth.getCurrentUser();
-        if (error) throw error;
-        return { data: { session: data?.user ? { user: data.user } : null }, error: null };
+        const session = insforge.auth.tokenManager.getSession();
+        if (!session) {
+            return { data: { session: null }, error: null };
+        }
+        return { data: { session: { user: session.user } }, error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }
@@ -104,18 +106,18 @@ export const getAdminSession = async () => {
 
 export const getCurrentAdmin = async () => {
     try {
-        const { data, error } = await insforge.auth.getCurrentUser();
-        if (error) throw error;
-
-        if (data?.user?.id) {
-            const { data: profile } = await getProfileByUserId(data.user.id);
-            if (profile) {
-                localStorage.setItem('saas_user_id', data.user.id);
-                localStorage.setItem('saas_tenant_id', profile.tenant_id);
-            }
+        const session = insforge.auth.tokenManager.getSession();
+        if (!session?.user?.id) {
+            return { data: null, error: null };
         }
 
-        return { data, error: null };
+        const { data: profile } = await getProfileByUserId(session.user.id);
+        if (profile) {
+            localStorage.setItem('saas_user_id', session.user.id);
+            localStorage.setItem('saas_tenant_id', profile.tenant_id);
+        }
+
+        return { data: session, error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }

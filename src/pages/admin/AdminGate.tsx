@@ -9,14 +9,20 @@ const AdminGate = () => {
     const { refreshPermissions } = usePermission();
 
     useEffect(() => {
+        let cancelled = false;
+        setIsAuth(null);
+
         const checkAuth = async () => {
             const auth = await isAuthenticated();
+            if (cancelled) return;
             setIsAuth(auth);
             if (auth) {
                 await refreshPermissions();
             }
         };
         checkAuth();
+
+        return () => { cancelled = true; };
     }, [location.pathname, refreshPermissions]);
 
     if (isAuth === null) {

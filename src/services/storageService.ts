@@ -150,10 +150,15 @@ export const deleteFile = async (key: string): Promise<{ data: unknown | null; e
     try {
         const { data, error } = await insforge.storage
             .from(BUCKET_NAME)
-            .remove(key);
+            .remove([key]);
         if (error) throw error;
         return { data, error: null };
     } catch (error) {
+        const msg = error instanceof Error ? error.message : '';
+        if (msg.includes('not found') || msg.includes('Not Found')) {
+            console.warn(`File not found in storage, skipping: ${key}`);
+            return { data: null, error: null };
+        }
         return handleInsforgeError(error);
     }
 };
