@@ -1,5 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
-import { getCurrentTenantId } from './tenantService';
+import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logPageEvent } from './auditService';
 
@@ -22,12 +22,11 @@ export interface SitePage {
 
 export const getPages = async () => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .order('created_at', { ascending: false });
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .select('*')
+        ).order('created_at', { ascending: false });
 
         if (error) throw error;
         return { data, error: null };
@@ -38,13 +37,11 @@ export const getPages = async () => {
 
 export const getPublishedPages = async () => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .eq('status', 'published')
-            .order('created_at', { ascending: false });
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .select('*')
+        ).eq('status', 'published').order('created_at', { ascending: false });
 
         if (error) throw error;
         return { data, error: null };
@@ -55,13 +52,11 @@ export const getPublishedPages = async () => {
 
 export const getPageBySlug = async (slug: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .eq('slug', slug)
-            .single();
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .select('*')
+        ).eq('slug', slug).maybeSingle();
 
         if (error) throw error;
         return { data, error: null };
@@ -72,13 +67,11 @@ export const getPageBySlug = async (slug: string) => {
 
 export const getPageById = async (id: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .eq('id', id)
-            .single();
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .select('*')
+        ).eq('id', id).single();
 
         if (error) throw error;
         return { data, error: null };
@@ -107,14 +100,11 @@ export const createPage = async (data: Partial<SitePage>) => {
 
 export const updatePage = async (id: string, data: Partial<SitePage>) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data: page, error } = await insforge.database
-            .from('site_pages')
-            .update(data)
-            .eq('tenant_id', tenantId)
-            .eq('id', id)
-            .select()
-            .single();
+        const { data: page, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .update(data)
+        ).eq('id', id).select().single();
 
         if (error) throw error;
         invalidateCmsCache('site_pages');
@@ -127,14 +117,11 @@ export const updatePage = async (id: string, data: Partial<SitePage>) => {
 
 export const deletePage = async (id: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .delete()
-            .eq('tenant_id', tenantId)
-            .eq('id', id)
-            .select()
-            .single();
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .delete()
+        ).eq('id', id).select().single();
 
         if (error) throw error;
         invalidateCmsCache('site_pages');
@@ -147,14 +134,11 @@ export const deletePage = async (id: string) => {
 
 export const publishPage = async (id: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_pages')
-            .update({ status: 'published', published_at: new Date().toISOString() })
-            .eq('tenant_id', tenantId)
-            .eq('id', id)
-            .select()
-            .single();
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_pages')
+                .update({ status: 'published', published_at: new Date().toISOString() })
+        ).eq('id', id).select().single();
 
         if (error) throw error;
         invalidateCmsCache('site_pages');

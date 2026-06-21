@@ -321,11 +321,13 @@ const Home = () => {
                             </Link>
                         </div>
                         <div className="rounded-2xl overflow-hidden shadow-xl">
-                            <img
-                                src={cafeImg}
-                                alt="Highlands Cafe"
-                                className="w-full h-full object-cover"
-                            />
+                            {cafeImg && (
+                                <img
+                                    src={cafeImg}
+                                    alt="Highlands Cafe"
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

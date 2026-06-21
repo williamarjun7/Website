@@ -1,5 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
-import { getCurrentTenantId } from './tenantService';
+import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logNavEvent } from './auditService';
 
@@ -19,12 +19,11 @@ export interface NavItem {
 
 export const getNavigation = async () => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_navigation')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .order('sort_order', { ascending: true });
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_navigation')
+                .select('*')
+        ).order('sort_order', { ascending: true });
 
         if (error) throw error;
         return { data, error: null };
@@ -53,14 +52,11 @@ export const addNavItem = async (data: Partial<NavItem>) => {
 
 export const updateNavItem = async (id: string, data: Partial<NavItem>) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data: item, error } = await insforge.database
-            .from('site_navigation')
-            .update(data)
-            .eq('tenant_id', tenantId)
-            .eq('id', id)
-            .select()
-            .single();
+        const { data: item, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_navigation')
+                .update(data)
+        ).eq('id', id).select().single();
 
         if (error) throw error;
         invalidateCmsCache('site_navigation');
@@ -73,12 +69,11 @@ export const updateNavItem = async (id: string, data: Partial<NavItem>) => {
 
 export const deleteNavItem = async (id: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { error } = await insforge.database
-            .from('site_navigation')
-            .delete()
-            .eq('tenant_id', tenantId)
-            .eq('id', id);
+        const { error } = await applyTenantFilter(
+            insforge.database
+                .from('site_navigation')
+                .delete()
+        ).eq('id', id);
 
         if (error) throw error;
         invalidateCmsCache('site_navigation');
@@ -91,13 +86,12 @@ export const deleteNavItem = async (id: string) => {
 
 export const reorderNavItems = async (items: { id: string; sort_order: number }[]) => {
     try {
-        const tenantId = getCurrentTenantId();
         for (const item of items) {
-            const { error } = await insforge.database
-                .from('site_navigation')
-                .update({ sort_order: item.sort_order })
-                .eq('tenant_id', tenantId)
-                .eq('id', item.id);
+            const { error } = await applyTenantFilter(
+                insforge.database
+                    .from('site_navigation')
+                    .update({ sort_order: item.sort_order })
+            ).eq('id', item.id);
 
             if (error) throw error;
         }

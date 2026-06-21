@@ -108,6 +108,7 @@ const AdminLogin = () => {
                                         <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                         <input
                                             type="email"
+                                            autoComplete="email"
                                             required
                                             value={resetEmail}
                                             onChange={(e) => setResetEmail(e.target.value)}
@@ -157,6 +158,7 @@ const AdminLogin = () => {
                                 <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
                                     type="email"
+                                    autoComplete="email"
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -172,6 +174,7 @@ const AdminLogin = () => {
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                                 <input
                                     type="password"
+                                    autoComplete="current-password"
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}

@@ -26,6 +26,11 @@ export const getCurrentTenantId = (): string | null => {
     return currentTenantId;
 };
 
+export const applyTenantFilter = (query: any, column = 'tenant_id') => {
+    if (!currentTenantId) return query;
+    return query.eq(column, currentTenantId);
+};
+
 export const getCurrentTenant = (): Tenant | null => {
     return currentTenant;
 };

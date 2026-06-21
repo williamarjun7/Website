@@ -78,11 +78,13 @@ const About = () => {
 
       <section className="relative h-80 mb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
-          <img
-            src={heroBg}
-            alt={C('site_name', 'Highlands Cafe & Motel Inn')}
-            className="w-full h-full object-cover opacity-40"
-          />
+          {heroBg && (
+            <img
+              src={heroBg}
+              alt={C('site_name', 'Highlands Cafe & Motel Inn')}
+              className="w-full h-full object-cover opacity-40"
+            />
+          )}
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="container-custom text-center text-white">

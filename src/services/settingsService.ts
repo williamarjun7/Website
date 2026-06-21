@@ -1,5 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
-import { getCurrentTenantId } from './tenantService';
+import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 
 export interface SiteSetting {
@@ -13,13 +13,11 @@ export interface SiteSetting {
 
 export const getSetting = async (key: string) => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_settings')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .eq('key', key)
-            .single();
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_settings')
+                .select('*')
+        ).eq('key', key).single();
 
         if (error) throw error;
         return { data, error: null };
@@ -30,11 +28,11 @@ export const getSetting = async (key: string) => {
 
 export const getAllSettings = async () => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_settings')
-            .select('*')
-            .eq('tenant_id', tenantId);
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_settings')
+                .select('*')
+        );
 
         if (error) throw error;
         return { data, error: null };
@@ -62,11 +60,11 @@ export const updateSetting = async (key: string, value: string) => {
 
 export const getSettingsMap = async () => {
     try {
-        const tenantId = getCurrentTenantId();
-        const { data, error } = await insforge.database
-            .from('site_settings')
-            .select('key, value')
-            .eq('tenant_id', tenantId);
+        const { data, error } = await applyTenantFilter(
+            insforge.database
+                .from('site_settings')
+                .select('key, value')
+        );
 
         if (error) throw error;
         const map: Record<string, string> = {};
