@@ -14,7 +14,7 @@ import TikTokFeed from '../components/TikTokFeed';
 const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
-    const [cafeImg, setCafeImg] = useState('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800');
+    const [cafeImg, setCafeImg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
     const [featuredReviews, setFeaturedReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
@@ -51,25 +51,6 @@ const Home = () => {
                                     title: img.title || C('hero_title', 'Welcome to Highlands'),
                                     subtitle: C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')
                                 })));
-            } else {
-                // Add sample hero slides for demonstration
-                setHeroSlides([
-                    {
-                        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200',
-                        title: C('hero_title', 'Welcome to Highlands'),
-                        subtitle: C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')
-                    },
-                    {
-                        image: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200',
-                        title: 'Luxury Mountain Views',
-                        subtitle: 'Wake Up to Breathtaking Himalayan Scenery'
-                    },
-                    {
-                        image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200',
-                        title: 'Authentic Nepali Hospitality',
-                        subtitle: 'Warm Service & Traditional Highland Charm'
-                    }
-                ]);
             }
         } catch (error) {
             console.error('Error loading home data:', error);
@@ -157,33 +138,23 @@ const Home = () => {
                         </div>
                     </>
                 ) : (
-                    <div className="absolute inset-0">
-                        {/* Fallback Hero Image */}
-                        <img
-                            src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200"
-                            alt="Highlands Cafe & Motel Inn"
-                            className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
-                        <div className="absolute inset-0 flex items-center justify-center text-center">
-                            <div className="text-center">
-                                <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">{C('hero_title', 'Welcome to Highlands')}</h1>
-                                <p className="text-xl mb-8">{C('hero_subtitle', 'Experience Cozy Comfort')}</p>
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60 flex items-center justify-center text-center">
+                        <div className="text-center text-white">
+                            <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">{C('hero_title', 'Welcome to Highlands')}</h1>
+                            <p className="text-xl mb-8">{C('hero_subtitle', 'Experience Cozy Comfort')}</p>
 
-                                {/* CTA Buttons */}
-                                <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                    <Link to="/booking" className="btn-primary inline-block">
-                                        {C('btn_book_stay', 'Book Your Stay')}
-                                        <ArrowRight className="inline ml-2" size={20} />
-                                    </Link>
-                                    <Link
-                                        to="/cafe"
-                                        className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-                                    >
-                                        <Coffee size={20} />
-                                        <span>{C('btn_view_menu', 'View Menu')}</span>
-                                    </Link>
-                                </div>
+                            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                                <Link to="/booking" className="btn-primary inline-block">
+                                    {C('btn_book_stay', 'Book Your Stay')}
+                                    <ArrowRight className="inline ml-2" size={20} />
+                                </Link>
+                                <Link
+                                    to="/cafe"
+                                    className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                                >
+                                    <Coffee size={20} />
+                                    <span>{C('btn_view_menu', 'View Menu')}</span>
+                                </Link>
                             </div>
                         </div>
                     </div>

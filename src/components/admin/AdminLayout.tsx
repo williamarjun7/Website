@@ -11,15 +11,31 @@ import {
     Menu,
     X,
     ShieldAlert,
-    Star
+    Star,
+    Navigation,
+    FileSymlink,
+    HelpCircle,
+    History,
+    Settings,
+    FolderOpen
 } from 'lucide-react';
 import { adminLogout } from '../../services/authService';
+import { usePermission } from '../../hooks/usePermission';
+
+interface NavItemDefinition {
+    name: string;
+    path: string;
+    icon: any;
+    resource?: string;
+    action?: string;
+}
 
 const AdminLayout = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+    const { can, profile, loading: permLoading } = usePermission();
 
     useEffect(() => {
         const handleResize = () => {
@@ -36,16 +52,40 @@ const AdminLayout = () => {
         navigate('/admin/login');
     };
 
-    const navItems = [
+    const allNavItems: NavItemDefinition[] = [
         { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
         { name: 'Bookings', path: '/admin/bookings', icon: CalendarDays },
         { name: 'Rooms', path: '/admin/rooms', icon: BedDouble },
         { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
-        { name: 'Site Images', path: '/admin/images', icon: ImageIcon },
-        { name: 'Content', path: '/admin/content', icon: FileText },
+        { name: 'Navigation', path: '/admin/navigation', icon: Navigation, resource: 'navigation', action: 'read' },
+        { name: 'Pages', path: '/admin/pages', icon: FileSymlink, resource: 'page', action: 'read' },
+        { name: 'FAQ', path: '/admin/faq', icon: HelpCircle, resource: 'faq', action: 'read' },
+        { name: 'Media Library', path: '/admin/media', icon: FolderOpen, resource: 'media', action: 'read' },
+        { name: 'Site Images', path: '/admin/images', icon: ImageIcon, resource: 'media', action: 'read' },
+        { name: 'Content', path: '/admin/content', icon: FileText, resource: 'page', action: 'read' },
+        { name: 'Site Settings', path: '/admin/settings', icon: Settings, resource: 'setting', action: 'read' },
+        { name: 'Revisions', path: '/admin/revisions', icon: History, resource: 'revision', action: 'read' },
         { name: 'Reviews', path: '/admin/reviews', icon: Star },
         { name: 'Payment Recovery', path: '/admin/payment-recovery', icon: ShieldAlert },
     ];
+
+    const [filteredNavItems, setFilteredNavItems] = useState<NavItemDefinition[]>([]);
+
+    useEffect(() => {
+        const filterItems = async () => {
+            const filtered: NavItemDefinition[] = [];
+            for (const item of allNavItems) {
+                if (item.resource && item.action) {
+                    const hasAccess = await can(item.resource as any, item.action as any);
+                    if (hasAccess) filtered.push(item);
+                } else {
+                    filtered.push(item);
+                }
+            }
+            setFilteredNavItems(filtered);
+        };
+        filterItems();
+    }, [can]);
 
     return (
         <div className="min-h-screen bg-gray-100 flex">
@@ -57,7 +97,14 @@ const AdminLayout = () => {
                 <div className="h-full flex flex-col">
                     {/* Header */}
                     <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
-                        <span className="font-heading text-xl font-bold text-primary">Admin Panel</span>
+                        <div className="flex items-center space-x-2">
+                            <span className="font-heading text-xl font-bold text-primary">Admin Panel</span>
+                            {profile?.role && (
+                                <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full uppercase font-semibold">
+                                    {profile.role}
+                                </span>
+                            )}
+                        </div>
                         <button
                             onClick={() => setSidebarOpen(false)}
                             className="md:hidden text-gray-500 hover:text-primary"
@@ -68,7 +115,7 @@ const AdminLayout = () => {
 
                     {/* Navigation */}
                     <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-                        {navItems.map((item) => {
+                        {filteredNavItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = location.pathname === item.path;
                             return (

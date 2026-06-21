@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Coffee, Heart, Award, CheckCircle, Star, Wifi, Car, Clock, Shield, Users, BookOpen, Sun, Moon, Mountain, TreePine, UtensilsCrossed, Smile } from 'lucide-react';
 import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
+import { getPageBySlug } from '../services/pageService';
 
 const ICON_MAP: Record<string, React.FC<{ size?: number; className?: string }>> = {
   Heart, Award, Coffee, MapPin, Star, CheckCircle,
@@ -33,16 +34,20 @@ const parseJSON = <T,>(jsonStr: string, fallback: T): T => {
 
 const About = () => {
   const [activeTab, setActiveTab] = useState('story');
-  const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200');
+  const [heroBg, setHeroBg] = useState('');
   const [content, setContent] = useState<Record<string, string>>({});
 
   useEffect(() => {
     Promise.all([
       getSiteImagesByType('hero'),
       getSiteContentMap(),
-    ]).then(([imgRes, contentRes]) => {
+      getPageBySlug('about'),
+    ]).then(([imgRes, contentRes, pageRes]) => {
       if (imgRes.data && imgRes.data.length > 0) {
         setHeroBg(imgRes.data[0].image_url);
+      }
+      if (pageRes.data && pageRes.data.featured_image) {
+        setHeroBg(pageRes.data.featured_image);
       }
       if (contentRes.data) setContent(contentRes.data);
     }).catch(() => {});

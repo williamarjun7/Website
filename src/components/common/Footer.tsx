@@ -2,22 +2,36 @@ import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee, UtensilsCrossed, Tv, Shield, Sun } from 'lucide-react';
 import { getSiteContentMap } from '../../services/contentService';
+import { getSettingsMap } from '../../services/settingsService';
+import { getNavigation, type NavItem } from '../../services/navigationService';
 
 const ICON_MAP: Record<string, typeof Wifi> = {
   Wifi, Car, Coffee, Heart, Tv, UtensilsCrossed, Shield, Sun, Phone, Mail, MapPin, Clock, Star, Facebook, Instagram, MessageCircle,
 };
 
+const FOOTER_ICONS: Record<string, string> = {
+  home: '🏨', rooms: '🏨', cafe: '☕', about: '❤️', booking: '📅', contact: '📞', faq: '❓', gallery: '🖼️', events: '📅',
+};
+
 const Footer = memo(() => {
     const [content, setContent] = useState<Record<string, string>>({});
+    const [settings, setSettings] = useState<Record<string, string>>({});
+    const [navItems, setNavItems] = useState<NavItem[]>([]);
     const currentYear = new Date().getFullYear();
 
     useEffect(() => {
-        getSiteContentMap().then(({ data }) => {
-            if (data) setContent(data);
+        Promise.all([
+            getSiteContentMap(),
+            getSettingsMap(),
+            getNavigation(),
+        ]).then(([contentRes, settingsRes, navRes]) => {
+            if (contentRes.data) setContent(contentRes.data);
+            if (settingsRes.data) setSettings(settingsRes.data);
+            if (navRes.data) setNavItems(navRes.data.filter(n => n.is_visible));
         }).catch(() => {});
     }, []);
 
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => settings[key] || content[key] || fallback;
 
     return (
         <footer className="relative bg-gradient-to-br from-amber-900 via-amber-800 to-orange-900 text-white mt-12 overflow-hidden">
@@ -77,7 +91,7 @@ const Footer = memo(() => {
                         </Link>
                     </div>
 
-                    {/* Enhanced Quick Links */}
+                    {/* Enhanced Quick Links from DB */}
                     <div>
                         <div className="relative mb-6">
                             <h4 className="font-heading text-lg font-bold mb-6 relative">
@@ -86,23 +100,26 @@ const Footer = memo(() => {
                             </h4>
                         </div>
                         <ul className="space-y-3">
-                            {[
-                                { to: '/rooms', label: 'Our Rooms', icon: '🏨' },
-                                { to: '/cafe', label: 'Cafe Menu', icon: '☕' },
-                                { to: '/about', label: 'About Us', icon: '❤️' },
-                                { to: '/booking', label: 'Book Now', icon: '📅' },
-                                { to: '/contact', label: 'Contact Us', icon: '📞' },
-                            ].map((item) => (
-                                <li key={item.to}>
-                                    <Link
-                                        to={item.to}
-                                        className="flex items-center space-x-3 text-amber-100 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 transform hover:translate-x-2"
-                                    >
-                                        <span className="text-lg">{item.icon}</span>
-                                        <span className="font-medium">{item.label}</span>
-                                    </Link>
-                                </li>
-                            ))}
+                            {(navItems.length > 0 ? navItems : [
+                                { url: '/rooms', label: 'Our Rooms' },
+                                { url: '/cafe', label: 'Cafe Menu' },
+                                { url: '/about', label: 'About Us' },
+                                { url: '/booking', label: 'Book Now' },
+                                { url: '/contact', label: 'Contact Us' },
+                            ] as Partial<NavItem>[]).map((item) => {
+                                const iconKey = item.url?.replace(/[^a-z]/g, '') || 'link';
+                                return (
+                                    <li key={item.url}>
+                                        <Link
+                                            to={item.url || '/'}
+                                            className="flex items-center space-x-3 text-amber-100 hover:text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300 transform hover:translate-x-2"
+                                        >
+                                            <span className="text-lg">{FOOTER_ICONS[iconKey] || '🔗'}</span>
+                                            <span className="font-medium">{item.label}</span>
+                                        </Link>
+                                    </li>
+                                );
+                            })}
                         </ul>
                     </div>
 

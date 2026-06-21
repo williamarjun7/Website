@@ -431,11 +431,9 @@ const RoomDetails = () => {
                                 Location
                             </h4>
                             <div className="aspect-square bg-gray-100 rounded-xl mb-4 overflow-hidden relative">
-                                <img
-                                    src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff?w=400"
-                                    alt="Map"
-                                    className="w-full h-full object-cover grayscale opacity-50"
-                                />
+                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-sm">
+                                    Map
+                                </div>
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-4 h-4 bg-primary rounded-full animate-ping" />
                                     <div className="absolute w-3 h-3 bg-primary rounded-full border-2 border-white" />

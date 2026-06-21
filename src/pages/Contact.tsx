@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, ExternalLink } from 'lucide-react';
 import { z } from 'zod';
 import { getSiteContentMap } from '../services/contentService';
+import { getSettingsMap } from '../services/settingsService';
+import { getPageBySlug } from '../services/pageService';
 
 const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(100),
@@ -12,14 +14,20 @@ const contactSchema = z.object({
 
 const Contact = () => {
     const [content, setContent] = useState<Record<string, string>>({});
+    const [settings, setSettings] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        getSiteContentMap().then(({ data }) => {
-            if (data) setContent(data);
+        Promise.all([
+            getSiteContentMap(),
+            getSettingsMap(),
+            getPageBySlug('contact'),
+        ]).then(([contentRes, settingsRes, pageRes]) => {
+            if (contentRes.data) setContent(contentRes.data);
+            if (settingsRes.data) setSettings(settingsRes.data);
         }).catch(() => {});
     }, []);
 
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => settings[key] || content[key] || fallback;
 
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});

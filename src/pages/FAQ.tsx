@@ -1,159 +1,53 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Car, Coffee } from 'lucide-react';
+import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Coffee, HelpCircle } from 'lucide-react';
 import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
+import { getPublishedFaqItems, type FaqItem } from '../services/faqService';
 
-interface FAQItem {
-    question: string;
-    answer: string;
-    category: string;
-    icon?: ComponentType<{ size?: number; className?: string }>;
-}
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  'Booking & Reservations': Calendar,
+  'Rooms & Facilities': Wifi,
+  'Check-in & Check-out': Clock,
+  'Cafe & Dining': Coffee,
+  'Location & Transportation': MapPin,
+  'Payment & Policies': CreditCard,
+};
 
 const FAQ = () => {
-    const [openItems, setOpenItems] = useState<string[]>([]);
-    const [heroBg, setHeroBg] = useState('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200');
+    const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+    const [heroBg, setHeroBg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
+    const [faqItems, setFaqItems] = useState<FaqItem[]>([]);
 
     useEffect(() => {
         Promise.all([
             getSiteImagesByType('hero'),
             getSiteContentMap(),
-        ]).then(([imgRes, contentRes]) => {
+            getPublishedFaqItems(),
+        ]).then(([imgRes, contentRes, faqRes]) => {
             if (imgRes.data && imgRes.data.length > 0) setHeroBg(imgRes.data[0].image_url);
             if (contentRes.data) setContent(contentRes.data);
+            if (faqRes.data) setFaqItems(faqRes.data);
         }).catch(() => {});
     }, []);
 
     const C = (key: string, fallback: string) => content[key] || fallback;
 
-    const getFAQ = (): FAQItem[] => {
-        try {
-            const raw = C('faq_questions', '');
-            if (raw.trim()) {
-                const parsed = JSON.parse(raw) as Array<{ question: string; answer: string; category?: string }>;
-                return parsed.map((item) => ({
-                    question: item.question,
-                    answer: item.answer,
-                    category: item.category || 'General',
-                }));
-            }
-        } catch {}
-        return defaultFAQ;
+    const getIconForCategory = (category: string) => CATEGORY_ICONS[category] || HelpCircle;
+
+    const toggleItem = (id: string) => {
+        setOpenItems(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
     };
 
-    const defaultFAQ: FAQItem[] = [
-        // Booking & Reservations
-        {
-            question: 'How do I make a reservation?',
-            answer: 'You can book your stay through our website using the "Book Now" button, message us on WhatsApp at +977 9763215874, or email us at highlandscafemotelinn@gmail.com.',
-            category: 'Booking & Reservations',
-            icon: Calendar
-        },
-        {
-            question: 'What is your cancellation and refund policy?',
-            answer: 'You may cancel your reservation and receive a full refund of your advance payment if you cancel at least 12 hours before your scheduled check-in time. For Pay at Property bookings, the 60% advance payment is refundable if cancelled 12+ hours before check-in. Cancellations made less than 12 hours before check-in are non-refundable. No-shows are not eligible for any refund.',
-            category: 'Booking & Reservations',
-            icon: CreditCard
-        },
-        {
-            question: 'Do I need to pay a deposit?',
-            answer: 'Yes, when choosing the Pay at Property option, we require a 60% advance payment online to confirm your reservation. The remaining 40% balance is due at the property during check-in or check-out. You can also choose to pay the full amount online via Fonepay QR or Fonepay Web Payment.',
-            category: 'Booking & Reservations',
-            icon: CreditCard
-        },
-
-        // Rooms & Facilities
-        {
-            question: 'What amenities are included in the room?',
-            answer: 'All rooms include free WiFi, private bathroom, hot water, heating, daily housekeeping, and mountain views from select rooms.',
-            category: 'Rooms & Facilities',
-            icon: Wifi
-        },
-        {
-            question: 'Is parking available?',
-            answer: 'Yes, we offer free secure parking for all our guests. No reservation is required for parking spaces.',
-            category: 'Rooms & Facilities',
-            icon: Car
-        },
-        {
-            question: 'Do you have WiFi?',
-            answer: 'Free high-speed WiFi is available throughout the property, including all rooms and common areas.',
-            category: 'Rooms & Facilities',
-            icon: Wifi
-        },
-
-        // Check-in & Check-out
-        {
-            question: 'What are the check-in and check-out times?',
-            answer: 'Check-in time is 2:00 PM and check-out time is 12:00 PM. Early check-in and late check-out may be available upon request, subject to availability.',
-            category: 'Check-in & Check-out',
-            icon: Clock
-        },
-        {
-            question: 'Can I store my luggage before check-in or after check-out?',
-            answer: 'Yes, we provide complimentary luggage storage. You can leave your luggage with us before check-in or after check-out while you explore the area.',
-            category: 'Check-in & Check-out',
-            icon: MapPin
-        },
-
-        // Cafe & Dining
-        {
-            question: 'What are the cafe hours?',
-            answer: 'Our on-site cafe is open daily from 7:00 AM to 8:00 PM. Room service is available during cafe hours.',
-            category: 'Cafe & Dining',
-            icon: Coffee
-        },
-
-        {
-            question: 'Do you accommodate dietary restrictions?',
-            answer: 'Yes, our cafe can accommodate various dietary restrictions including vegetarian, vegan, and gluten-free options. Please inform us in advance about any special dietary needs.',
-            category: 'Cafe & Dining',
-            icon: Coffee
-        },
-
-        // Location & Transportation
-        {
-            question: 'How do I get to Highlands Cafe & Motel Inn?',
-            answer: 'We are located at Birendranagar-07, Khajura, Surkhet. Local taxis and ride-sharing services are also available to reach us from the main bus park or airport.',
-            category: 'Location & Transportation',
-            icon: MapPin
-        },
-        {
-            question: 'How far are you from the city center?',
-            answer: 'We are situated in Khajura, Birendranagar, the heart of Surkhet. We are easily accessible from all major points in the city.',
-            category: 'Location & Transportation',
-            icon: Car
-        },
-
-        // Payment & Policies
-        {
-            question: 'What payment methods do you accept?',
-            answer: 'We accept credit cards (Visa, MasterCard), debit cards, cash (NPR and USD), and mobile payment options. All prices are listed in Nepali Rupees.',
-            category: 'Payment & Policies',
-            icon: CreditCard
-        },
-        {
-            question: 'Are taxes included in the room rate?',
-            answer: 'All our rates are inclusive of taxes and service charges. No additional taxes will be applied upon check-out.',
-            category: 'Payment & Policies',
-            icon: CreditCard
-        }
-    ];
-
-    const toggleItem = (question: string) => {
-        setOpenItems(prev =>
-            prev.includes(question)
-                ? prev.filter(item => item !== question)
-                : [...prev, question]
-        );
-    };
-
-    const FAQ_ITEMS = getFAQ();
-    const categories = Array.from(new Set(FAQ_ITEMS.map((item: FAQItem) => item.category)));
+    const categories = Array.from(new Set(faqItems.map((item: FaqItem) => item.category)));
     const groupedFAQs = categories.map((category: string) => ({
         category,
-        items: FAQ_ITEMS.filter((item: FAQItem) => item.category === category)
+        items: faqItems.filter((item: FaqItem) => item.category === category)
     }));
 
     return (
@@ -220,40 +114,41 @@ const FAQ = () => {
                                 {group.category}
                             </h2>
                             <div className="space-y-4">
-                                {group.items.map((item, index) => (
-                                    <div
-                                        key={index}
-                                        className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
-                                    >
-                                        <button
-                                            onClick={() => toggleItem(item.question)}
-                                            className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-amber-50 transition-colors"
+                                {group.items.map((item) => {
+                                    const CategoryIcon = getIconForCategory(item.category);
+                                    return (
+                                        <div
+                                            key={item.id}
+                                            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden"
                                         >
-                                            <div className="flex items-center space-x-3 flex-1">
-                                                {item.icon && (
+                                            <button
+                                                onClick={() => toggleItem(item.id)}
+                                                className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-amber-50 transition-colors"
+                                            >
+                                                <div className="flex items-center space-x-3 flex-1">
                                                     <div className="p-2 bg-amber-100 rounded-lg">
-                                                        <item.icon size={18} className="text-amber-700" />
+                                                        <CategoryIcon size={18} className="text-amber-700" />
                                                     </div>
+                                                    <span className="font-semibold text-gray-800">
+                                                        {item.question}
+                                                    </span>
+                                                </div>
+                                                {openItems.has(item.id) ? (
+                                                    <ChevronUp size={20} className="text-amber-600 flex-shrink-0" />
+                                                ) : (
+                                                    <ChevronDown size={20} className="text-amber-600 flex-shrink-0" />
                                                 )}
-                                                <span className="font-semibold text-gray-800">
-                                                    {item.question}
-                                                </span>
-                                            </div>
-                                            {openItems.includes(item.question) ? (
-                                                <ChevronUp size={20} className="text-amber-600 flex-shrink-0" />
-                                            ) : (
-                                                <ChevronDown size={20} className="text-amber-600 flex-shrink-0" />
+                                            </button>
+                                            {openItems.has(item.id) && (
+                                                <div className="px-6 py-4 bg-amber-50 border-t border-amber-100">
+                                                    <p className="text-gray-700 leading-relaxed">
+                                                        {item.answer}
+                                                    </p>
+                                                </div>
                                             )}
-                                        </button>
-                                        {openItems.includes(item.question) && (
-                                            <div className="px-6 py-4 bg-amber-50 border-t border-amber-100">
-                                                <p className="text-gray-700 leading-relaxed">
-                                                    {item.answer}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     ))}

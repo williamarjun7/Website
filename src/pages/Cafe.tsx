@@ -24,7 +24,7 @@ interface MenuItem {
 
 const Cafe = () => {
     const [menu, setMenu] = useState<MenuCategory[]>([]);
-    const [heroImg, setHeroImg] = useState('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200');
+    const [heroImg, setHeroImg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
 

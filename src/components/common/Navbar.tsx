@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, memo } from 'react';
+import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react';
 import { getSiteContentMap } from '../../services/contentService';
+import { getSettingsMap } from '../../services/settingsService';
+import { getNavigation, type NavItem } from '../../services/navigationService';
 
 import logo from '../../assets/logo.png';
 
@@ -11,14 +13,22 @@ const Navbar = memo(() => {
     const location = useLocation();
     const prevPath = useRef(location.pathname);
     const [content, setContent] = useState<Record<string, string>>({});
+    const [settings, setSettings] = useState<Record<string, string>>({});
+    const [navItems, setNavItems] = useState<NavItem[]>([]);
+
+    const C = (key: string, fallback: string) => settings[key] || content[key] || fallback;
 
     useEffect(() => {
-        getSiteContentMap().then(({ data }) => {
-            if (data) setContent(data);
+        Promise.all([
+            getSiteContentMap(),
+            getSettingsMap(),
+            getNavigation(),
+        ]).then(([contentRes, settingsRes, navRes]) => {
+            if (contentRes.data) setContent(contentRes.data);
+            if (settingsRes.data) setSettings(settingsRes.data);
+            if (navRes.data) setNavItems(navRes.data.filter(n => n.is_visible));
         }).catch(() => {});
     }, []);
-
-    const C = (key: string, fallback: string) => content[key] || fallback;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,14 +46,17 @@ const Navbar = memo(() => {
         }
     }, [location.pathname, isOpen]);
 
-    const navLinks = [
-        { name: 'Home', path: '/', icon: null },
-        { name: 'Rooms', path: '/rooms', icon: null },
-        { name: 'Cafe', path: '/cafe', icon: null },
-        { name: 'About', path: '/about', icon: null },
-        { name: 'Gallery', path: '/gallery', icon: null },
-        { name: 'Contact', path: '/contact', icon: null },
-    ];
+    const navLinks = useCallback(() => {
+        if (navItems.length > 0) return navItems.map(n => ({ name: n.label, path: n.url }));
+        return [
+            { name: 'Home', path: '/' },
+            { name: 'About', path: '/about' },
+            { name: 'Gallery', path: '/gallery' },
+            { name: 'Events', path: '/events' },
+            { name: 'Contact', path: '/contact' },
+            { name: 'FAQ', path: '/faq' },
+        ];
+    }, [navItems]);
 
     return (
         <nav
@@ -74,7 +87,7 @@ const Navbar = memo(() => {
                     {/* Enhanced Desktop Navigation - Centered */}
                     <div className="hidden lg:flex flex-1 items-center justify-center">
                         <div className="flex items-center space-x-2">
-                            {navLinks.map((link) => (
+                            {navLinks().map((link) => (
                                 <Link
                                     key={link.path}
                                     to={link.path}
@@ -121,7 +134,7 @@ const Navbar = memo(() => {
                 {isOpen && (
                     <div id="mobile-menu" aria-hidden={!isOpen} className="lg:hidden py-6 px-4 bg-gradient-to-b from-white/95 to-amber-50/95 backdrop-blur-md rounded-b-2xl shadow-2xl border-t border-amber-100">
                         <div className="flex flex-col space-y-3">
-                            {navLinks.map((link) => (
+                            {navLinks().map((link) => (
                                 <Link
                                     key={link.path}
                                     to={link.path}

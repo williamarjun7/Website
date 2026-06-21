@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { isAuthenticated } from '../../services/authService';
+import { usePermission } from '../../hooks/usePermission';
 
 const AdminGate = () => {
     const location = useLocation();
     const [isAuth, setIsAuth] = useState<boolean | null>(null);
+    const { refreshPermissions } = usePermission();
 
     useEffect(() => {
         const checkAuth = async () => {
             const auth = await isAuthenticated();
             setIsAuth(auth);
+            if (auth) {
+                await refreshPermissions();
+            }
         };
         checkAuth();
-    }, [location.pathname]);
+    }, [location.pathname, refreshPermissions]);
 
     if (isAuth === null) {
         return (
