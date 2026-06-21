@@ -33,6 +33,18 @@ skills-lock.json
 screenshots/
 cms_audit*.md
 
+# Root artifact/report files
+CMS_SCORE.md
+CMS_AUDIT_COMPLETE.md
+TEST_REPORT.html
+TEST_RESULTS.json
+PERFORMANCE_REPORT.md
+SaaS_ARCHITECTURE.md
+SECURITY_AUDIT.md
+TEST_EXPANSION_REPORT.md
+playwright-report/
+test-results/
+
 # InsForge & AI agent skills
 .agent
 .agents
