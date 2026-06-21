@@ -8,7 +8,7 @@ import { getEffectivePricePerNight } from '../services/bookingService';
 import { getFeaturedReviews, type Review } from '../services/reviewService';
 import Skeleton from '../components/common/Skeleton';
 
-import { getSiteImagesByType, getSiteContentMap, SiteImage } from '../services/contentService';
+import { getSiteImagesByPage, getSiteContentMap, SiteImage } from '../services/contentService';
 import TikTokFeed from '../components/TikTokFeed';
 
 const Home = () => {
@@ -28,8 +28,8 @@ const Home = () => {
         try {
             const [roomsRes, heroRes, cafeRes, contentRes, reviewsRes] = await Promise.all([
                 getRooms(),
-                getSiteImagesByType('hero'),
-                getSiteImagesByType('cafe'),
+                getSiteImagesByPage('home'),
+                getSiteImagesByPage('cafe'),
                 getSiteContentMap(),
                 getFeaturedReviews(6),
             ]);
@@ -240,7 +240,7 @@ const Home = () => {
                                         />
                                         {room.has_ac !== undefined && (
                                             <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-sm ${room.has_ac ? 'bg-blue-100/90 text-blue-700' : 'bg-gray-100/90 text-gray-600'}`}>
-                                                {room.has_ac ? 'AC' : 'Non-AC'}
+                                                {room.has_ac ? C('rooms_label_ac', 'AC') : C('rooms_label_nonac', 'Non-AC')}
                                             </div>
                                         )}
                                     </div>
@@ -278,7 +278,7 @@ const Home = () => {
                                             )}
                                         </div>
                                         <Link to="/booking" className="btn-secondary text-sm px-4 py-2">
-                                            Book Now
+                                            {C('rooms_label_book', 'Book Now')}
                                         </Link>
                                     </div>
                                 </div>
@@ -356,10 +356,10 @@ const Home = () => {
                     <div className="container-custom">
                         <div className="text-center mb-12">
                             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
-                                What Our Guests Say
+                                {C('home_reviews_title', 'What Our Guests Say')}
                             </h2>
                             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                                Real stories from real guests at Highlands
+                                {C('home_reviews_subtitle', 'Real stories from real guests at Highlands')}
                             </p>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

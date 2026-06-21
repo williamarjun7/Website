@@ -21,7 +21,7 @@ import {
     toggleItemAvailability,
     MenuItem
 } from '../../services/menuService';
-import { uploadImage } from '../../services/storageService';
+import { uploadFile } from '../../services/storageService';
 import Skeleton from '../../components/common/Skeleton';
 
 interface MenuCategoryData {
@@ -158,7 +158,7 @@ const Menu = () => {
                 throw new Error('Image size should be less than 2MB');
             }
 
-            const { data, error } = await uploadImage(file, 'menu');
+            const { data, error } = await uploadFile(file, 'menu');
             if (error) throw error;
 
             if (data) {

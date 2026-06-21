@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { MapPin, Coffee, Heart, Award, CheckCircle, Star, Wifi, Car, Clock, Shield, Users, BookOpen, Sun, Moon, Mountain, TreePine, UtensilsCrossed, Smile } from 'lucide-react';
-import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
+import { getSiteImagesByPage, getSiteContentMap } from '../services/contentService';
 import { getPageBySlug } from '../services/pageService';
 
 const ICON_MAP: Record<string, React.FC<{ size?: number; className?: string }>> = {
@@ -39,7 +39,7 @@ const About = () => {
 
   useEffect(() => {
     Promise.all([
-      getSiteImagesByType('hero'),
+      getSiteImagesByPage('about'),
       getSiteContentMap(),
       getPageBySlug('about'),
     ]).then(([imgRes, contentRes, pageRes]) => {
@@ -80,7 +80,7 @@ const About = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
           <img
             src={heroBg}
-            alt="Highlands Cafe & Motel Inn"
+            alt={C('site_name', 'Highlands Cafe & Motel Inn')}
             className="w-full h-full object-cover opacity-40"
           />
         </div>
@@ -101,8 +101,8 @@ const About = () => {
         <div className="flex justify-center mb-12">
           <div className="bg-white rounded-xl shadow-lg p-2 inline-flex space-x-2">
             {[
-              { id: 'story', label: 'Our Story', icon: Heart },
-              { id: 'mission', label: 'Mission & Values', icon: Award },
+              { id: 'story', label: C('about_tab_story_label', 'Our Story'), icon: Heart },
+              { id: 'mission', label: C('about_mission_heading', 'Mission & Values'), icon: Award },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -156,7 +156,7 @@ const About = () => {
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-12">
               <div className="flex items-center justify-center mb-6">
                 <MapPin size={40} className="text-amber-700 mr-4" />
-                <h3 className="font-heading text-2xl font-bold text-amber-900">Perfectly Positioned</h3>
+                <h3 className="font-heading text-2xl font-bold text-amber-900">{C('about_position_heading', 'Perfectly Positioned')}</h3>
               </div>
               <p className="text-gray-700 text-center max-w-3xl mx-auto leading-relaxed">
                 {C('location_section_content', 'Nestled in the Khajura region of Birendranagar-07, Surkhet, our location offers the perfect blend of accessibility and serenity.')}
@@ -169,7 +169,7 @@ const About = () => {
           <div className="space-y-16">
             <div className="text-center max-w-4xl mx-auto">
               <h2 className="font-heading text-3xl font-bold mb-6 text-amber-900">
-                Our Mission & Values
+                {C('about_mission_heading', 'Our Mission & Values')}
               </h2>
               <p className="text-xl text-gray-700 leading-relaxed mb-12 italic">
                 {C('about_mission', '"To create unforgettable experiences through exceptional hospitality, authentic cuisine, and genuine connection to our Himalayan heritage."')}
@@ -200,15 +200,15 @@ const About = () => {
             </div>
 
             <div className="bg-gradient-to-r from-amber-900 to-orange-900 text-white rounded-2xl p-12 text-center">
-              <h3 className="font-heading text-2xl font-bold mb-4">{C('about_commitment', 'Our Commitment')}</h3>
+              <h3 className="font-heading text-2xl font-bold mb-4">{C('about_commitment_heading', 'Our Commitment')}</h3>
               <p className="text-lg mb-8 max-w-3xl mx-auto">
                 {C('about_commitment', 'We are dedicated to creating a space where travelers can rest, recharge, and reconnect with nature and themselves.')}
               </p>
               <div className="flex justify-center space-x-8">
-                {['Quality', 'Comfort', 'Authenticity', 'Sustainability'].map((item) => (
-                  <div key={item} className="text-center">
+                {C('about_commitment_items', 'Quality, Comfort, Authenticity, Sustainability').split(',').map((item) => (
+                  <div key={item.trim()} className="text-center">
                     <CheckCircle size={32} className="mx-auto mb-2 text-amber-300" />
-                    <span className="font-semibold">{item}</span>
+                    <span className="font-semibold">{item.trim()}</span>
                   </div>
                 ))}
               </div>
@@ -218,7 +218,7 @@ const About = () => {
 
         <section className="mt-20 bg-gradient-to-r from-amber-900 to-orange-900 text-white rounded-2xl p-12">
           <div className="text-center mb-12">
-            <h2 className="font-heading text-3xl font-bold mb-4">Highlands by Numbers</h2>
+            <h2 className="font-heading text-3xl font-bold mb-4">{C('about_stats_heading', 'Highlands by Numbers')}</h2>
             <p className="text-amber-100 text-lg">{C('about_intro_subheading', 'Our commitment to excellence speaks for itself')}</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">

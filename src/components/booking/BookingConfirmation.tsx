@@ -131,11 +131,12 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
   const navigate = useNavigate();
   const [data, setData] = useState<ConfirmedBookingData | null>(propData || null);
   const [loading, setLoading] = useState(!propData);
-  const [contactInfo, setContactInfo] = useState<Record<string, string>>({});
+  const [content, setContent] = useState<Record<string, string>>({});
+  const C = (key: string, fallback: string) => content[key] || fallback;
 
   useEffect(() => {
-    getSiteContentMap().then(res => {
-      if (res.data) setContactInfo(res.data);
+    getSiteContentMap().then(r => {
+      if (r.data) setContent(r.data);
     });
 
     if (propData) {
@@ -164,7 +165,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             check_in: b.check_in,
             check_out: b.check_out,
             guests: b.adults || 1,
-            room: b.rooms || { id: '', name: 'Selected Room' },
+            room: b.rooms || { id: '', name: C('confirmation_room_fallback', 'Selected Room') },
             total_price: b.total_price,
             advance_amount: b.advance_amount,
             balance_amount: b.balance_amount,
@@ -191,8 +192,8 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
     return (
       <div className="bg-white rounded-2xl shadow-md p-8 text-center max-w-2xl mx-auto">
         <div className="animate-spin w-12 h-12 border-4 border-amber-600 border-t-transparent rounded-full mx-auto mb-4" />
-        <h2 className="font-heading text-2xl font-bold mb-2">Reservation Confirmed</h2>
-        <p className="text-gray-600">Loading your reservation details...</p>
+        <h2 className="font-heading text-2xl font-bold mb-2">{C('confirmation_heading', 'Reservation Confirmed')}</h2>
+        <p className="text-gray-600">{C('confirmation_loading_text', 'Loading your reservation details...')}</p>
       </div>
     );
   }
@@ -200,9 +201,9 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
   if (!data) {
     return (
       <div className="bg-white rounded-2xl shadow-md p-8 text-center max-w-2xl mx-auto">
-        <h2 className="font-heading text-2xl font-bold mb-2">Reservation Not Found</h2>
-        <p className="text-gray-600 mb-6">We couldn't find your reservation details. Please contact us for assistance.</p>
-        <button onClick={() => navigate('/')} className="btn-primary w-full">Return Home</button>
+        <h2 className="font-heading text-2xl font-bold mb-2">{C('confirmation_not_found', 'Reservation Not Found')}</h2>
+        <p className="text-gray-600 mb-6">{C('confirmation_not_found_text', "We couldn't find your reservation details. Please contact us for assistance.")}</p>
+        <button onClick={() => navigate('/')} className="btn-primary w-full">{C('confirmation_return_home', 'Return Home')}</button>
       </div>
     );
   }
@@ -211,7 +212,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
 
   const paymentConfig = {
     icon: isPayAtProperty ? Wallet : data.payment_method === 'fonepay_qr' ? QrCode : Globe,
-    label: isPayAtProperty ? 'Advance Payment Reservation' : data.payment_method === 'fonepay_qr' ? 'Fonepay QR' : 'Fonepay Web',
+    label: isPayAtProperty ? C('confirmation_advance_label', 'Advance Payment Reservation') : data.payment_method === 'fonepay_qr' ? C('confirmation_fonepay_qr_label', 'Fonepay QR') : C('confirmation_fonepay_web_label', 'Fonepay Web'),
     cardClass: isPayAtProperty ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200',
     iconWrapClass: isPayAtProperty ? 'bg-amber-100' : 'bg-green-100',
     iconClass: isPayAtProperty ? 'text-amber-700' : 'text-green-700',
@@ -231,12 +232,12 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             <Check className="text-green-600" size="32" />
           </div>
           <h1 className="font-heading text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Reservation Confirmed
+            {C('confirmation_reserved_heading', 'Reservation Confirmed')}
           </h1>
           <p className="text-gray-500 text-sm md:text-base max-w-md mx-auto leading-relaxed">
             {isPayAtProperty
-              ? 'Your reservation has been successfully created. Please review your reservation details below.'
-              : 'Your payment has been received and your reservation is confirmed.'
+              ? C('confirmation_success_text_pay_at_property_true', 'Your reservation has been successfully created. Please review your reservation details below.')
+              : C('confirmation_success_text_pay_at_property_false', 'Your payment has been received and your reservation is confirmed.')
             }
           </p>
         </div>
@@ -246,7 +247,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-2">
-                Reservation Reference
+                {C('confirmation_ref_label', 'Reservation Reference')}
               </p>
               <p className="font-mono text-xl md:text-2xl font-bold text-primary break-all leading-tight">
                 {data.id}
@@ -261,32 +262,32 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
 
         {/* ── Reservation Details ── */}
         <SectionCard className="mb-4 print:border-gray-300">
-          <SectionHeading icon={CalendarDays} label="Reservation Details" />
+          <SectionHeading icon={CalendarDays} label={C('confirmation_details_heading', 'Reservation Details')} />
           <DetailGrid>
-            <DetailItem label="Room" value={data.room.name + (data.room.room_number ? ` #${data.room.room_number}` : '')} />
+            <DetailItem label={C('confirmation_room_label', 'Room')} value={data.room.name + (data.room.room_number ? ` #${data.room.room_number}` : '')} />
             {data.room.room_type && (
-              <DetailItem label="Room Type" value={data.room.room_type.charAt(0).toUpperCase() + data.room.room_type.slice(1)} />
+              <DetailItem label={C('confirmation_room_type_label', 'Room Type')} value={data.room.room_type.charAt(0).toUpperCase() + data.room.room_type.slice(1)} />
             )}
-            <DetailItem label="Check-In Date" value={formatDate(data.check_in)} />
-            <DetailItem label="Check-Out Date" value={formatDate(data.check_out)} />
-            <DetailItem label="Number of Nights" value={`${nights} Night${nights !== 1 ? 's' : ''}`} />
-            <DetailItem label="Number of Guests" value={`${data.guests} Guest${data.guests !== 1 ? 's' : ''}`} />
+            <DetailItem label={C('confirmation_checkin_label', 'Check-In Date')} value={formatDate(data.check_in)} />
+            <DetailItem label={C('confirmation_checkout_label', 'Check-Out Date')} value={formatDate(data.check_out)} />
+            <DetailItem label={C('confirmation_nights_label', 'Number of Nights')} value={`${nights} ${nights !== 1 ? C('confirmation_nights', 'Nights') : C('confirmation_night', 'Night')}`} />
+            <DetailItem label={C('confirmation_guests_label', 'Number of Guests')} value={`${data.guests} ${data.guests !== 1 ? C('confirmation_guests', 'Guests') : C('confirmation_guest', 'Guest')}`} />
           </DetailGrid>
         </SectionCard>
 
         {/* ── Guest Information ── */}
         <SectionCard className="mb-4 print:border-gray-300">
-          <SectionHeading icon={User} label="Guest Information" />
+          <SectionHeading icon={User} label={C('confirmation_guest_heading', 'Guest Information')} />
           <DetailGrid>
-            <DetailItem label="Guest Name" value={data.guest_name} />
-            <DetailItem label="Email Address" value={data.guest_email} />
-            <DetailItem label="Phone Number" value={data.guest_phone} />
+            <DetailItem label={C('confirmation_guest_name_label', 'Guest Name')} value={data.guest_name} />
+            <DetailItem label={C('confirmation_email_label', 'Email Address')} value={data.guest_email} />
+            <DetailItem label={C('confirmation_phone_label', 'Phone Number')} value={data.guest_phone} />
           </DetailGrid>
         </SectionCard>
 
         {/* ── Payment Information ── */}
         <SectionCard className="mb-5 print:border-gray-300">
-          <SectionHeading icon={Receipt} label="Payment Information" />
+          <SectionHeading icon={Receipt} label={C('confirmation_payment_heading', 'Payment Information')} />
 
           <div className={`flex items-center gap-3 border rounded-xl px-4 py-3 mt-3 ${paymentConfig.cardClass}`}>
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${paymentConfig.iconWrapClass}`}>
@@ -295,7 +296,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             <div>
               <p className="font-semibold text-sm text-gray-900">{paymentConfig.label}</p>
               {data.transaction_id && (
-                <p className="text-xs text-gray-500 font-mono mt-0.5 break-all">Transaction ID: {data.transaction_id}</p>
+                <p className="text-xs text-gray-500 font-mono mt-0.5 break-all">{C('confirmation_transaction_id_label', 'Transaction ID:')} {data.transaction_id}</p>
               )}
             </div>
           </div>
@@ -305,35 +306,35 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
               <>
                 <div className="sm:col-span-2 border-b border-gray-100 pb-3">
                   <div className="grid grid-cols-2 gap-4">
-                    <span className="text-gray-500 text-sm">Reservation Total</span>
-                    <span className="font-semibold text-gray-900 text-sm text-right">NPR {total.toLocaleString()}</span>
+                    <span className="text-gray-500 text-sm">{C('confirmation_total_label', 'Reservation Total')}</span>
+                    <span className="font-semibold text-gray-900 text-sm text-right">{C('confirmation_npr_prefix', 'NPR')} {total.toLocaleString()}</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs mb-0.5">Advance Payment Required</p>
-                  <p className="text-xs text-amber-600 font-medium mb-1">60% of reservation total</p>
-                  <p className="font-semibold text-amber-700 text-sm">NPR {advance.toLocaleString()}</p>
+                  <p className="text-gray-500 text-xs mb-0.5">{C('confirmation_advance_label_short', 'Advance Payment Required')}</p>
+                  <p className="text-xs text-amber-600 font-medium mb-1">{C('confirmation_advance_percent', '60% of reservation total')}</p>
+                  <p className="font-semibold text-amber-700 text-sm">{C('confirmation_npr_prefix', 'NPR')} {advance.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-gray-500 text-xs mb-0.5">Balance Due At Check-In</p>
-                  <p className="text-xs text-green-600 font-medium mb-1">40% of reservation total</p>
-                  <p className="font-semibold text-green-700 text-sm">NPR {balance.toLocaleString()}</p>
+                  <p className="text-gray-500 text-xs mb-0.5">{C('confirmation_balance_label_short', 'Balance Due At Check-In')}</p>
+                  <p className="text-xs text-green-600 font-medium mb-1">{C('confirmation_balance_percent', '40% of reservation total')}</p>
+                  <p className="font-semibold text-green-700 text-sm">{C('confirmation_npr_prefix', 'NPR')} {balance.toLocaleString()}</p>
                 </div>
                 <div className="sm:col-span-2 bg-amber-50 rounded-lg p-3 mt-2 text-xs text-amber-800 leading-relaxed">
-                  <p className="font-medium mb-1">Your reservation has been secured.</p>
-                  <p>The advance payment amount is required to confirm the booking.</p>
-                  <p className="mt-1">The remaining balance will be paid during check-in at the property.</p>
+                  <p className="font-medium mb-1">{C('confirmation_policy_secured', 'Your reservation has been secured.')}</p>
+                  <p>{C('confirmation_policy_advance_required', 'The advance payment amount is required to confirm the booking.')}</p>
+                  <p className="mt-1">{C('confirmation_policy_balance_at_property', 'The remaining balance will be paid during check-in at the property.')}</p>
                 </div>
               </>
             ) : (
               <>
-                <DetailItem label="Payment Status" value="Paid" />
-                <DetailItem label="Amount Paid" value={`NPR ${total.toLocaleString()}`} />
+                <DetailItem label={C('confirmation_payment_status_label', 'Payment Status')} value={C('confirmation_paid_label', 'Paid')} />
+                <DetailItem label={C('confirmation_amount_paid_label', 'Amount Paid')} value={`${C('confirmation_npr_prefix', 'NPR')} ${total.toLocaleString()}`} />
                 {data.transaction_id && (
-                  <DetailItem label="Transaction ID" value={data.transaction_id} mono fullWidth />
+                  <DetailItem label={C('confirmation_transaction_id', 'Transaction ID')} value={data.transaction_id} mono fullWidth />
                 )}
                 <div className="sm:col-span-2 bg-green-50 rounded-lg p-3 mt-2 text-xs text-green-800 leading-relaxed">
-                  <p className="font-medium">Payment completed successfully via {data.payment_method === 'fonepay_qr' ? 'Fonepay QR' : 'Fonepay Web'}.</p>
+                  <p className="font-medium">{C('confirmation_payment_success_text', 'Payment completed successfully via Fonepay.')}</p>
                 </div>
               </>
             )}
@@ -342,59 +343,59 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
 
         {/* ── Hotel Contact ── */}
         <SectionCard className="mb-4 print:border-gray-300 print:bg-gray-50">
-          <SectionHeading icon={Building} label="Need Assistance?" />
+          <SectionHeading icon={Building} label={C('confirmation_help_heading', 'Need Assistance?')} />
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2.5">
-              <p className="font-semibold text-gray-900 text-sm">Highlands Motel & Cafe</p>
+              <p className="font-semibold text-gray-900 text-sm">{C('confirmation_hotel_name', 'Highlands Motel & Cafe')}</p>
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <MapPin size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>Surkhet, Nepal</span>
+                <span>{C('confirmation_location', 'Surkhet, Nepal')}</span>
               </div>
             </div>
             <div className="space-y-2.5">
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <Phone size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>{contactInfo['contact_phone'] || '+977-98XXXXXXXX'}</span>
+                <span>{content['contact_phone'] || C('confirmation_phone_fallback', '+977-98XXXXXXXX')}</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-600 break-all">
                 <Mail size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>{contactInfo['contact_email'] || 'info@highlands-motel.com'}</span>
+                <span>{content['contact_email'] || C('confirmation_email_fallback', 'info@highlands-motel.com')}</span>
               </div>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-4 print:hidden">
             <a
-              href={`tel:${contactInfo['contact_phone'] || '+977-98XXXXXXXX'}`}
+              href={`tel:${content['contact_phone'] || C('confirmation_phone_fallback', '+977-98XXXXXXXX')}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
             >
               <Phone size="14" />
-              Call Hotel
+              {C('confirmation_call_btn', 'Call Hotel')}
             </a>
             <a
-              href={`mailto:${contactInfo['contact_email'] || 'info@highlands-motel.com'}`}
+              href={`mailto:${content['contact_email'] || C('confirmation_email_fallback', 'info@highlands-motel.com')}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
             >
               <Mail size="14" />
-              Send Email
+              {C('confirmation_email_btn', 'Send Email')}
             </a>
           </div>
         </SectionCard>
 
         {/* ── Important Information ── */}
         <SectionCard className="mb-5 print:border-gray-300">
-          <SectionHeading icon={Info} label="Important Information" />
+          <SectionHeading icon={Info} label={C('confirmation_important_heading', 'Important Information')} />
           <ul className="mt-3 space-y-2.5 text-sm text-gray-600">
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
-              <span>Please bring a valid government-issued ID during check-in.</span>
+              <span>{C('confirmation_policy_id', 'Please bring a valid government-issued ID during check-in.')}</span>
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
-              <span>Check-in and check-out times are subject to hotel policy.</span>
+              <span>{C('confirmation_policy_times', 'Check-in and check-out times are subject to hotel policy.')}</span>
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
-              <span>For any reservation changes, please contact the hotel directly.</span>
+              <span>{C('confirmation_policy_changes', 'For any reservation changes, please contact the hotel directly.')}</span>
             </li>
           </ul>
         </SectionCard>
@@ -406,14 +407,14 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             className="btn-primary flex-1 flex items-center justify-center gap-2"
           >
             <Printer size={18} />
-            <span>Print Confirmation</span>
+            <span>{C('confirmation_print_btn', 'Print Confirmation')}</span>
           </button>
           <button
             onClick={() => navigate('/')}
             className="btn-secondary flex-1 flex items-center justify-center gap-2"
           >
             <Home size={18} />
-            <span>Return Home</span>
+            <span>{C('confirmation_return_home_btn', 'Return Home')}</span>
           </button>
         </div>
       </div>

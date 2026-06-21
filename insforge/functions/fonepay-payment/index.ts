@@ -12,9 +12,8 @@ const ENV_VARS = [
 console.log("[startup] Env var check:", ENV_VARS.map(v => `${v}=${Deno.env.get(v) ? "✓" : "✗ MISSING"}`).join(", "))
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
-  "https://6aiag3ra.insforge.site",
+  "https://highlandsmotelinn.insforge.site",
   "https://highlands-motel.com",
-  "https://highlandmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]

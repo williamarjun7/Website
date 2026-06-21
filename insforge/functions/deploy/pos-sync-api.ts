@@ -2,7 +2,7 @@ import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
-  "https://6aiag3ra.insforge.site",
+  "https://highlandsmotelinn.insforge.site",
   "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
@@ -102,6 +102,10 @@ const CreateBookingSchema = z.object({
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/),
   booking_status: z.enum(["confirmed", "checked_in", "checked_out"]).default("confirmed"),
   payment_status: z.enum(["pending", "paid", "failed", "pay_at_property"]).default("pending"),
+  total_amount: z.number().nonnegative().optional(),
+  advance_amount: z.number().nonnegative().optional(),
+  balance_amount: z.number().nonnegative().optional(),
+  paid_amount: z.number().nonnegative().optional(),
   pos_booking_id: z.string().optional(),
 })
 
@@ -117,8 +121,13 @@ const UpdateBookingSchema = z.object({
   payment_status: z.enum(["pending", "paid", "failed", "pay_at_property"]).optional(),
   guest_name: z.string().min(2).max(100).optional(),
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/).optional(),
+  guest_email: z.string().email().optional(),
   check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  total_amount: z.number().nonnegative().optional(),
+  advance_amount: z.number().nonnegative().optional(),
+  balance_amount: z.number().nonnegative().optional(),
+  paid_amount: z.number().nonnegative().optional(),
 })
 
 export default async function handler(req: Request) {
@@ -303,29 +312,42 @@ export default async function handler(req: Request) {
       const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))
       const total_price = nights * room.price_per_night
 
-      // Check for conflicts (skip if POS has its own checks)
-      const { data: conflicts } = await db
-        .from("bookings")
-        .select("id")
-        .eq("room_id", input.room_id)
-        .in("booking_status", ["confirmed", "checked_in"])
-        .lt("check_in", input.check_out)
-        .gt("check_out", input.check_in)
-        .limit(1)
-
-      if (conflicts && conflicts.length > 0) {
-        return errorResponse("Room is not available for the selected dates", 409, corsHeaders)
-      }
+      // ── Double-booking prevention is handled by the DB ─────────
+      // No SELECT conflict check needed. The PostgreSQL EXCLUDE
+      // constraint `no_overlapping_active_bookings` guarantees
+      // zero overlapping bookings per room. If the INSERT fails
+      // with 23P01 (exclusion_constraint), we return 409.
+      // ───────────────────────────────────────────────────────────
 
       // Insert with source=pos to prevent loop
       const traceId = (rawBody as Record<string, unknown>).trace_id || `pos-${crypto.randomUUID()}`
+      const effectiveTotal = input.total_amount || total_price
+      const effectiveAdvance = input.advance_amount || (
+        input.payment_status === "pay_at_property"
+          ? Math.round(effectiveTotal * 60) / 100
+          : null
+      )
+      const effectiveBalance = input.balance_amount || (
+        effectiveAdvance ? effectiveTotal - effectiveAdvance : null
+      )
+      const effectivePaid = input.paid_amount || (
+        input.payment_status === "paid" ? effectiveTotal : (effectiveAdvance || 0)
+      )
+
+      const paymentMeta: Record<string, unknown> = {}
+      if (effectiveAdvance) paymentMeta.pos_advance_amount = effectiveAdvance
+      if (effectiveBalance) paymentMeta.pos_balance_amount = effectiveBalance
+      if (effectivePaid) paymentMeta.pos_paid_amount = effectivePaid
+
       const { data: booking, error: insertError } = await db
         .from("bookings")
         .insert({
           room_id: input.room_id,
           check_in: input.check_in,
           check_out: input.check_out,
-          total_price,
+          total_price: effectiveTotal,
+          advance_amount: effectiveAdvance,
+          balance_amount: effectiveBalance,
           guest_name: input.guest_name,
           guest_email: input.guest_email,
           guest_phone: input.guest_phone,
@@ -333,12 +355,17 @@ export default async function handler(req: Request) {
           payment_status: input.payment_status,
           source: "pos",
           pos_booking_id: input.pos_booking_id || null,
-          metadata: { trace_id: traceId, origin_system: "pos" },
+          metadata: { trace_id: traceId, origin_system: "pos", ...paymentMeta },
         })
         .select()
         .single()
 
-      if (insertError) return errorResponse(insertError.message, 500, corsHeaders)
+      if (insertError) {
+        if (insertError.code === "23P01" || insertError.code === "23505") {
+          return errorResponse("Room is not available for the selected dates", 409, corsHeaders)
+        }
+        return errorResponse(insertError.message, 500, corsHeaders)
+      }
 
       return new Response(JSON.stringify({ data: booking }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -374,6 +401,26 @@ export default async function handler(req: Request) {
       // Only allow updates that don't re-trigger website sync
       // Prevent infinite loop: POS updates set source=pos context
       const updates: Record<string, unknown> = { ...parsed.data }
+
+      // Map payment amount fields to Website schema
+      if (updates.total_amount) {
+        updates.total_price = updates.total_amount
+        delete updates.total_amount
+      }
+
+      // Calculate advance/balance from paid_amount if payment_status changes
+      if (updates.payment_status === "paid" && !updates.advance_amount) {
+        // Fetch current booking to get total_price
+        const { data: current } = await db
+          .from("bookings")
+          .select("total_price")
+          .eq("id", updateMatch[1])
+          .single()
+        if (current) {
+          updates.advance_amount = current.total_price
+          updates.balance_amount = 0
+        }
+      }
 
       const { data: booking, error: updateError } = await db
         .from("bookings")

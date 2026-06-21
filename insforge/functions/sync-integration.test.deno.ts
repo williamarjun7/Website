@@ -59,7 +59,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify(body),
     })
@@ -86,7 +86,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({ room_id: "not-a-uuid", guest_name: "A" }),
     })
@@ -105,11 +105,11 @@ Deno.test({
   fn: async () => {
     const resp = await fetch(`${BASE}/functions/create-booking`, {
       method: "OPTIONS",
-      headers: { "Origin": "https://highlandmotelinn.netlify.app" },
+      headers: { "Origin": "https://highlandsmotelinn.insforge.site" },
     })
 
     const cors = resp.headers.get("access-control-allow-origin")
-    assertEquals(cors, "https://highlandmotelinn.netlify.app", "CORS origin matches")
+    assertEquals(cors, "https://highlandsmotelinn.insforge.site", "CORS origin matches")
     console.log(`  → CORS origin: ${cors}`)
   },
   sanitizeResources: false,
@@ -460,7 +460,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify(body),
     })

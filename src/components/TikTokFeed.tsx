@@ -1,10 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, Music } from 'lucide-react';
-
-const TIKTOK_USERNAME = 'highlandscafe1';
+import { getSiteContentMap } from '../services/contentService';
 
 export default function TikTokFeed() {
   const injected = useRef(false);
+  const [content, setContent] = useState<Record<string, string>>({});
+  useEffect(() => {
+    getSiteContentMap().then(r => { if (r.data) setContent(r.data); })
+  }, []);
+  const C = (key: string, fallback: string) => content[key] || fallback;
+  const TIKTOK_USERNAME = C('tiktok_username', 'highlandscafe1');
 
   useEffect(() => {
     if (injected.current) return;
@@ -21,15 +26,15 @@ export default function TikTokFeed() {
   }, []);
 
   return (
-    <section className="py-16 bg-gray-50/50" aria-label="Latest from TikTok">
+    <section className="py-16 bg-gray-50/50" aria-label={C('tiktok_heading', 'Latest from TikTok')}>
       <div className="container-custom">
         <div className="text-center mb-10 max-w-3xl mx-auto">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/5 mb-4">
             <Music size={28} className="text-primary" />
           </div>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">Latest from TikTok</h2>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-3">{C('tiktok_heading', 'Latest from TikTok')}</h2>
           <p className="text-gray-500 text-lg">
-            Follow <span className="font-semibold text-gray-700">@{TIKTOK_USERNAME}</span> for behind-the-scenes content and updates
+            {C('tiktok_follow_prefix', 'Follow @')}<span className="font-semibold text-gray-700">{TIKTOK_USERNAME}</span> {C('tiktok_description', 'for behind-the-scenes content and updates')}
           </p>
         </div>
 
@@ -63,7 +68,7 @@ export default function TikTokFeed() {
             className="inline-flex items-center space-x-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
             aria-label={`View ${TIKTOK_USERNAME} on TikTok`}
           >
-            <span>View all on TikTok</span>
+            <span>{C('tiktok_view_all', 'View all on TikTok')}</span>
             <ExternalLink size={14} />
           </a>
         </div>

@@ -278,7 +278,7 @@ export async function sendSyncEvent(
     clearTimeout(timer)
     const bodyText = await response.text()
 
-    if (response.ok) {
+    if (response.ok || response.status === 508) {
       circuitBreakerSuccess(webhookUrl)
     } else {
       circuitBreakerFailure(webhookUrl, response.status)
@@ -406,6 +406,15 @@ function sleep(ms: number): Promise<void> {
 // ── End inlined ──
 import { createClient } from "npm:@insforge/sdk"
 
+// Strict HMAC: if BOOKING_WEBHOOK_SECRET is missing, refuse to start.
+const _STARTUP_SECRET_CHECK = (() => {
+  const secret = Deno.env.get("BOOKING_WEBHOOK_SECRET")
+  if (!secret) {
+    console.error("FATAL: BOOKING_WEBHOOK_SECRET is not configured. Service will refuse all requests.")
+  }
+  return secret
+})()
+
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -432,6 +441,14 @@ function toError(e: unknown): Error {
     return new Error(String(msg))
   }
   return new Error(String(e))
+}
+
+interface PaymentFields {
+  payment_status: string
+  paid_amount: number
+  advance_amount: number | null
+  balance_amount: number | null
+  total_amount: number
 }
 
 interface WebhookBody {
@@ -467,43 +484,49 @@ export default async function handler(req: Request) {
     })
   }
 
-  // ── HMAC verification with ±300s timestamp tolerance ──────────
-  const webhookSecret = Deno.env.get("BOOKING_WEBHOOK_SECRET")
-  let rawBodyText: string | null = null
+  // ── STRICT HMAC verification (fail closed) ─────────────────────
+  // RULES:
+  //   1. BOOKING_WEBHOOK_SECRET must be configured (startup check above)
+  //   2. X-Webhook-Signature header is REQUIRED
+  //   3. X-Timestamp header is REQUIRED
+  //   4. Timestamp tolerance: ±5 minutes (enforced by verifyHmac)
+  //   5. No fallback/lenient validation paths
+  //
+  // FAIL CLOSED: any missing/invalid header → 401/403 response
+  // ───────────────────────────────────────────────────────────────
+  const webhookSecret = _STARTUP_SECRET_CHECK
+  if (!webhookSecret) {
+    return new Response(JSON.stringify({ error: "Server not configured for webhooks" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
 
-  if (webhookSecret) {
-    rawBodyText = await req.text()
+  const rawBodyText = await req.text()
 
-    const signature = req.headers.get("X-Webhook-Signature")
-    if (!signature) {
-      return new Response(JSON.stringify({ error: "Missing X-Webhook-Signature" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
-    }
+  const signature = req.headers.get("X-Webhook-Signature")
+  if (!signature) {
+    return new Response(JSON.stringify({ error: "Missing X-Webhook-Signature" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
 
-    const timestampMs = req.headers.get("X-Timestamp")
+  const timestampMs = req.headers.get("X-Timestamp")
+  if (!timestampMs) {
+    return new Response(JSON.stringify({ error: "Missing X-Timestamp header (required for HMAC)" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
 
-    if (timestampMs) {
-      // Strict validation: HMAC over payload.timestamp with ±5min tolerance
-      const { valid, reason } = await verifyHmac(webhookSecret, rawBodyText, signature, timestampMs)
-      if (!valid) {
-        return new Response(JSON.stringify({ error: `HMAC validation failed: ${reason}` }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-    } else {
-      // Lenient fallback: raw body HMAC (backward compat with POS website-sync)
-      console.warn("booking-webhook: Missing X-Timestamp header — using lenient HMAC validation")
-      const expectedSig = await hmacSha256Hex(webhookSecret, rawBodyText)
-      if (signature !== expectedSig) {
-        return new Response(JSON.stringify({ error: "Invalid HMAC signature" }), {
-          status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        })
-      }
-    }
+  // verifyHmac enforces ±5 minute timestamp tolerance + timing-safe comparison
+  const { valid, reason } = await verifyHmac(webhookSecret, rawBodyText, signature, timestampMs)
+  if (!valid) {
+    return new Response(JSON.stringify({ error: `HMAC validation failed: ${reason}` }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
   }
 
   let body: WebhookBody
@@ -589,6 +612,7 @@ export default async function handler(req: Request) {
           total_amount,
           advance_amount,
           balance_amount,
+          paid_amount = 0,
           payment_status = "pending",
           booking_status = "confirmed",
           pos_booking_id,
@@ -598,25 +622,12 @@ export default async function handler(req: Request) {
           throw new Error("Missing required booking fields: room_id, guest_name, check_in, check_out")
         }
 
-        // Check for conflicts on the Website side
-        const { data: conflicts } = await db
-          .from("bookings")
-          .select("id, guest_name, check_in, check_out")
-          .eq("room_id", websiteRoomId as string)
-          .in("booking_status", ["confirmed", "checked_in"])
-          .lt("check_in", check_out as string)
-          .gt("check_out", check_in as string)
-          .limit(5)
-
-        if (conflicts && conflicts.length > 0) {
-          const conflictResult = { received: true, status: "rejected", reason: "Room not available for selected dates", conflicts }
-          // Mark idempotency as completed so retries get cached response
-          await completeIdempotency(db, event_type, idKey, undefined, conflictResult as unknown as Record<string, unknown>)
-          return new Response(JSON.stringify(conflictResult), {
-            status: 409,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          })
-        }
+        // ── Double-booking prevention is handled by the DB ─────────
+        // No SELECT conflict check needed. The PostgreSQL EXCLUDE
+        // constraint `no_overlapping_active_bookings` guarantees
+        // zero overlapping bookings per room. If the INSERT below
+        // fails with exclusion_constraint (23P01), we return 409.
+        // ───────────────────────────────────────────────────────────
 
         // Calculate price if not provided
         let totalPrice = total_amount
@@ -638,6 +649,21 @@ export default async function handler(req: Request) {
           }
         }
 
+        // Store payment metadata for mapping advance/balance semantics
+        const paymentMeta: Record<string, unknown> = {}
+        if (advance_amount !== undefined && advance_amount !== null) paymentMeta.pos_advance_amount = advance_amount
+        if (balance_amount !== undefined && balance_amount !== null) paymentMeta.pos_balance_amount = balance_amount
+        if (paid_amount && Number(paid_amount) > 0) paymentMeta.pos_paid_amount = paid_amount
+
+        // Calculate paid_amount from payment context if not explicitly provided
+        const effectivePaidAmount = Number(paid_amount) > 0
+          ? Number(paid_amount)
+          : payment_status === "paid"
+            ? (Number(totalPrice) || 0)
+            : payment_status === "pay_at_property"
+              ? (Number(advance_amount) || Math.round(Number(totalPrice) * 60) / 100 || 0)
+              : 0
+
         // Create booking with source=pos to prevent loop
         const { data: newBooking, error: insertError } = await db
           .from("bookings")
@@ -648,8 +674,8 @@ export default async function handler(req: Request) {
             adults: adults as number,
             children: children as number,
             total_price: (totalPrice as number) || 0,
-            advance_amount: advance_amount as number | null || null,
-            balance_amount: balance_amount as number | null || null,
+            advance_amount: (advance_amount as number) || null,
+            balance_amount: (balance_amount as number) || null,
             guest_name: guest_name as string,
             guest_email: (guest_email as string) || null,
             guest_phone: (guest_phone as string) || null,
@@ -657,12 +683,22 @@ export default async function handler(req: Request) {
             booking_status: booking_status as string,
             source: "pos",
             pos_booking_id: (pos_booking_id as string) || null,
-            metadata: { trace_id: traceId, origin_system: "pos" },
+            metadata: { trace_id: traceId, origin_system: "pos", ...paymentMeta },
           })
           .select("id")
           .single()
 
-        if (insertError) throw insertError
+        if (insertError) {
+          if (insertError.code === "23P01" || insertError.code === "23505") {
+            const conflictResult = { received: true, status: "rejected", reason: "Room not available for selected dates" }
+            await completeIdempotency(db, event_type, idKey, undefined, conflictResult as unknown as Record<string, unknown>)
+            return new Response(JSON.stringify(conflictResult), {
+              status: 409,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            })
+          }
+          throw insertError
+        }
 
         const responsePayload = { received: true, status: "accepted", website_booking_id: newBooking.id }
         await completeIdempotency(db, event_type, idKey, undefined, responsePayload as unknown as Record<string, unknown>)
@@ -706,9 +742,17 @@ export default async function handler(req: Request) {
         if (bookingData) {
           if (bookingData.guest_name) updateData.guest_name = bookingData.guest_name
           if (bookingData.guest_phone) updateData.guest_phone = bookingData.guest_phone
+          if (bookingData.guest_email) updateData.guest_email = bookingData.guest_email
           if (bookingData.check_in) updateData.check_in = bookingData.check_in
           if (bookingData.check_out) updateData.check_out = bookingData.check_out
           if (bookingData.payment_status) updateData.payment_status = bookingData.payment_status
+          if (bookingData.total_amount) updateData.total_price = bookingData.total_amount
+          if (bookingData.advance_amount !== undefined && bookingData.advance_amount !== null) {
+            updateData.advance_amount = bookingData.advance_amount
+          }
+          if (bookingData.balance_amount !== undefined && bookingData.balance_amount !== null) {
+            updateData.balance_amount = bookingData.balance_amount
+          }
         }
 
         await db.from("bookings").update(updateData).eq("id", externalBookingId)
@@ -734,9 +778,4 @@ export default async function handler(req: Request) {
   }
 }
 
-async function hmacSha256Hex(key: string, data: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const cryptoKey = await crypto.subtle.importKey("raw", encoder.encode(key), { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
-  const sig = await crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(data))
-  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("")
-}
+

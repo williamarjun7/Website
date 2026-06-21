@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Coffee, HelpCircle } from 'lucide-react';
-import { getSiteImagesByType, getSiteContentMap } from '../services/contentService';
+import { getSiteImagesByPage, getSiteContentMap } from '../services/contentService';
 import { getPublishedFaqItems, type FaqItem } from '../services/faqService';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
@@ -21,7 +21,7 @@ const FAQ = () => {
 
     useEffect(() => {
         Promise.all([
-            getSiteImagesByType('hero'),
+            getSiteImagesByPage('faq'),
             getSiteContentMap(),
             getPublishedFaqItems(),
         ]).then(([imgRes, contentRes, faqRes]) => {
@@ -94,14 +94,14 @@ const FAQ = () => {
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
                             <Phone size={20} />
-                            <span>WhatsApp Us</span>
+                            <span>{C('faq_whatsapp_label', 'WhatsApp Us')}</span>
                         </a>
                         <a
                             href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
                             <Mail size={20} />
-                            <span>Email Us</span>
+                            <span>{C('faq_email_label', 'Email Us')}</span>
                         </a>
                     </div>
                 </div>
@@ -157,13 +157,13 @@ const FAQ = () => {
                 {/* Quick Links */}
                 <div className="mt-16 bg-gradient-to-r from-amber-900 to-orange-900 text-white rounded-2xl p-8">
                     <h3 className="font-heading text-xl font-bold mb-6 text-center">
-                        Quick Links
+                        {C('faq_quicklinks_heading', 'Quick Links')}
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <a href="/booking" className="text-center hover:text-amber-200 transition-colors">{C('btn_book_stay', 'Book a Room')}</a>
-                        <a href="/cafe" className="text-center hover:text-amber-200 transition-colors">{C('btn_view_menu', 'View Menu')}</a>
-                        <a href="/contact" className="text-center hover:text-amber-200 transition-colors">Contact Us</a>
-                        <a href="/about" className="text-center hover:text-amber-200 transition-colors">About Us</a>
+                        <a href="/booking" className="text-center hover:text-amber-200 transition-colors">{C('faq_quicklink_book', 'Book a Room')}</a>
+                        <a href="/cafe" className="text-center hover:text-amber-200 transition-colors">{C('faq_quicklink_menu', 'View Menu')}</a>
+                        <a href="/contact" className="text-center hover:text-amber-200 transition-colors">{C('faq_quicklink_contact', 'Contact Us')}</a>
+                        <a href="/about" className="text-center hover:text-amber-200 transition-colors">{C('faq_quicklink_about', 'About Us')}</a>
                     </div>
                 </div>
             </div>

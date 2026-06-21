@@ -123,7 +123,7 @@ const Rooms = () => {
                                 type="text"
                                 value={filters.searchQuery}
                                 onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
-                                placeholder="Search rooms by name, number, type..."
+                                placeholder={C('rooms_search_placeholder', 'Search rooms by name, number, type...')}
                                 className="input w-full pl-12 pr-10"
                             />
                             {filters.searchQuery && (
@@ -140,7 +140,7 @@ const Rooms = () => {
                             className={`btn-secondary flex items-center space-x-2 justify-center ${showFilters ? 'bg-primary text-white border-primary' : ''}`}
                         >
                             <SlidersHorizontal size={18} />
-                            <span>Filters</span>
+                            <span>{C('rooms_filter_btn', 'Filters')}</span>
                             {hasActiveFilters && (
                                 <span className="w-2 h-2 bg-primary rounded-full" />
                             )}
@@ -151,40 +151,40 @@ const Rooms = () => {
                     {showFilters && (
                         <div className="mt-4 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="font-bold text-gray-900 text-sm">Filter Rooms</h3>
+                                <h3 className="font-bold text-gray-900 text-sm">{C('rooms_filter_heading', 'Filter Rooms')}</h3>
                                 {hasActiveFilters && (
                                     <button onClick={clearFilters} className="text-xs text-primary font-medium hover:underline">
-                                        Clear all filters
+                                        {C('rooms_filter_clear', 'Clear all filters')}
                                     </button>
                                 )}
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">AC / Non-AC</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">{C('rooms_filter_ac_label', 'AC / Non-AC')}</label>
                                     <select
                                         value={filters.acFilter}
                                         onChange={(e) => setFilters({ ...filters, acFilter: e.target.value })}
                                         className="input w-full text-sm"
                                     >
-                                        <option value="all">All</option>
-                                        <option value="ac">Air Conditioning (AC)</option>
-                                        <option value="non-ac">Non-AC</option>
+                                        <option value="all">{C('rooms_filter_ac_all', 'All')}</option>
+                                        <option value="ac">{C('rooms_filter_ac_ac', 'Air Conditioning (AC)')}</option>
+                                        <option value="non-ac">{C('rooms_filter_ac_nonac', 'Non-AC')}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Room Type</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">{C('rooms_filter_type_label', 'Room Type')}</label>
                                     <select
                                         value={filters.typeFilter}
                                         onChange={(e) => setFilters({ ...filters, typeFilter: e.target.value })}
                                         className="input w-full text-sm"
                                     >
-                                        <option value="all">All</option>
-                                        <option value="single">Single Room</option>
-                                        <option value="double">Double Room</option>
+                                        <option value="all">{C('rooms_filter_type_all', 'All')}</option>
+                                        <option value="single">{C('rooms_filter_type_single', 'Single Room')}</option>
+                                        <option value="double">{C('rooms_filter_type_double', 'Double Room')}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Min Price (NPR)</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">{C('rooms_filter_min_price', 'Min Price (NPR)')}</label>
                                     <input
                                         type="number"
                                         value={filters.minPrice}
@@ -194,7 +194,7 @@ const Rooms = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Max Price (NPR)</label>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">{C('rooms_filter_max_price', 'Max Price (NPR)')}</label>
                                     <input
                                         type="number"
                                         value={filters.maxPrice}
@@ -218,18 +218,18 @@ const Rooms = () => {
                     <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-gray-100">
                         {hasActiveFilters || filters.searchQuery ? (
                             <>
-                                <p className="text-gray-500 text-lg mb-2">No rooms match your criteria.</p>
+                                <p className="text-gray-500 text-lg mb-2">{C('rooms_no_results', 'No rooms match your criteria.')}</p>
                                 <button onClick={clearFilters} className="text-primary font-medium hover:underline">
-                                    Clear all filters
+                                    {C('rooms_filter_clear', 'Clear all filters')}
                                 </button>
                             </>
                         ) : (
-                            <p className="text-gray-500 text-lg">No rooms available at the moment. Please check back later.</p>
+                            <p className="text-gray-500 text-lg">{C('rooms_no_rooms', 'No rooms available at the moment. Please check back later.')}</p>
                         )}
                     </div>
                 ) : (
                     <>
-                        <p className="text-sm text-gray-400 mb-6 font-medium">{filteredRooms.length} room{filteredRooms.length !== 1 ? 's' : ''} found</p>
+                        <p className="text-sm text-gray-400 mb-6 font-medium">{C('rooms_count_found', '{count} room(s) found').replace('{count}', String(filteredRooms.length))}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12">
                             {filteredRooms.map((room) => (
                                 <div key={room.id} className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col">
@@ -241,31 +241,31 @@ const Rooms = () => {
                                         <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
                                             {room.availability_status && room.availability_status !== 'available' && (
                                                 <div className="bg-primary/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
-                                                    <span className="text-[10px] font-bold text-white">{room.availability_status === 'limited' ? 'Limited Availability' : 'Booked'}</span>
+                                                    <span className="text-[10px] font-bold text-white">{room.availability_status === 'limited' ? C('rooms_label_limited', 'Limited Availability') : C('rooms_label_booked', 'Booked')}</span>
                                                 </div>
                                             )}
                                             {room.featured && (
                                                 <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
                                                     <Star className="text-yellow-400 fill-yellow-400" size={12} />
-                                                    <span className="text-[10px] font-bold text-gray-800">Featured</span>
+                                                    <span className="text-[10px] font-bold text-gray-800">{C('rooms_label_featured', 'Featured')}</span>
                                                 </div>
                                             )}
                                             {room.maintenance && (
                                                 <div className="bg-amber-500/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20">
-                                                    <span className="text-[10px] font-bold text-white">Under Maintenance</span>
+                                                    <span className="text-[10px] font-bold text-white">{C('rooms_label_maintenance', 'Under Maintenance')}</span>
                                                 </div>
                                             )}
                                             {room.has_ac !== undefined && (
                                                 <div className={`px-3 py-1 rounded-full flex items-center space-x-1 shadow-sm border border-white/20 backdrop-blur-md ${room.has_ac ? 'bg-blue-100/90 text-blue-700' : 'bg-gray-100/90 text-gray-600'}`}>
                                                     <Wind size={12} />
-                                                    <span className="text-[10px] font-bold">{room.has_ac ? 'AC' : 'Non-AC'}</span>
+                                                    <span className="text-[10px] font-bold">{room.has_ac ? C('rooms_label_ac', 'AC') : C('rooms_label_nonac', 'Non-AC')}</span>
                                                 </div>
                                             )}
                                         </div>
                                         <div className="absolute top-4 right-4 z-10">
                                             {room.floor_number && (
                                                 <div className="bg-gray-900/70 backdrop-blur-md px-2 py-1 rounded-full text-[10px] text-white font-medium shadow-sm">
-                                                    Floor {room.floor_number}
+                                                    {C('rooms_label_floor', 'Floor')} {room.floor_number}
                                                 </div>
                                             )}
                                         </div>
@@ -275,7 +275,7 @@ const Rooms = () => {
                                                     <div className="flex items-baseline space-x-1">
                                                         <span className="text-[10px] font-medium opacity-80">NPR</span>
                                                         <span className="text-xl font-bold">{getEffectivePricePerNight(room).toLocaleString()}</span>
-                                                        <span className="text-[10px] font-medium opacity-80">/ night</span>
+                                                <span className="text-[10px] font-medium opacity-80">{C('rooms_label_night', '/ night')}</span>
                                                     </div>
                                                     <div className="flex items-center space-x-2 mt-0.5">
                                                         <span className="text-xs line-through opacity-70">NPR {room.price_per_night.toLocaleString()}</span>
@@ -299,7 +299,7 @@ const Rooms = () => {
                                                     {room.name}
                                                 </h2>
                                                 <div className="flex items-center space-x-2 flex-wrap">
-                                                    <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || 'Standard Room'}</span>
+                                                    <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || C('rooms_type_fallback', 'Standard Room')}</span>
                                                     {room.room_size && <span className="text-gray-400 text-xs">• {room.room_size}</span>}
                                                     {room.room_number && (
                                                         <span className="text-gray-400 text-xs">• #{room.room_number}</span>
@@ -320,7 +320,7 @@ const Rooms = () => {
                                                     </span>
                                                 ))}
                                                 {room.amenities.length > 4 && (
-                                                    <span className="text-[10px] text-gray-400 font-medium">+{room.amenities.length - 4} more</span>
+                                                    <span className="text-[10px] text-gray-400 font-medium">{C('rooms_label_more', '+{count} more').replace('{count}', String(room.amenities.length - 4))}</span>
                                                 )}
                                             </div>
                                         )}
@@ -331,8 +331,8 @@ const Rooms = () => {
                                                     <Users size={16} />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">Guests</span>
-                                                    <span className="text-xs font-bold">{room.max_guests} People</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">{C('rooms_label_guests', 'Guests')}</span>
+                                                    <span className="text-xs font-bold">{room.max_guests} {C('rooms_label_people', 'People')}</span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-3 text-gray-600 bg-gray-50 p-3 rounded-2xl border border-gray-100/50">
@@ -340,8 +340,8 @@ const Rooms = () => {
                                                     <Bed size={16} />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">Bed Type</span>
-                                                    <span className="text-xs font-bold truncate">{room.bed_type || 'King Size'}</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold uppercase">{C('rooms_label_bed', 'Bed Type')}</span>
+                                                    <span className="text-xs font-bold truncate">{room.bed_type || C('rooms_bed_fallback', 'King Size')}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -349,7 +349,7 @@ const Rooms = () => {
                                         <div className="flex items-center space-x-4 mt-auto">
                                             {room.maintenance ? (
                                                 <span className="btn-primary flex-1 py-4 text-center text-sm font-bold tracking-wide shadow-lg shadow-primary/10 opacity-50 cursor-not-allowed">
-                                                    Unavailable
+                                                    {C('rooms_label_unavailable', 'Unavailable')}
                                                 </span>
                                             ) : (
                                                 <Link
@@ -357,13 +357,13 @@ const Rooms = () => {
                                                     state={{ selectedRoom: room }}
                                                     className="btn-primary flex-1 py-4 text-center text-sm font-bold tracking-wide shadow-lg shadow-primary/10"
                                                 >
-                                                    Book Now
+                                                    {C('rooms_label_book', 'Book Now')}
                                                 </Link>
                                             )}
                                             <Link
                                                 to={`/rooms/${room.id}`}
                                                 className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-900 hover:text-white transition-all group/arrow border border-gray-200"
-                                                title="View Details"
+                                                title={C('rooms_view_details', 'View Details')}
                                             >
                                                 <ArrowRight size={20} className="group-hover/arrow:translate-x-1 transition-transform" />
                                             </Link>

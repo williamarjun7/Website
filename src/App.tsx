@@ -41,6 +41,7 @@ const AdminFaq = lazy(() => import('./pages/admin/Faq'));
 const AdminMedia = lazy(() => import('./pages/admin/MediaLibrary'));
 const AdminSiteSettings = lazy(() => import('./pages/admin/SiteSettings'));
 const AdminRevisions = lazy(() => import('./pages/admin/Revisions'));
+const AdminMenuPages = lazy(() => import('./pages/admin/MenuPages'));
 const DynamicPage = lazy(() => import('./pages/DynamicPage'));
 
 const LoadingFallback = () => (
@@ -107,6 +108,7 @@ function App() {
                   <Route path="media" element={<Suspense fallback={<LoadingFallback />}><AdminMedia /></Suspense>} />
                   <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><AdminSiteSettings /></Suspense>} />
                   <Route path="revisions" element={<Suspense fallback={<LoadingFallback />}><AdminRevisions /></Suspense>} />
+                  <Route path="menu-pages" element={<Suspense fallback={<LoadingFallback />}><AdminMenuPages /></Suspense>} />
                 </Route>
               </Route>
             </Routes>

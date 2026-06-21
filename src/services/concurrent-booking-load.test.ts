@@ -25,7 +25,7 @@ const CONCURRENCY = 10
 const KNOWN_ROOM_ID = '5f4d5e3a-713e-47d0-88b2-e85a48b8591a'
 const SECOND_ROOM_ID = '6ac86da7-46f6-4a78-8cf6-1471fa37a9fe'
 const TEST_PREFIX = `loadtest-${Date.now()}`
-const ALLOWED_ORIGIN = 'https://highlandmotelinn.netlify.app'
+const ALLOWED_ORIGIN = 'https://highlandsmotelinn.insforge.site'
 
 // ═══════════════════════════════════════════════════════════════════════════
 // UTILITIES

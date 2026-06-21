@@ -21,7 +21,7 @@ import {
     Room,
     RoomImage
 } from '../../services/roomService';
-import { uploadImage } from '../../services/storageService';
+import { uploadFile } from '../../services/storageService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Skeleton from '../../components/common/Skeleton';
 
@@ -136,7 +136,7 @@ const Rooms = () => {
                     continue;
                 }
 
-                const { data, error } = await uploadImage(file, 'rooms');
+                const { data, error } = await uploadFile(file, 'rooms');
                 if (error) {
                     setUploadError(typeof error === 'string' ? error : 'Failed to upload image');
                 } else if (data) {
@@ -171,7 +171,7 @@ const Rooms = () => {
         setUploading(true);
         setUploadError('');
         try {
-            const { data, error } = await uploadImage(file, 'rooms');
+            const { data, error } = await uploadFile(file, 'rooms');
             if (error) throw error;
             if (data) {
                 const room = rooms.find(r => r.id === roomId);

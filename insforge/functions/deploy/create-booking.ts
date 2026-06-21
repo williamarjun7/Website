@@ -278,7 +278,7 @@ export async function sendSyncEvent(
     clearTimeout(timer)
     const bodyText = await response.text()
 
-    if (response.ok) {
+    if (response.ok || response.status === 508) {
       circuitBreakerSuccess(webhookUrl)
     } else {
       circuitBreakerFailure(webhookUrl, response.status)
@@ -300,9 +300,8 @@ import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
-  "https://6aiag3ra.insforge.site",
+  "https://highlandsmotelinn.insforge.site",
   "https://highlands-motel.com",
-  "https://highlandmotelinn.netlify.app",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -500,83 +499,68 @@ export default async function (req: Request) {
       .eq("booking_status", "pending_payment")
       .lt("hold_expires_at", now)
 
-    let attempts = 0
-    const maxAttempts = 3
+    // ── DB-Enforced Double-Booking Prevention ───────────────────────
+    // No SELECT conflict check needed.
+    // The PostgreSQL EXCLUDE constraint `no_overlapping_active_bookings`
+    // on `bookings` guarantees zero overlapping bookings per room
+    // for active statuses (pending_payment, confirmed, checked_in).
+    //
+    // If a concurrent transaction inserts an overlapping booking first,
+    // the EXCLUDE constraint raises error code 23P01 (exclusion_violation).
+    // We catch this and return a clean "room unavailable" response.
+    //
+    // This eliminates the TOCTOU race window entirely.
+    // ─────────────────────────────────────────────────────────────────
 
-    while (attempts < maxAttempts) {
-      attempts++
+    const needsPayment = payment_status === "pending" || payment_status === "pay_at_property"
+    const bookingStatus = needsPayment ? "pending_payment" : "confirmed"
+    const holdExpiresAt = needsPayment
+      ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
+      : null
 
-      const { data: conflictingBookings, error: conflictError } = await db
-        .from("bookings")
-        .select("id")
-        .eq("room_id", room_id)
-        .in("booking_status", ["pending_payment", "confirmed", "checked_in"])
-        .lt("check_in", check_out)
-        .gt("check_out", check_in)
-        .limit(1)
+    const { data: booking, error: insertError } = await db
+      .from("bookings")
+      .insert({
+        room_id,
+        check_in,
+        check_out,
+        adults: guestCount,
+        total_price,
+        advance_amount: isPayAtProperty ? advAmount : null,
+        balance_amount: isPayAtProperty ? balAmount : null,
+        guest_name,
+        guest_email,
+        guest_phone,
+        payment_status: payment_status || "pending",
+        booking_status: bookingStatus,
+        hold_expires_at: holdExpiresAt,
+        source: "website",
+        metadata: {
+          trace_id: traceId,
+          origin_system: "website",
+        },
+      })
+      .select()
+      .single()
 
-      if (conflictError) {
-        console.error("create-booking: DB error checking conflicts:", conflictError.message)
-        return new Response(JSON.stringify({ message: "Database error, please try again", error: "DATABASE_ERROR" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 502,
-        })
-      }
-
-      if (conflictingBookings && conflictingBookings.length > 0) {
-        throw new Error("Room is no longer available for the selected dates")
-      }
-
-      const needsPayment = payment_status === "pending" || payment_status === "pay_at_property"
-      const bookingStatus = needsPayment ? "pending_payment" : "confirmed"
-      const holdExpiresAt = needsPayment
-        ? new Date(Date.now() + 15 * 60 * 1000).toISOString()
-        : null
-
-      const { data: booking, error: insertError } = await db
-        .from("bookings")
-        .insert({
-          room_id,
-          check_in,
-          check_out,
-          adults: guestCount,
-          total_price,
-          advance_amount: isPayAtProperty ? advAmount : null,
-          balance_amount: isPayAtProperty ? balAmount : null,
-          guest_name,
-          guest_email,
-          guest_phone,
-          payment_status: payment_status || "pending",
-          booking_status: bookingStatus,
-          hold_expires_at: holdExpiresAt,
-          source: "website",
-          metadata: {
-            trace_id: traceId,
-            origin_system: "website",
-          },
-        })
-        .select()
-        .single()
-
-      if (!insertError && booking) {
-        return new Response(JSON.stringify(booking), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        })
-      }
-
-      if (insertError && (insertError.code === "23505" || insertError.message?.includes("unique"))) {
-        if (attempts === maxAttempts) {
-          throw new Error("Room is no longer available for the selected dates")
-        }
-        await new Promise(resolve => setTimeout(resolve, 100 * attempts))
-        continue
-      }
-
-      if (insertError) throw insertError
+    if (insertError) {
+      // 23P01 = exclusion_constraint violation (no_overlapping_active_bookings)
+      // 23505 = unique_violation (safety net for any UNIQUE constraints)
+      const isOverlap = insertError.code === "23P01" || insertError.code === "23505"
+      console.error(`create-booking: ${isOverlap ? "overlap" : "db"} error: ${insertError.code} ${insertError.message}`)
+      return new Response(JSON.stringify({
+        message: isOverlap ? "Room is no longer available for the selected dates" : "Database error, please try again",
+        error: isOverlap ? "ROOM_UNAVAILABLE" : "DATABASE_ERROR",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: isOverlap ? 409 : 502,
+      })
     }
 
-    throw new Error("Room is no longer available for the selected dates")
+    return new Response(JSON.stringify(booking), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : typeof error === "object" && error !== null ? JSON.stringify(error) : String(error)
     console.error("create-booking error:", message, error)

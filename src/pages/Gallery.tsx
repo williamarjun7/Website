@@ -6,15 +6,17 @@ import { getAllSiteImages, getSiteContentMap } from '../services/contentService'
 interface GalleryImage {
   id: string;
   image_url: string;
-  type: string;
+  page?: string;
   title?: string;
 }
 
-const GALLERY_TYPES = ['gallery', 'exterior', 'other'] as const;
+const GALLERY_PAGES = ['gallery', 'cafe', 'rooms', 'about', 'other'] as const;
 
-const TYPE_LABELS: Record<string, string> = {
+const PAGE_LABELS: Record<string, string> = {
   gallery: 'Gallery',
-  exterior: 'Exterior & Property',
+  cafe: 'Cafe',
+  rooms: 'Rooms',
+  about: 'About',
   other: 'Other',
 };
 
@@ -34,7 +36,7 @@ const Gallery = () => {
       if (contentRes.data) setContent(contentRes.data);
       if (imgRes.data) {
         const filtered = imgRes.data.filter(
-          (img) => GALLERY_TYPES.includes(img.type as typeof GALLERY_TYPES[number]) && img.is_active !== false
+          (img) => GALLERY_PAGES.includes(img.page as typeof GALLERY_PAGES[number]) && img.is_active !== false
         );
         setImages(filtered);
       }
@@ -44,7 +46,7 @@ const Gallery = () => {
 
   const getFiltered = useCallback(() => {
     if (activeType === 'all') return images;
-    return images.filter((img) => img.type === activeType);
+    return images.filter((img) => img.page === activeType);
   }, [images, activeType]);
 
   const filtered = getFiltered();
@@ -113,16 +115,16 @@ const Gallery = () => {
             >
               {C('gallery_filter_all', 'All Photos')}
             </button>
-            {GALLERY_TYPES.map((type) => (
+            {GALLERY_PAGES.map((page) => (
               <button
-                key={type}
-                onClick={() => setActiveType(type)}
-                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all ${activeType === type
+                key={page}
+                onClick={() => setActiveType(page)}
+                className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all ${activeType === page
                   ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-md'
                   : 'text-gray-600 hover:bg-amber-50 hover:text-amber-700'
                 }`}
               >
-                {TYPE_LABELS[type] || type}
+                {C(`gallery_filter_${page}`, PAGE_LABELS[page] || page)}
               </button>
             ))}
           </div>
@@ -137,8 +139,8 @@ const Gallery = () => {
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
             <ImageIcon className="mx-auto text-gray-300 mb-4" size={64} />
-            <h3 className="text-xl font-semibold text-gray-500 mb-2">No photos yet</h3>
-            <p className="text-gray-400">Gallery photos will appear here once added.</p>
+            <h3 className="text-xl font-semibold text-gray-500 mb-2">{C('gallery_empty_heading', 'No photos yet')}</h3>
+            <p className="text-gray-400">{C('gallery_empty_text', 'Gallery photos will appear here once added.')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -150,7 +152,7 @@ const Gallery = () => {
               >
                 <img
                   src={img.image_url}
-                  alt={img.title || TYPE_LABELS[img.type] || 'Gallery image'}
+                  alt={img.title || PAGE_LABELS[img.page || ''] || C('gallery_img_fallback', 'Gallery image')}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
@@ -194,7 +196,7 @@ const Gallery = () => {
           <div className="max-w-5xl max-h-[85vh] p-4" onClick={(e) => e.stopPropagation()}>
             <img
               src={filtered[lightboxIndex].image_url}
-              alt={filtered[lightboxIndex].title || 'Gallery image'}
+              alt={filtered[lightboxIndex].title || C('gallery_img_fallback', 'Gallery image')}
               className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
             />
             {filtered[lightboxIndex].title && (

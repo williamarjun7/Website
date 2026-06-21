@@ -52,7 +52,7 @@ const Navbar = memo(() => {
             { name: 'Home', path: '/' },
             { name: 'About', path: '/about' },
             { name: 'Gallery', path: '/gallery' },
-            { name: 'Events', path: '/events' },
+            { name: 'Cafe', path: '/cafe' },
             { name: 'Contact', path: '/contact' },
             { name: 'FAQ', path: '/faq' },
         ];

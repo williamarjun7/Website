@@ -21,7 +21,7 @@ const Contact = () => {
             getSiteContentMap(),
             getSettingsMap(),
             getPageBySlug('contact'),
-        ]).then(([contentRes, settingsRes, pageRes]) => {
+        ]).then(([contentRes, settingsRes, _pageRes]) => {
             if (contentRes.data) setContent(contentRes.data);
             if (settingsRes.data) setSettings(settingsRes.data);
         }).catch(() => {});
@@ -93,7 +93,7 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">{C('contact_phone_label', 'Phone & WhatsApp')}</h3>
                                     <a
-                                        href="https://wa.me/9779763215874"
+                                        href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-gray-600 hover:text-primary transition-colors"
@@ -114,7 +114,7 @@ const Contact = () => {
                                     >
                                         {C('contact_email', 'highlandscafemotelinn@gmail.com')}
                                     </a>
-                                    <p className="text-sm text-gray-400 mt-0.5">Quick response within 24 hours</p>
+                                    <p className="text-sm text-gray-400 mt-0.5">{C('contact_email_note', 'Quick response within 24 hours')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -134,11 +134,11 @@ const Contact = () => {
                                 </div>
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">{C('contact_checkinout_label', 'Check-in / Check-out')}</h3>
-                                    <p className="text-gray-600">
-                                        Check-in: {C('checkin_time', '2:00 PM')} &nbsp;|&nbsp; Check-out: {C('checkout_time', '12:00 PM')}
+                    <p className="text-gray-600">
+                        {C('footer_hours_checkin_label', 'Check-in:')} {C('checkin_time', '2:00 PM')} &nbsp;|&nbsp; {C('footer_hours_checkout_label', 'Check-out:')} {C('checkout_time', '12:00 PM')}
                                     </p>
                                     <p className="text-sm text-gray-400 mt-0.5">
-                                        Early check-in and late check-out available upon request
+                                        {C('contact_checkinout_note', 'Early check-in and late check-out available upon request')}
                                     </p>
                                 </div>
                             </div>
@@ -156,7 +156,7 @@ const Contact = () => {
                                 <div>
                                     <input
                                         type="text"
-                                        placeholder="Your Name"
+                                        placeholder={C('contact_form_name_placeholder', 'Your Name')}
                                         value={formData.name}
                                         onChange={(e) => { setFormData({ ...formData, name: e.target.value }); setErrors({}); }}
                                         className={`input w-full ${errors.name ? 'border-red-400' : ''}`}
@@ -167,7 +167,7 @@ const Contact = () => {
                                 <div>
                                     <input
                                         type="email"
-                                        placeholder="Your Email"
+                                        placeholder={C('contact_form_email_placeholder', 'Your Email')}
                                         value={formData.email}
                                         onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setErrors({}); }}
                                         className={`input w-full ${errors.email ? 'border-red-400' : ''}`}
@@ -178,7 +178,7 @@ const Contact = () => {
                                 <div>
                                     <textarea
                                         rows={5}
-                                        placeholder="Your Message"
+                                        placeholder={C('contact_form_message_placeholder', 'Your Message')}
                                         value={formData.message}
                                         onChange={(e) => { setFormData({ ...formData, message: e.target.value }); setErrors({}); }}
                                         className={`input w-full resize-none ${errors.message ? 'border-red-400' : ''}`}
@@ -196,7 +196,7 @@ const Contact = () => {
                                 {status === 'sent' && (
                                     <p className="text-center text-sm text-green-600 flex items-center justify-center gap-1.5">
                                         <ExternalLink size={14} />
-                                        Your email client should open. If not, please email us directly.
+                                        {C('contact_form_thank_you_note', 'Your email client should open. If not, please email us directly.')}
                                     </p>
                                 )}
                             </form>
@@ -234,9 +234,8 @@ const Contact = () => {
 
                 {/* Tertiary: Location Assistance */}
                 <div className="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-amber-100">
-                    <h2 className="font-heading text-2xl font-bold mb-2 flex items-center gap-2">
-                        <span>{C('contact_location_assistance_heading', 'Location Assistance')}</span>
-                        <span className="text-2xl">📍</span>
+                    <h2 className="font-heading text-2xl font-bold mb-2">
+                        {C('contact_location_assistance_heading', 'Location Assistance')}
                     </h2>
                     <p className="text-gray-600 mb-4 max-w-3xl">
                         {C('contact_location_assistance_text', "Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your phone and follow the navigation. If you need additional assistance, feel free to call or WhatsApp us.")}
@@ -261,13 +260,13 @@ const Contact = () => {
                         {C('contact_cta_text', 'Prefer to talk? Call or WhatsApp us anytime.')}
                     </p>
                     <a
-                        href="https://wa.me/9779763215874"
+                        href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="btn-primary inline-flex gap-2"
                     >
                         <Phone size={18} />
-                        +977 9763215874
+                        {C('contact_phone', '+977 9763215874')}
                     </a>
                 </div>
             </div>

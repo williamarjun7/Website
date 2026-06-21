@@ -156,7 +156,7 @@ export default async function handler(req: Request): Promise<Response> {
       total_found: (issues || []).length,
       auto_healable: repairs.length,
       skipped_require_human: (issues || []).length - repairs.length,
-      dry_run,
+      dry_run: dryRun,
       repairs_attempted: 0,
       repairs_succeeded: 0,
       repairs_failed: 0,

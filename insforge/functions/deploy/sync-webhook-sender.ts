@@ -397,7 +397,7 @@ export default async function handler() {
 
       const payload = event.payload || {}
 
-      // Build webhook payload with full lineage
+      // Build webhook payload with full lineage and payment fields
       const webhookPayload = {
         event_type: event.event_type,
         website_booking_id: event.entity_id,
@@ -415,9 +415,10 @@ export default async function handler() {
           adults: payload.adults || 1,
           children: payload.children || 0,
           nightly_rate: payload.nightly_rate || null,
-          total_amount: payload.total_price || payload.total_amount,
+          total_amount: payload.total_price || payload.total_amount || 0,
           advance_amount: payload.advance_amount || null,
           balance_amount: payload.balance_amount || null,
+          paid_amount: payload.paid_amount || 0,
           payment_status: payload.payment_status || "unpaid",
           booking_status: payload.booking_status || "pending",
           source: payload.source || "website",

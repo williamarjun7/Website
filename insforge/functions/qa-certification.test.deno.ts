@@ -89,7 +89,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -126,7 +126,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({ room_id: "not-a-uuid", guest_name: "" }),
     })
@@ -158,7 +158,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -179,7 +179,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -217,7 +217,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -238,7 +238,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -410,7 +410,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
@@ -448,7 +448,7 @@ Deno.test({
         "Content-Type": "application/json",
         "apikey": API_KEY,
         "Authorization": `Bearer ${API_KEY}`,
-        "Origin": "https://highlandmotelinn.netlify.app",
+        "Origin": "https://highlandsmotelinn.insforge.site",
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,

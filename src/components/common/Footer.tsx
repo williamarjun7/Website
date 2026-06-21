@@ -55,7 +55,7 @@ const Footer = memo(() => {
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <Star key={star} size={16} className="fill-amber-300 text-amber-300 animate-pulse" />
                                 ))}
-                                <span className="ml-2 text-amber-200 text-sm">Premium Hospitality</span>
+                                <span className="ml-2 text-amber-200 text-sm">{C('footer_premium_label', 'Premium Hospitality')}</span>
                             </div>
                         </div>
 
@@ -95,7 +95,7 @@ const Footer = memo(() => {
                     <div>
                         <div className="relative mb-6">
                             <h4 className="font-heading text-lg font-bold mb-6 relative">
-                                Quick Links
+                                {C('footer_quicklinks_heading', 'Quick Links')}
                                 <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400"></div>
                             </h4>
                         </div>
@@ -127,14 +127,14 @@ const Footer = memo(() => {
                     <div>
                         <div className="relative mb-6">
                             <h4 className="font-heading text-lg font-bold mb-6 relative">
-                                Get in Touch
+                                {C('footer_getintouch_heading', 'Get in Touch')}
                                 <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400"></div>
                             </h4>
                         </div>
                         <ul className="space-y-4">
                             <li className="group">
                                 <a
-                                    href="https://wa.me/9779763215874"
+                                    href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center space-x-3 text-amber-100 hover:text-white transition-all duration-300 transform hover:translate-x-2"
@@ -144,13 +144,13 @@ const Footer = memo(() => {
                                     </div>
                                     <div>
                                         <div className="font-medium">{C('contact_phone', '+977 9763215874')}</div>
-                                        <div className="text-xs text-amber-200">Call & WhatsApp</div>
+                                        <div className="text-xs text-amber-200">{C('footer_phone_sublabel', 'Call & WhatsApp')}</div>
                                     </div>
                                 </a>
                             </li>
                             <li className="group">
                                 <a
-                                    href="mailto:highlandscafemotelinn@gmail.com"
+                                    href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
                                     className="flex items-center space-x-3 text-amber-100 hover:text-white transition-all duration-300 transform hover:translate-x-2"
                                 >
                                     <div className="p-2 bg-amber-700/50 rounded-lg group-hover:bg-amber-600/50 transition-colors">
@@ -158,7 +158,7 @@ const Footer = memo(() => {
                                     </div>
                                     <div>
                                         <div className="font-medium break-all">{C('contact_email', 'highlandscafemotelinn@gmail.com')}</div>
-                                        <div className="text-xs text-amber-200">Quick Response</div>
+                                        <div className="text-xs text-amber-200">{C('footer_email_sublabel', 'Quick Response')}</div>
                                     </div>
                                 </a>
                             </li>
@@ -169,7 +169,7 @@ const Footer = memo(() => {
                                     </div>
                                     <div>
                                         <div className="font-medium">{C('contact_address', 'Birendranagar-07, Khajura, Surkhet')}</div>
-                                        <div className="text-xs text-amber-200">Karnali Province, Nepal</div>
+                                        <div className="text-xs text-amber-200">{C('footer_location_sublabel', 'Karnali Province, Nepal')}</div>
                                     </div>
                                 </div>
                             </li>
@@ -180,7 +180,7 @@ const Footer = memo(() => {
                     <div>
                         <div className="relative mb-6">
                             <h4 className="font-heading text-lg font-bold mb-6 relative">
-                                Connect & Hours
+                                {C('footer_connect_heading', 'Connect & Hours')}
                                 <div className="absolute -bottom-2 left-0 w-12 h-0.5 bg-gradient-to-r from-amber-400 to-orange-400"></div>
                             </h4>
                         </div>
@@ -214,19 +214,19 @@ const Footer = memo(() => {
                         <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
                             <div className="flex items-center space-x-2 mb-3">
                                 <Clock size={18} className="text-amber-300" />
-                                <span className="font-semibold text-amber-200">Operating Hours</span>
+                                <span className="font-semibold text-amber-200">{C('footer_operating_hours_heading', 'Operating Hours')}</span>
                             </div>
                             <div className="space-y-2 text-sm text-amber-100">
                                 <div className="flex justify-between">
-                                    <span>Check-in:</span>
+                                    <span>{C('footer_hours_checkin_label', 'Check-in:')}</span>
                                     <span className="font-medium text-white">{C('checkin_time', '2:00 PM')}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span>Check-out:</span>
+                                    <span>{C('footer_hours_checkout_label', 'Check-out:')}</span>
                                     <span className="font-medium text-white">{C('checkout_time', '12:00 PM')}</span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t border-amber-700/50">
-                                    <span>Cafe Hours:</span>
+                                    <span>{C('footer_hours_cafe_label', 'Cafe Hours:')}</span>
                                     <span className="font-medium text-green-300">{C('cafe_hours_text', '7:00 AM - 8:00 PM')}</span>
                                 </div>
                             </div>
@@ -239,18 +239,18 @@ const Footer = memo(() => {
                     <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
                         <div className="text-center md:text-left">
                             <p className="text-amber-200 text-sm">
-                                © {currentYear} {C('site_name', 'Highlands Cafe & Motel Inn')}. All rights reserved.
+                                © {currentYear} {C('site_name', 'Highlands Cafe & Motel Inn')}. {C('footer_rights', 'All rights reserved.')}
                             </p>
                             <p className="text-amber-300 text-xs mt-1">
-                                Made with <Heart size={12} className="inline text-red-400 animate-pulse" /> in Nepal
+                                {C('footer_made_with', 'Made with')} <Heart size={12} className="inline text-red-400 animate-pulse" /> {C('footer_made_in_nepal', 'in Nepal')}
                             </p>
                         </div>
 
                         {/* Bottom Links */}
                         <div className="flex space-x-6 text-xs text-amber-200">
-                            <Link to="/faq" className="hover:text-white transition-colors">FAQ</Link>
-                            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                            <Link to="/faq" className="hover:text-white transition-colors">{C('footer_bottom_faq', 'FAQ')}</Link>
+                            <Link to="/privacy" className="hover:text-white transition-colors">{C('footer_bottom_privacy', 'Privacy Policy')}</Link>
+                            <Link to="/terms" className="hover:text-white transition-colors">{C('footer_bottom_terms', 'Terms of Service')}</Link>
                         </div>
                     </div>
                 </div>

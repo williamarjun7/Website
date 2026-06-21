@@ -169,23 +169,23 @@ const RoomDetails = () => {
                                 <div>
                                     <div className="flex items-center space-x-2 mb-2">
                                         <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wider">
-                                            {room.room_type || 'Standard Room'}
+                                            {room.room_type || C('roomdetails_type_fallback', 'Standard Room')}
                                         </span>
                                         {room.has_ac !== undefined && (
                                             <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${room.has_ac ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
                                                 <Wind size={12} />
-                                                <span>{room.has_ac ? 'AC' : 'Non-AC'}</span>
+                                                <span>{room.has_ac ? C('roomdetails_ac_label', 'AC') : C('roomdetails_no_ac_label', 'Non-AC')}</span>
                                             </span>
                                         )}
                                         {room.featured && (
                                             <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
                                                 <Star size={12} />
-                                                <span>Featured</span>
+                                                <span>{C('rooms_label_featured', 'Featured')}</span>
                                             </span>
                                         )}
                                         {room.maintenance && (
                                             <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500 text-white">
-                                                <span>Under Maintenance</span>
+                                                <span>{C('rooms_label_maintenance', 'Under Maintenance')}</span>
                                             </span>
                                         )}
                                         {room.availability_status && room.availability_status !== 'available' && (
@@ -205,13 +205,13 @@ const RoomDetails = () => {
                                         {room.room_number && (
                                             <span className="flex items-center space-x-1">
                                                 <Hash size={14} />
-                                                <span>Room #{room.room_number}</span>
+                                                <span>{C('roomdetails_room_number_label', 'Room #{number}').replace('{number}', String(room.room_number))}</span>
                                             </span>
                                         )}
                                         {room.floor_number && (
                                             <span className="flex items-center space-x-1">
                                                 <Layers size={14} />
-                                                <span>Floor {room.floor_number}</span>
+                                                <span>{C('roomdetails_floor_label', 'Floor {floor}').replace('{floor}', String(room.floor_number))}</span>
                                             </span>
                                         )}
                                     </div>
@@ -224,12 +224,12 @@ const RoomDetails = () => {
                                                 <span className="text-sm text-gray-400 line-through">NPR {room.price_per_night.toLocaleString()}</span>
                                                 <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">{room.discount_percent}% OFF</span>
                                             </div>
-                                            <div className="text-gray-400 text-sm">per night</div>
+                                            <div className="text-gray-400 text-sm">{C('roomdetails_per_night', 'per night')}</div>
                                         </div>
                                     ) : (
                                         <>
                                             <div className="text-3xl font-bold text-primary">NPR {room.price_per_night.toLocaleString()}</div>
-                                            <div className="text-gray-400 text-sm">per night</div>
+                                            <div className="text-gray-400 text-sm">{C('roomdetails_per_night', 'per night')}</div>
                                         </>
                                     )}
                                 </div>
@@ -239,30 +239,30 @@ const RoomDetails = () => {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100 shadow-inner">
                                 <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0 md:last:border-0 lg:border-r">
                                     <Users className="text-primary mb-2" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">CAPACITY</span>
-                                    <span className="text-sm font-bold text-gray-900">{room.max_guests} Guests</span>
+                                    <span className="text-xs text-gray-500 font-medium">{C('roomdetails_capacity_label', 'CAPACITY')}</span>
+                                    <span className="text-sm font-bold text-gray-900">{room.max_guests} {C('roomdetails_guests_suffix', 'Guests')}</span>
                                 </div>
                                 <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0 md:last:border-r">
                                     <Maximize className="text-primary mb-2" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">SIZE</span>
-                                    <span className="text-sm font-bold text-gray-900">{room.room_size || '350 sq.ft'}</span>
+                                    <span className="text-xs text-gray-500 font-medium">{C('roomdetails_size_label', 'SIZE')}</span>
+                                    <span className="text-sm font-bold text-gray-900">{room.room_size || C('rooms_size_fallback', '350 sq.ft')}</span>
                                 </div>
                                 <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0">
                                     <Bed className="text-primary mb-2" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">BED TYPE</span>
-                                    <span className="text-sm font-bold text-gray-900">{room.bed_type || 'King Size'}</span>
+                                    <span className="text-xs text-gray-500 font-medium">{C('roomdetails_bedtype_label', 'BED TYPE')}</span>
+                                    <span className="text-sm font-bold text-gray-900">{room.bed_type || C('rooms_bed_fallback', 'King Size')}</span>
                                 </div>
                                 <div className="flex flex-col items-center text-center p-2 last:border-0">
                                     <ShieldCheck className="text-primary mb-2" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">AVAILABILITY</span>
+                                    <span className="text-xs text-gray-500 font-medium">{C('roomdetails_availability_label', 'AVAILABILITY')}</span>
                                     <span className={`text-sm font-bold ${room.availability_status === 'available' ? 'text-green-600' : 'text-amber-600'}`}>
-                                        {room.availability_status === 'available' ? 'Available' : room.availability_status || 'Available'}
+                                        {room.availability_status === 'available' ? C('rooms_status_available', 'Available') : room.availability_status || C('rooms_status_available', 'Available')}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="prose prose-blue max-w-none">
-                                <h3 className="text-xl font-bold font-heading mb-4 text-gray-900">Description</h3>
+                                <h3 className="text-xl font-bold font-heading mb-4 text-gray-900">{C('roomdetails_desc_heading', 'Description')}</h3>
                                 <p className="text-gray-600 leading-relaxed whitespace-pre-line">
                                     {room.description}
                                 </p>
@@ -270,18 +270,18 @@ const RoomDetails = () => {
 
                             {/* Amenities */}
                             <div className="mt-10 pt-10 border-t border-gray-100">
-                                <h3 className="text-xl font-bold font-heading mb-6 text-gray-900">Room Amenities</h3>
+                                <h3 className="text-xl font-bold font-heading mb-6 text-gray-900">{C('roomdetails_amenities_heading', 'Room Amenities')}</h3>
                                 <div className="mb-6 flex flex-wrap gap-2">
                                     {room.has_ac !== undefined && (
                                         <span className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${room.has_ac ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-50 text-gray-500 border border-gray-200'}`}>
                                             <Wind size={16} />
-                                            <span>{room.has_ac ? 'Air Conditioning (AC)' : 'Non-AC (Standard Room)'}</span>
+                                            <span>{room.has_ac ? C('rooms_filter_ac_ac', 'Air Conditioning (AC)') : C('rooms_filter_ac_nonac', 'Non-AC')}</span>
                                         </span>
                                     )}
                                     {room.floor_number && (
                                         <span className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-purple-50 text-purple-700 border border-purple-200">
                                             <Layers size={16} />
-                                            <span>Floor {room.floor_number}</span>
+                                            <span>{C('rooms_label_floor', 'Floor')} {room.floor_number}</span>
                                         </span>
                                     )}
                                 </div>
@@ -296,7 +296,7 @@ const RoomDetails = () => {
                                             </div>
                                         ))
                                     ) : (
-                                        ['High speed WiFi', 'Air Conditioning', 'Smart TV', 'Room Service', 'Mini Bar', 'Daily Housekeeping'].map((amenity, idx) => (
+                                        C('roomdetails_amenity_fallback', 'High speed WiFi, Air Conditioning, Smart TV, Room Service, Mini Bar, Daily Housekeeping').split(',').map((amenity, idx) => (
                                             <div key={idx} className="flex items-center space-x-3 text-gray-600">
                                                 <CheckCircle2 className="text-green-500" size={18} />
                                                 <span className="text-sm font-medium">{amenity}</span>
@@ -308,19 +308,19 @@ const RoomDetails = () => {
 
                             {/* Policies */}
                             <div className="mt-10 pt-10 border-t border-gray-100">
-                                <h3 className="text-xl font-bold font-heading mb-4 text-gray-900">Policies & Notes</h3>
+                                <h3 className="text-xl font-bold font-heading mb-4 text-gray-900">{C('roomdetails_policies_heading', 'Policies & Notes')}</h3>
                                 <div className="bg-yellow-50/50 p-6 rounded-2xl border border-yellow-100/50 space-y-4">
                                     <div className="flex items-start space-x-3">
                                         <Clock className="text-yellow-600 mt-0.5" size={18} />
                                         <div>
-                                            <p className="text-sm font-bold text-yellow-800">Check-in / Check-out</p>
+                                            <p className="text-sm font-bold text-yellow-800">{C('roomdetails_checkin_heading', 'Check-in / Check-out')}</p>
                                             <p className="text-xs text-yellow-700">{C('checkin_time', 'Check-in: 02:00 PM')} | {C('checkout_time', 'Check-out: 11:00 AM')}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start space-x-3">
                                         <Clock className="text-yellow-600 mt-0.5" size={18} />
                                         <div>
-                                            <p className="text-sm font-bold text-yellow-800">Cancellation Policy</p>
+                                            <p className="text-sm font-bold text-yellow-800">{C('roomdetails_cancel_heading', 'Cancellation Policy')}</p>
                                             <p className="text-xs text-yellow-700">{C('cancel_policy', 'Free cancellation up to 12 hours before check-in.')}</p>
                                         </div>
                                     </div>
@@ -338,7 +338,7 @@ const RoomDetails = () => {
                         {/* Reviews Section */}
                         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold font-heading text-gray-900">Guest Reviews</h3>
+                                <h3 className="text-xl font-bold font-heading text-gray-900">{C('roomdetails_reviews_heading', 'Guest Reviews')}</h3>
                                 {reviews.length > 0 && (
                                     <div className="flex items-center space-x-1 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">
                                         <Star className="text-amber-400 fill-amber-400" size={16} />
@@ -352,9 +352,9 @@ const RoomDetails = () => {
                             {reviews.length === 0 ? (
                                 <div className="text-center py-12 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                     <Star className="mx-auto mb-4 text-gray-300" size={40} />
-                                    <h4 className="font-bold text-gray-900 mb-2">No reviews yet</h4>
+                                    <h4 className="font-bold text-gray-900 mb-2">{C('roomdetails_no_reviews_heading', 'No reviews yet')}</h4>
                                     <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                        Be one of our first guests to share your experience at Highlands Cafe & Motel Inn!
+                                        {C('roomdetails_no_reviews_text', 'Be one of our first guests to share your experience at Highlands Cafe & Motel Inn!')}
                                     </p>
                                 </div>
                             ) : (
@@ -389,7 +389,7 @@ const RoomDetails = () => {
                     <div className="space-y-8">
                         {/* Booking Card */}
                         <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 sticky top-28">
-                            <h3 className="text-xl font-bold font-heading mb-6 text-gray-900">Reserve Your Stay</h3>
+                            <h3 className="text-xl font-bold font-heading mb-6 text-gray-900">{C('roomdetails_reserve_heading', 'Reserve Your Stay')}</h3>
                             <div className="space-y-4 mb-8 text-gray-600">
                                 <div className="flex items-center space-x-3 text-sm">
                                     <CheckCircle2 size={18} className="text-green-500" />
@@ -428,18 +428,18 @@ const RoomDetails = () => {
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                             <h4 className="font-bold text-gray-900 mb-4 flex items-center">
                                 <MapPin size={18} className="mr-2 text-primary" />
-                                Location
+                                {C('roomdetails_location_heading', 'Location')}
                             </h4>
                             <div className="aspect-square bg-gray-100 rounded-xl mb-4 overflow-hidden relative">
                                 <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-sm">
-                                    Map
+                                    {C('roomdetails_map_placeholder', 'Map')}
                                 </div>
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <div className="w-4 h-4 bg-primary rounded-full animate-ping" />
                                     <div className="absolute w-3 h-3 bg-primary rounded-full border-2 border-white" />
                                 </div>
                             </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">Birendranagar-07, Khajura, Surkhet</p>
+                            <p className="text-xs text-gray-500 line-clamp-1">{C('roomdetails_map_address', 'Birendranagar-07, Khajura, Surkhet')}</p>
                         </div>
                     </div>
                 </div>

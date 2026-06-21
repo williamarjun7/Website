@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { checkPermission, can, clearPermissionCache, type Role, type Resource, type Action, type AdminProfile } from '../services/rbacService';
+import { checkPermission, type Role, type Resource, type Action, type AdminProfile } from '../services/rbacService';
 import { getCurrentAdmin, getAdminProfileForCurrentUser } from '../services/authService';
 
 interface PermissionContextValue {

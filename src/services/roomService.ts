@@ -1,5 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
-import { deleteImage, extractStorageKey } from './storageService';
+import { deleteFile, extractStorageKey } from './storageService';
 
 export interface Room {
     id: string;
@@ -216,7 +216,7 @@ export const deleteRoomImage = async (id: string) => {
 
         if (image?.image_url) {
             const key = extractStorageKey(image.image_url);
-            if (key) await deleteImage(key);
+            if (key) await deleteFile(key);
         }
 
         const { error } = await insforge.database

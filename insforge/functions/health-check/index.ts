@@ -1,7 +1,7 @@
 import { createClient } from 'npm:@insforge/sdk'
 
 const ALLOWED_ORIGINS = [
-  "https://6aiag3ra.insforge.site",
+  "https://highlandsmotelinn.insforge.site",
   "https://highlands-motel.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,

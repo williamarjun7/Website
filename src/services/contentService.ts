@@ -1,5 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
-import { deleteImage, extractStorageKey } from './storageService';
+import { deleteFile, extractStorageKey } from './storageService';
 
 export interface SiteContent {
     id: string;
@@ -11,10 +11,12 @@ export interface SiteContent {
 export interface SiteImage {
     id: string;
     image_url: string;
-    type: 'hero' | 'gallery' | 'cafe' | 'exterior' | 'other';
+    page: string;
+    type?: string;
     title?: string;
     is_active: boolean;
     created_at: string;
+    sort_order?: number;
 }
 
 // Get site content by key
@@ -63,14 +65,15 @@ export const updateSiteContent = async (key: string, value: string) => {
     }
 };
 
-// Get site images by type
-export const getSiteImagesByType = async (type: SiteImage['type']) => {
+// Get site images by page
+export const getSiteImagesByPage = async (page: string) => {
     try {
         const { data, error } = await insforge.database
             .from('site_images')
             .select('*')
-            .eq('type', type)
+            .eq('page', page)
             .eq('is_active', true)
+            .order('sort_order', { ascending: true })
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -86,6 +89,8 @@ export const getAllSiteImages = async () => {
         const { data, error } = await insforge.database
             .from('site_images')
             .select('*')
+            .order('page', { ascending: true })
+            .order('sort_order', { ascending: true })
             .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -124,7 +129,7 @@ export const deleteSiteImage = async (id: string) => {
 
         if (image?.image_url) {
             const key = extractStorageKey(image.image_url);
-            if (key) await deleteImage(key);
+            if (key) await deleteFile(key);
         }
 
         const { error } = await insforge.database
@@ -134,6 +139,58 @@ export const deleteSiteImage = async (id: string) => {
 
         if (error) throw error;
         return { data: true, error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
+// Get menu page images ordered
+export const getMenuPages = async () => {
+    try {
+        const { data, error } = await insforge.database
+            .from('site_images')
+            .select('*')
+            .eq('page', 'menu')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
+// Admin: Get all menu pages including inactive
+export const getAllMenuPages = async () => {
+    try {
+        const { data, error } = await insforge.database
+            .from('site_images')
+            .select('*')
+            .eq('page', 'menu')
+            .order('sort_order', { ascending: true })
+            .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        return { data: data || [], error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
+// Admin: Update menu page image
+export const updateMenuPage = async (id: string, updates: Partial<SiteImage>) => {
+    try {
+        const { data, error } = await insforge.database
+            .from('site_images')
+            .update(updates)
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }

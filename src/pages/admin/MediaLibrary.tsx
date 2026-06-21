@@ -17,7 +17,7 @@ import {
     deleteMediaFile,
     type MediaFile
 } from '../../services/mediaService';
-import { uploadImage } from '../../services/storageService';
+import { uploadFile } from '../../services/storageService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Skeleton from '../../components/common/Skeleton';
 import { PermissionGuard, PermissionButton } from '../../components/common/PermissionGuard';
@@ -84,7 +84,7 @@ const MediaLibrary = () => {
                 throw new Error('File size should be less than 10MB');
             }
 
-            const { data, error } = await uploadImage(file, 'media');
+            const { data, error } = await uploadFile(file, 'media');
             if (error) throw error;
 
             if (data) {

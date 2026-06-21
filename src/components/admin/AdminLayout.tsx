@@ -35,7 +35,7 @@ const AdminLayout = () => {
     const location = useLocation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const { can, profile, loading: permLoading } = usePermission();
+    const { can, profile, loading: _permLoading } = usePermission();
 
     useEffect(() => {
         const handleResize = () => {
@@ -57,12 +57,13 @@ const AdminLayout = () => {
         { name: 'Bookings', path: '/admin/bookings', icon: CalendarDays },
         { name: 'Rooms', path: '/admin/rooms', icon: BedDouble },
         { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
+        { name: 'Menu Pages', path: '/admin/menu-pages', icon: ImageIcon },
         { name: 'Navigation', path: '/admin/navigation', icon: Navigation, resource: 'navigation', action: 'read' },
         { name: 'Pages', path: '/admin/pages', icon: FileSymlink, resource: 'page', action: 'read' },
         { name: 'FAQ', path: '/admin/faq', icon: HelpCircle, resource: 'faq', action: 'read' },
         { name: 'Media Library', path: '/admin/media', icon: FolderOpen, resource: 'media', action: 'read' },
         { name: 'Site Images', path: '/admin/images', icon: ImageIcon, resource: 'media', action: 'read' },
-        { name: 'Content', path: '/admin/content', icon: FileText, resource: 'page', action: 'read' },
+        { name: 'Website Content', path: '/admin/content', icon: FileText },
         { name: 'Site Settings', path: '/admin/settings', icon: Settings, resource: 'setting', action: 'read' },
         { name: 'Revisions', path: '/admin/revisions', icon: History, resource: 'revision', action: 'read' },
         { name: 'Reviews', path: '/admin/reviews', icon: Star },
