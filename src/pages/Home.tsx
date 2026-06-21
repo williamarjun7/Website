@@ -234,7 +234,7 @@ const Home = () => {
                                 <div key={room.id} className="card">
                                     <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden relative">
                                         <img
-                                            src={room.room_images?.[0]?.image_url}
+                                            src={room.room_images?.[0]?.url}
                                             alt={room.name}
                                             className="w-full h-full object-cover"
                                         />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RoomCarouselProps {
-    images: { id: string; image_url: string }[];
+    images: { id: string; url: string }[];
     roomName: string;
 }
 
@@ -21,7 +21,7 @@ const RoomCarousel = ({ images, roomName }: RoomCarouselProps) => {
         return (
             <div className="aspect-video rounded-lg overflow-hidden">
                 <img
-                    src={images[0].image_url}
+                    src={images[0].url}
                     alt={roomName}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -52,7 +52,7 @@ const RoomCarousel = ({ images, roomName }: RoomCarouselProps) => {
                 {images.map((img) => (
                     <img
                         key={img.id}
-                        src={img.image_url}
+                        src={img.url}
                         alt={roomName}
                         className="w-full h-full object-cover flex-shrink-0"
                         loading="lazy"

@@ -104,7 +104,7 @@ const DateSelectionStep: React.FC<DateSelectionStepProps> = ({
                                     className="w-full text-left border border-gray-200 rounded-lg p-4 hover:border-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     onClick={() => onRoomSelect(room)}>
                                     <div className="flex items-start space-x-4">
-                                        <img src={room.room_images?.[0]?.image_url} alt={room.name}
+                                        <img src={room.room_images?.[0]?.url} alt={room.name}
                                             className="w-32 h-24 object-cover rounded-lg" />
                                         <div className="flex-1">
                                             <h4 className="font-heading text-xl font-semibold mb-1">

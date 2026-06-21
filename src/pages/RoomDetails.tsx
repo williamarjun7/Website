@@ -458,7 +458,7 @@ const RoomDetails = () => {
                             >
                                 <div className="aspect-video relative overflow-hidden">
                                     <img
-                                        src={r.room_images?.[0]?.image_url}
+                                        src={r.room_images?.[0]?.url}
                                         alt={r.name}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />

@@ -143,7 +143,7 @@ const Rooms = () => {
                     if (editingRoom) {
                         await addRoomImage({
                             room_id: editingRoom.id,
-                            image_url: data.url,
+                            url: data.url,
                             sort_order: (editingRoom.room_images?.length || 0) + 1
                         });
                     } else {
@@ -177,7 +177,7 @@ const Rooms = () => {
                 const room = rooms.find(r => r.id === roomId);
                 await addRoomImage({
                     room_id: roomId,
-                    image_url: data.url,
+                    url: data.url,
                     sort_order: (room?.room_images?.length || 0) + 1
                 });
             }
@@ -294,7 +294,7 @@ const Rooms = () => {
                 for (let i = 0; i < pendingImages.length; i++) {
                     const result = await addRoomImage({
                         room_id: savedRoom.id,
-                        image_url: pendingImages[i].url,
+                        url: pendingImages[i].url,
                         sort_order: i + 1
                     });
                     if (result.error) throw new Error(result.error);
@@ -422,7 +422,7 @@ const Rooms = () => {
 
                             <div className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
                                 {room.room_images && room.room_images.length > 0 ? (
-                                    <img src={room.room_images[0].image_url} alt={room.name} className="w-full h-full object-cover rounded-lg" />
+                                    <img src={room.room_images[0].url} alt={room.name} className="w-full h-full object-cover rounded-lg" />
                                 ) : (
                                     <div className="flex flex-col items-center text-gray-400">
                                         <ImageIcon size={36} />
@@ -556,7 +556,7 @@ const Rooms = () => {
                                     <div>
                                         <label className="block text-sm font-semibold mb-1.5 text-gray-700">Capacity</label>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
                                             <input
                                                 type="number"
                                                 required
@@ -610,7 +610,7 @@ const Rooms = () => {
                                     <div>
                                         <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Size</label>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
                                             <input
                                                 type="text"
                                                 value={formData.room_size}
@@ -630,7 +630,7 @@ const Rooms = () => {
                                             onChange={(e) => setFormData({ ...formData, has_ac: e.target.checked })}
                                             className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded-lg cursor-pointer"
                                         />
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-blue-500"><path d="M12 2v20M16 4l-4 4-4-4M16 20l-4-4-4 4"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M12 2v20M16 4l-4 4-4-4M16 20l-4-4-4 4"/></svg>
                                         <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">
                                             Air Conditioning (AC)
                                         </span>
@@ -683,7 +683,7 @@ const Rooms = () => {
                                                 onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                                                 className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
                                             />
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-amber-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                                             <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Featured Room</span>
                                         </label>
                                         <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-300 transition-colors">
@@ -693,7 +693,7 @@ const Rooms = () => {
                                                 onChange={(e) => setFormData({ ...formData, maintenance: e.target.checked })}
                                                 className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
                                             />
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                             <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Under Maintenance</span>
                                         </label>
                                     </div>
@@ -730,7 +730,7 @@ const Rooms = () => {
                                     <div className="mt-4">
                                         <details className="group">
                                             <summary className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-primary transition-colors list-none flex items-center space-x-2">
-                                                <svg className="w-4 h-4 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                                <svg className="w-4 h-4 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="9 18 15 12 9 6"/></svg>
                                                 <span>Seasonal Pricing (JSON)</span>
                                             </summary>
                                             <div className="mt-3">
@@ -774,14 +774,14 @@ const Rooms = () => {
                                 </h3>
                                 {uploadError && (
                                     <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm mb-4 border border-red-100 flex items-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
                                         <span>{uploadError}</span>
                                     </div>
                                 )}
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {editingRoom?.room_images?.map((img: RoomImage) => (
                                         <div key={img.id} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md group/img transition-all duration-200 hover:shadow-lg">
-                                            <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveExistingImage(img.id)}
@@ -841,7 +841,7 @@ const Rooms = () => {
                                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                                         className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg cursor-pointer"
                                     />
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-green-500"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Publicly Visible</span>
                                 </label>
                                 <div className="flex space-x-3 w-full sm:w-auto">
@@ -910,7 +910,7 @@ const Rooms = () => {
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                                     {imageManageRoom.room_images.map((img: RoomImage, index) => (
                                         <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border-2 border-white shadow-md group/img">
-                                            <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
 
                                             {/* Overlay Controls */}
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center space-x-2">

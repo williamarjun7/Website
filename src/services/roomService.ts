@@ -28,7 +28,7 @@ export interface Room {
 export interface RoomImage {
     id: string;
     room_id: string;
-    image_url: string;
+    url: string;
     sort_order: number;
     created_at: string;
 }
@@ -206,16 +206,16 @@ export const addRoomImage = async (roomImage: Partial<RoomImage>) => {
 // Admin: Delete room image (also removes from storage)
 export const deleteRoomImage = async (id: string) => {
     try {
-        const { data: image, error: fetchError } = await insforge.database
+            const { data: image, error: fetchError } = await insforge.database
             .from('room_images')
-            .select('image_url')
+            .select('url')
             .eq('id', id)
             .single();
 
         if (fetchError) throw fetchError;
 
-        if (image?.image_url) {
-            const key = extractStorageKey(image.image_url);
+        if (image?.url) {
+            const key = extractStorageKey(image.url);
             if (key) await deleteFile(key);
         }
 
