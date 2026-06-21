@@ -47,6 +47,7 @@ test-results/
 e2e/
 docs/
 .graphify_chunk_*.txt
+tests/
 
 # InsForge & AI agent skills
 .agent
