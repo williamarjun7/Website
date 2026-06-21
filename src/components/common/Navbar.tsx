@@ -16,7 +16,10 @@ const Navbar = memo(() => {
     const [settings, setSettings] = useState<Record<string, string>>({});
     const [navItems, setNavItems] = useState<NavItem[]>([]);
 
-    const C = (key: string, fallback: string) => settings[key] || content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = settings[key] || content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
+
+    const isHomePage = location.pathname === '/';
+    const isTransparent = isHomePage && !isScrolled;
 
     useEffect(() => {
         Promise.all([
@@ -50,26 +53,30 @@ const Navbar = memo(() => {
         if (navItems.length > 0) return navItems.map(n => ({ name: n.label, path: n.url }));
         return [
             { name: 'Home', path: '/' },
-            { name: 'About', path: '/about' },
-            { name: 'Gallery', path: '/gallery' },
+            { name: 'Rooms', path: '/rooms' },
             { name: 'Cafe', path: '/cafe' },
+            { name: 'Gallery', path: '/gallery' },
             { name: 'Contact', path: '/contact' },
-            { name: 'FAQ', path: '/faq' },
+            { name: 'About', path: '/about' },
         ];
     }, [navItems]);
 
+    const navBg = isTransparent
+        ? 'bg-black/10 backdrop-blur-[2px]'
+        : isScrolled
+            ? 'bg-white/95 backdrop-blur-md shadow-2xl border-b border-amber-100'
+            : 'bg-gradient-to-r from-amber-50/90 to-orange-50/90 backdrop-blur-sm shadow-lg';
+
+    const textColor = isTransparent ? 'text-white' : 'text-gray-700';
+
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-                ? 'bg-white/95 backdrop-blur-md shadow-2xl border-b border-amber-100'
-                : 'bg-gradient-to-r from-amber-50/90 to-orange-50/90 backdrop-blur-sm shadow-lg'
-                }`}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${navBg}`}
             role="navigation"
             aria-label="Main navigation"
         >
             <div className="container-custom">
                 <div className="flex items-center justify-between h-20">
-                    {/* Logo with enhanced styling */}
                     <Link
                         to="/"
                         className="group flex items-center space-x-3 transform hover:scale-105 transition-all duration-300"
@@ -78,13 +85,12 @@ const Navbar = memo(() => {
                             <img
                                 src={logo}
                                 alt={C('site_name', 'Highlands Cafe & Motel Inn')}
-                                className="h-14 w-auto object-contain drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300"
+                                className={`h-16 w-16 rounded-full object-cover drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 ${isTransparent ? 'drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]' : ''}`}
                             />
                             <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full opacity-0 group-hover:opacity-20 blur-lg transition-all duration-300"></div>
                         </div>
                     </Link>
 
-                    {/* Enhanced Desktop Navigation - Centered */}
                     <div className="hidden lg:flex flex-1 items-center justify-center">
                         <div className="flex items-center space-x-2">
                             {navLinks().map((link) => (
@@ -93,7 +99,7 @@ const Navbar = memo(() => {
                                     to={link.path}
                                     className={`relative px-6 py-3 rounded-full font-body font-semibold text-sm transition-all duration-300 transform hover:scale-105 ${location.pathname === link.path
                                         ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg'
-                                        : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-100 hover:to-orange-100 hover:text-primary hover:shadow-md'
+                                        : `${textColor} ${isTransparent ? 'hover:bg-white/20 hover:text-white' : 'hover:bg-gradient-to-r hover:from-amber-100 hover:to-orange-100 hover:text-primary hover:shadow-md'}`
                                         }`}
                                 >
                                     <span className="relative z-10">{link.name}</span>
@@ -105,7 +111,6 @@ const Navbar = memo(() => {
                         </div>
                     </div>
 
-                    {/* Enhanced CTA Button - Right Side */}
                     <Link
                         to="/booking"
                         className="relative px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-heading font-bold text-sm shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden group hidden lg:block"
@@ -116,12 +121,12 @@ const Navbar = memo(() => {
                         <div className="absolute inset-0 bg-gradient-to-r from-secondary to-primary opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                     </Link>
 
-
-
-                    {/* Enhanced Mobile Menu Button */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="lg:hidden p-3 rounded-xl bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 text-primary transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg"
+                        className={`lg:hidden p-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg ${isTransparent
+                            ? 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
+                            : 'bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 text-primary'
+                            }`}
                         aria-label="Toggle navigation menu"
                         aria-expanded={isOpen}
                         aria-controls="mobile-menu"
@@ -130,7 +135,6 @@ const Navbar = memo(() => {
                     </button>
                 </div>
 
-                {/* Enhanced Mobile Navigation */}
                 {isOpen && (
                     <div id="mobile-menu" aria-hidden={!isOpen} className="lg:hidden py-6 px-4 bg-gradient-to-b from-white/95 to-amber-50/95 backdrop-blur-md rounded-b-2xl shadow-2xl border-t border-amber-100">
                         <div className="flex flex-col space-y-3">
@@ -152,7 +156,6 @@ const Navbar = memo(() => {
                                 </Link>
                             ))}
 
-                            {/* Mobile CTA Button */}
                             <Link
                                 to="/booking"
                                 className="mt-4 px-6 py-4 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-heading font-bold shadow-xl hover:shadow-2xl transform hover:scale-102 transition-all duration-300 text-center"
@@ -160,7 +163,6 @@ const Navbar = memo(() => {
                                 {C('btn_book_now', 'Book Now')}
                             </Link>
 
-                            {/* Mobile Contact Info */}
                             <div className="mt-6 pt-6 border-t border-amber-200 space-y-3">
                                 <a href={`https://wa.me/${C('navbar_phone', '+9779763215874').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Phone size={18} className="text-primary" />

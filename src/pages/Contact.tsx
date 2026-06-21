@@ -27,7 +27,7 @@ const Contact = () => {
         }).catch(() => {});
     }, []);
 
-    const C = (key: string, fallback: string) => settings[key] || content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = settings[key] || content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
     const [formData, setFormData] = useState({ name: '', email: '', message: '' });
     const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});

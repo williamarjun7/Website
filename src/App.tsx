@@ -14,7 +14,6 @@ const Booking = lazy(() => import('./pages/Booking'));
 const Cafe = lazy(() => import('./pages/Cafe'));
 const About = lazy(() => import('./pages/About'));
 const Contact = lazy(() => import('./pages/Contact'));
-const FAQ = lazy(() => import('./pages/FAQ'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const RoomDetails = lazy(() => import('./pages/RoomDetails'));
@@ -79,7 +78,6 @@ function App() {
                 <Route path="/cafe" element={<Cafe />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="/faq" element={<FAQ />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/payment-result" element={<PaymentResult />} />

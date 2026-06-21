@@ -31,7 +31,7 @@ const Cafe = () => {
     const [menuImages, setMenuImages] = useState<{ id: string; image_url: string; title?: string }[]>([]);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
     useEffect(() => {
         let cancelled = false;

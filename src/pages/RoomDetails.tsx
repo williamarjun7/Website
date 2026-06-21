@@ -33,7 +33,7 @@ const RoomDetails = () => {
     const [loading, setLoading] = useState(true);
     const [siteContent, setSiteContent] = useState<Record<string, string>>({});
     const [reviews, setReviews] = useState<Review[]>([]);
-    const C = (key: string, fallback: string) => siteContent[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = siteContent[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
     useEffect(() => {
         if (!id) return;
@@ -314,7 +314,7 @@ const RoomDetails = () => {
                                         <Clock className="text-yellow-600 mt-0.5" size={18} />
                                         <div>
                                             <p className="text-sm font-bold text-yellow-800">{C('roomdetails_checkin_heading', 'Check-in / Check-out')}</p>
-                                            <p className="text-xs text-yellow-700">{C('checkin_time', 'Check-in: 02:00 PM')} | {C('checkout_time', 'Check-out: 11:00 AM')}</p>
+                                            <p className="text-xs text-yellow-700">{C('checkin_time', '2:00 PM')} | {C('checkout_time', '12:00 PM')}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start space-x-3">

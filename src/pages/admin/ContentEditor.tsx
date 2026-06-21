@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, RefreshCw, ChevronDown, ChevronRight, Image, FileText, HelpCircle, Settings, Eye, Phone, Home, Info, BookOpen, Layout, Camera, Coffee } from 'lucide-react';
+import { Save, RefreshCw, ChevronDown, ChevronRight, Image, FileText, Settings, Eye, Phone, Home, Info, BookOpen, Layout, Camera, Coffee } from 'lucide-react';
 import { getAllSiteContent, updateSiteContent } from '../../services/contentService';
 import { CONTENT_DEFAULTS } from '../../services/contentDefaults';
 import Skeleton from '../../components/common/Skeleton';
@@ -66,17 +66,6 @@ const pagesConfig: PageConfig[] = [
                 { id: 'map', label: 'Map Section', fields: ['contact_location_heading', 'google_maps_url', 'contact_getting_here_title', 'contact_getting_here_text'] },
                 { id: 'assistance', label: 'Location Assistance', fields: ['contact_location_assistance_heading', 'contact_location_assistance_text', 'tiktok_embed_url'] },
                 { id: 'cta', label: 'CTA Section', fields: ['contact_cta_text'] },
-            ]
-        }]
-    },
-    {
-        id: 'faq', label: 'FAQ', icon: HelpCircle,
-        groups: [{
-            label: 'FAQ Page',
-            sections: [
-                { id: 'hero', label: 'Hero Section', fields: ['faq_hero_title', 'faq_hero_subtitle'] },
-                { id: 'cta', label: 'CTA Section', fields: ['faq_default_fallback', 'faq_cta_text', 'faq_whatsapp_label', 'faq_email_label'] },
-                { id: 'quicklinks', label: 'Quick Links Section', fields: ['faq_quicklinks_heading', 'faq_quicklink_book', 'faq_quicklink_menu', 'faq_quicklink_contact', 'faq_quicklink_about'] },
             ]
         }]
     },
@@ -162,7 +151,7 @@ const pagesConfig: PageConfig[] = [
                     { id: 'footer', label: 'Footer Content', fields: ['footer_text', 'footer_quicklinks_heading', 'footer_getintouch_heading', 'footer_connect_heading', 'footer_operating_hours_heading', 'footer_premium_label', 'footer_phone_sublabel', 'footer_email_sublabel', 'footer_location_sublabel', 'footer_rights', 'footer_made_with'] },
                     { id: 'social', label: 'Social Links', fields: ['footer_social_facebook', 'footer_social_instagram', 'footer_social_whatsapp', 'footer_social_tiktok'] },
                     { id: 'amenities', label: 'Amenities', fields: ['footer_amenity_1_label', 'footer_amenity_1_icon', 'footer_amenity_2_label', 'footer_amenity_2_icon', 'footer_amenity_3_label', 'footer_amenity_3_icon', 'footer_amenity_4_label', 'footer_amenity_4_icon'] },
-                    { id: 'bottom', label: 'Bottom Bar', fields: ['footer_bottom_faq', 'footer_bottom_privacy', 'footer_bottom_terms'] },
+                    { id: 'bottom', label: 'Bottom Bar', fields: ['footer_bottom_privacy', 'footer_bottom_terms'] },
                     { id: 'hours', label: 'Operating Hours Labels', fields: ['footer_hours_checkin_label', 'footer_hours_checkout_label', 'footer_hours_cafe_label', 'checkin_time', 'checkout_time', 'cafe_hours_text'] },
                 ]
             },
@@ -181,7 +170,6 @@ const pagesConfig: PageConfig[] = [
                 { id: 'home', label: 'Home Page SEO', fields: ['home_meta_title', 'home_meta_desc'] },
                 { id: 'about', label: 'About Page SEO', fields: ['about_meta_title', 'about_meta_desc'] },
                 { id: 'contact', label: 'Contact Page SEO', fields: ['contact_meta_title', 'contact_meta_desc'] },
-                { id: 'faq', label: 'FAQ Page SEO', fields: ['faq_meta_title', 'faq_meta_desc'] },
                 { id: 'rooms', label: 'Rooms Page SEO', fields: ['rooms_meta_title', 'rooms_meta_desc'] },
                 { id: 'cafe', label: 'Cafe Page SEO', fields: ['cafe_meta_title', 'cafe_meta_desc'] },
                 { id: 'gallery', label: 'Gallery Page SEO', fields: ['gallery_meta_title', 'gallery_meta_desc'] },
@@ -260,18 +248,6 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     contact_location_assistance_text: { label: 'Location Assistance Text', type: 'textarea', section: 'Assistance' },
     tiktok_embed_url: { label: 'TikTok Embed URL', type: 'text', section: 'Assistance' },
     contact_cta_text: { label: 'CTA Text', type: 'text', section: 'CTA' },
-
-    faq_hero_title: { label: 'Hero Title', type: 'text', section: 'Hero' },
-    faq_hero_subtitle: { label: 'Hero Subtitle', type: 'textarea', section: 'Hero' },
-    faq_default_fallback: { label: 'Fallback Heading', type: 'text', section: 'CTA' },
-    faq_cta_text: { label: 'CTA Description', type: 'textarea', section: 'CTA' },
-    faq_whatsapp_label: { label: 'WhatsApp Button Label', type: 'text', section: 'CTA' },
-    faq_email_label: { label: 'Email Button Label', type: 'text', section: 'CTA' },
-    faq_quicklinks_heading: { label: 'Quick Links Section Heading', type: 'text', section: 'Quick Links' },
-    faq_quicklink_book: { label: 'Quick Link — Book a Room', type: 'text', section: 'Quick Links' },
-    faq_quicklink_menu: { label: 'Quick Link — View Menu', type: 'text', section: 'Quick Links' },
-    faq_quicklink_contact: { label: 'Quick Link — Contact', type: 'text', section: 'Quick Links' },
-    faq_quicklink_about: { label: 'Quick Link — About', type: 'text', section: 'Quick Links' },
 
     cafe_hero_title: { label: 'Hero Title', type: 'text', section: 'Hero' },
     cafe_hero_subtitle: { label: 'Hero Subtitle', type: 'text', section: 'Hero' },
@@ -412,7 +388,6 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     footer_amenity_3_icon: { label: 'Amenity 3 Icon (Lucide name)', type: 'text', section: 'Amenities' },
     footer_amenity_4_label: { label: 'Amenity 4 Label', type: 'text', section: 'Amenities' },
     footer_amenity_4_icon: { label: 'Amenity 4 Icon (Lucide name)', type: 'text', section: 'Amenities' },
-    footer_bottom_faq: { label: 'FAQ Bottom Link', type: 'text', section: 'Bottom' },
     footer_bottom_privacy: { label: 'Privacy Policy Bottom Link', type: 'text', section: 'Bottom' },
     footer_bottom_terms: { label: 'Terms Bottom Link', type: 'text', section: 'Bottom' },
     footer_hours_checkin_label: { label: 'Check-in Row Label', type: 'text', section: 'Hours' },
@@ -445,8 +420,6 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     about_meta_desc: { label: 'About Page Meta Description', type: 'textarea', section: 'SEO' },
     contact_meta_title: { label: 'Contact Page Meta Title', type: 'text', section: 'SEO' },
     contact_meta_desc: { label: 'Contact Page Meta Description', type: 'textarea', section: 'SEO' },
-    faq_meta_title: { label: 'FAQ Page Meta Title', type: 'text', section: 'SEO' },
-    faq_meta_desc: { label: 'FAQ Page Meta Description', type: 'textarea', section: 'SEO' },
     rooms_meta_title: { label: 'Rooms Page Meta Title', type: 'text', section: 'SEO' },
     rooms_meta_desc: { label: 'Rooms Page Meta Description', type: 'textarea', section: 'SEO' },
     cafe_meta_title: { label: 'Cafe Page Meta Title', type: 'text', section: 'SEO' },

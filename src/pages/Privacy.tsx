@@ -13,7 +13,7 @@ const Privacy = () => {
     }).catch(() => {});
   }, []);
 
-  const C = (key: string, fallback: string) => content[key] || fallback;
+  const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
   const [htmlContent, setHtmlContent] = useState<string>('');
   const [loading, setLoading] = useState(true);

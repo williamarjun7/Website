@@ -20,7 +20,7 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
     const [currentSlide, setCurrentSlide] = useState(0);
 
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const loadData = async () => {
@@ -82,7 +82,7 @@ const Home = () => {
                 <meta name="description" content={C('home_meta_desc', 'Experience a warm, cozy stay. Book comfortable rooms and enjoy great food.')} />
             </Helmet>
             {/* Hero Section */}
-            <section className="relative h-[600px] md:h-[700px] overflow-hidden">
+            <section className="relative min-h-screen overflow-hidden">
                 {heroSlides.length > 0 ? (
                     <>
                         {heroSlides.map((slide, index) => (
@@ -96,9 +96,9 @@ const Home = () => {
                                     alt={slide.title}
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
                                 <div className="absolute inset-0 flex items-center justify-center text-center">
-                                    <div className="container-custom text-white">
+                                    <div className="container-custom text-white pt-20">
                                         <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
                                             {slide.title}
                                         </h1>
@@ -138,8 +138,8 @@ const Home = () => {
                         </div>
                     </>
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60 flex items-center justify-center text-center">
-                        <div className="text-center text-white">
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 flex items-center justify-center text-center">
+                        <div className="text-center text-white pt-20">
                             <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">{C('hero_title', 'Welcome to Highlands')}</h1>
                             <p className="text-xl mb-8">{C('hero_subtitle', 'Experience Cozy Comfort')}</p>
 

@@ -22,7 +22,7 @@ const Rooms = () => {
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
     const [content, setContent] = useState<Record<string, string>>({});
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
     const [filters, setFilters] = useState({
         acFilter: 'all',

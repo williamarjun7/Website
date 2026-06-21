@@ -44,7 +44,7 @@ const Booking = () => {
     const entryMode = entryRoom ? 'room_card' : 'search';
 
     const [content, setContent] = useState<Record<string, string>>({});
-    const C = (key: string, fallback: string) => content[key] || fallback;
+    const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
     useEffect(() => { getSiteContentMap().then(({ data }) => { if (data) setContent(data); }).catch(() => {}); }, []);
 
     // ── Single source of truth for room selection ──────────────────────

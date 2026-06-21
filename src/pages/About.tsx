@@ -53,7 +53,7 @@ const About = () => {
     }).catch(() => {});
   }, []);
 
-  const C = (key: string, fallback: string) => content[key] || fallback;
+  const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
   const values = parseJSON<ValueItem[]>(C('about_values', '[]'), [
     { icon: 'Heart', title: 'Hospitality First', description: 'Every guest is family. We go above and beyond to ensure your stay is comfortable and memorable.' },

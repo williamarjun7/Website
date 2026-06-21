@@ -26,7 +26,7 @@ const Gallery = () => {
   const [activeType, setActiveType] = useState<string>('all');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [content, setContent] = useState<Record<string, string>>({});
-  const C = (key: string, fallback: string) => content[key] || fallback;
+  const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
   useEffect(() => {
     Promise.all([

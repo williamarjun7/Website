@@ -36,7 +36,7 @@ interface ImageFormData {
     is_active: boolean;
 }
 
-const PAGES = ['home', 'cafe', 'rooms', 'about', 'gallery', 'contact', 'faq', 'footer', 'other'] as const;
+const PAGES = ['home', 'cafe', 'rooms', 'about', 'gallery', 'contact', 'footer', 'other'] as const;
 const PAGE_LABELS: Record<string, string> = {
     home: 'Home Page',
     cafe: 'Cafe Page',
@@ -44,7 +44,6 @@ const PAGE_LABELS: Record<string, string> = {
     about: 'About Page',
     gallery: 'Gallery Page',
     contact: 'Contact Page',
-    faq: 'FAQ Page',
     footer: 'Footer / Logos',
     other: 'Other Images',
 };
