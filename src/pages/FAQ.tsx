@@ -97,7 +97,7 @@ const FAQ = () => {
                             <span>{C('faq_whatsapp_label', 'WhatsApp Us')}</span>
                         </a>
                         <a
-                            href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
+                            href={`mailto:${C('contact_email', 'highlandsmotelinn@gmail.com')}`}
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
                             <Mail size={20} />

@@ -439,7 +439,7 @@ const RoomDetails = () => {
                                     <div className="absolute w-3 h-3 bg-primary rounded-full border-2 border-white" />
                                 </div>
                             </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">{C('roomdetails_map_address', 'Birendranagar-07, Khajura, Surkhet')}</p>
+                            <p className="text-xs text-gray-500 line-clamp-1">{C('roomdetails_map_address', 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal')}</p>
                         </div>
                     </div>
                 </div>

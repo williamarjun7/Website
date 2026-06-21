@@ -152,14 +152,14 @@ const Footer = memo(() => {
                             </li>
                             <li className="group">
                                 <a
-                                    href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
+                                    href={`mailto:${C('contact_email', 'highlandsmotelinn@gmail.com')}`}
                                     className="flex items-center space-x-3 text-amber-100 hover:text-white transition-all duration-300 transform hover:translate-x-2"
                                 >
                                     <div className="p-2 bg-amber-700/50 rounded-lg group-hover:bg-amber-600/50 transition-colors">
                                         <Mail size={18} className="text-amber-300" />
                                     </div>
                                     <div>
-                                        <div className="font-medium break-all">{C('contact_email', 'highlandscafemotelinn@gmail.com')}</div>
+                                        <div className="font-medium break-all">{C('contact_email', 'highlandsmotelinn@gmail.com')}</div>
                                         <div className="text-xs text-amber-200">{C('footer_email_sublabel', 'Quick Response')}</div>
                                     </div>
                                 </a>
@@ -170,7 +170,7 @@ const Footer = memo(() => {
                                         <MapPin size={18} className="text-amber-300" />
                                     </div>
                                     <div>
-                                        <div className="font-medium">{C('contact_address', 'Birendranagar-07, Khajura, Surkhet')}</div>
+                                        <div className="font-medium">{C('contact_address', 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal')}</div>
                                         <div className="text-xs text-amber-200">{C('footer_location_sublabel', 'Karnali Province, Nepal')}</div>
                                     </div>
                                 </div>

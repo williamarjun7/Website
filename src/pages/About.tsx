@@ -159,7 +159,7 @@ const About = () => {
                 <h3 className="font-heading text-2xl font-bold text-amber-900">{C('about_position_heading', 'Perfectly Positioned')}</h3>
               </div>
               <p className="text-gray-700 text-center max-w-3xl mx-auto leading-relaxed">
-                {C('location_section_content', 'Nestled in the Khajura region of Birendranagar-07, Surkhet, our location offers the perfect blend of accessibility and serenity.')}
+                {C('location_section_content', 'Nestled in the Khajura region of Birendranagar-8, Surkhet, our location offers the perfect blend of accessibility and serenity.')}
               </p>
             </div>
           </div>

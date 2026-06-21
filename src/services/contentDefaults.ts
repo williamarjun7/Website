@@ -48,7 +48,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
 
     // About - Position
     about_position_heading: 'Perfectly Positioned',
-    location_section_content: 'Nestled in the Khajura region of Birendranagar-07, Surkhet, our location offers the perfect blend of accessibility and serenity.',
+    location_section_content: 'Nestled in the Khajura region of Birendranagar-8, Surkhet, our location offers the perfect blend of accessibility and serenity.',
 
     // About - Mission
     about_mission_heading: 'Our Mission & Values',
@@ -74,10 +74,10 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     contact_phone: '+977 9763215874',
     contact_phone_note: 'Call or WhatsApp anytime',
     contact_email_label: 'Email',
-    contact_email: 'highlandscafemotelinn@gmail.com',
+    contact_email: 'highlandsmotelinn@gmail.com',
     contact_email_note: 'Quick response within 24 hours',
     contact_address_label: 'Address',
-    contact_address: 'Birendranagar-07, Khajura, Surkhet, Karnali Province, Nepal',
+    contact_address: 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal',
     contact_checkinout_label: 'Check-in / Check-out',
     contact_checkinout_note: 'Early check-in and late check-out available upon request',
 
@@ -211,7 +211,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     roomdetails_room_number_label: 'Room #{number}',
     roomdetails_floor_label: 'Floor {floor}',
     roomdetails_map_placeholder: 'Map',
-    roomdetails_map_address: 'Birendranagar-07, Khajura, Surkhet',
+    roomdetails_map_address: 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal',
     roomdetails_no_ac_label: 'Non-AC',
     roomdetails_ac_label: 'AC',
     rooms_size_fallback: '350 sq.ft',
@@ -268,7 +268,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     // Global - Navbar
     site_name: 'Highlands Cafe & Motel Inn',
     navbar_phone: '+977 9763215874',
-    navbar_email: 'highlandscafemotelinn@gmail.com',
+    navbar_email: 'highlandsmotelinn@gmail.com',
 
     // Global - Footer
     footer_text: 'Experience cozy comfort in the heart of the highlands. Your perfect retreat with breathtaking views, warm hospitality, and unforgettable memories waiting to be created.',
@@ -446,7 +446,6 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     confirmation_email_btn: 'Send Email',
     confirmation_important_heading: 'Important Information',
     confirmation_policy_id_required: '• Valid government-issued ID required at check-in.',
-    confirmation_policy_times: '• Check-in: 2:00 PM | Check-out: 12:00 PM.',
     confirmation_policy_changes: '• Cancellations or changes may affect the advance payment amount.',
     confirmation_print_btn: 'Print Confirmation',
     confirmation_return_home_btn: 'Return Home',

@@ -168,13 +168,13 @@ const Navbar = memo(() => {
                                     <Phone size={18} className="text-primary" />
                                     <span className="font-body font-medium">{C('navbar_phone', '+977 9763215874')}</span>
                                 </a>
-                                <a href={`mailto:${C('navbar_email', 'highlandscafemotelinn@gmail.com')}`} className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
+                                <a href={`mailto:${C('navbar_email', 'highlandsmotelinn@gmail.com')}`} className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Mail size={18} className="text-primary" />
-                                    <span className="font-body font-medium">{C('navbar_email', 'highlandscafemotelinn@gmail.com')}</span>
+                                    <span className="font-body font-medium">{C('navbar_email', 'highlandsmotelinn@gmail.com')}</span>
                                 </a>
                                 <div className="flex items-center space-x-3 text-gray-600">
                                     <MapPin size={18} className="text-primary" />
-                                    <span className="font-body font-medium text-sm">{C('contact_address', 'Birendranagar-07, Khajura, Surkhet')}</span>
+                                    <span className="font-body font-medium text-sm">{C('contact_address', 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal')}</span>
                                 </div>
                             </div>
                         </div>

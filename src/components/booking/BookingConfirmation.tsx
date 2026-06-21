@@ -391,7 +391,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />
-              <span>{C('confirmation_policy_times', 'Check-in and check-out times are subject to hotel policy.')}</span>
+              <span>{C('footer_hours_checkin_label', 'Check-in:')} {C('checkin_time', '2:00 PM')} &nbsp;|&nbsp; {C('footer_hours_checkout_label', 'Check-out:')} {C('checkout_time', '12:00 PM')}</span>
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-700 mt-2 shrink-0" />

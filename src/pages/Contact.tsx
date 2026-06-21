@@ -49,7 +49,7 @@ const Contact = () => {
         setStatus('sending');
         const subject = encodeURIComponent(`Contact from ${formData.name}`);
         const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`);
-        window.location.href = `mailto:highlandscafemotelinn@gmail.com?subject=${subject}&body=${body}`;
+        window.location.href = `mailto:highlandsmotelinn@gmail.com?subject=${subject}&body=${body}`;
         setStatus('sent');
         setFormData({ name: '', email: '', message: '' });
         setTimeout(() => setStatus('idle'), 4000);
@@ -112,10 +112,10 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">{C('contact_email_label', 'Email')}</h3>
                                     <a
-                                        href={`mailto:${C('contact_email', 'highlandscafemotelinn@gmail.com')}`}
+                                        href={`mailto:${C('contact_email', 'highlandsmotelinn@gmail.com')}`}
                                         className="text-gray-600 hover:text-primary transition-colors break-all"
                                     >
-                                        {C('contact_email', 'highlandscafemotelinn@gmail.com')}
+                                        {C('contact_email', 'highlandsmotelinn@gmail.com')}
                                     </a>
                                     <p className="text-sm text-gray-400 mt-0.5">{C('contact_email_note', 'Quick response within 24 hours')}</p>
                                 </div>
@@ -127,7 +127,7 @@ const Contact = () => {
                                 <div className="pt-1">
                                     <h3 className="font-semibold text-gray-900 mb-1">{C('contact_address_label', 'Address')}</h3>
                                     <p className="text-gray-600">
-                                        {C('contact_address', 'Birendranagar-07, Khajura, Surkhet, Karnali Province, Nepal')}
+                                        {C('contact_address', 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal')}
                                     </p>
                                 </div>
                             </div>
