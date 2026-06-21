@@ -64,6 +64,7 @@ const SiteImages = () => {
     const [editFormData, setEditFormData] = useState({ title: '', page: 'gallery', is_active: true });
 
     const [uploading, setUploading] = useState(false);
+    const [savingEdit, setSavingEdit] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,9 +74,11 @@ const SiteImages = () => {
 
     const loadImages = async () => {
         setLoading(true);
-        const { data } = await getAllSiteImages();
-        if (data) {
-            setImages(data);
+        try {
+            const { data } = await getAllSiteImages();
+            if (data) setImages(data);
+        } catch (err) {
+            console.error('Failed to load images:', err);
         }
         setLoading(false);
     };
@@ -135,7 +138,8 @@ const SiteImages = () => {
     };
 
     const handleEditSave = async () => {
-        if (!editingImage) return;
+        if (!editingImage || savingEdit) return;
+        setSavingEdit(true);
         const { error } = await updateSiteImage(editingImage.id, {
             title: editFormData.title,
             page: editFormData.page,
@@ -147,6 +151,7 @@ const SiteImages = () => {
         } else {
             setUploadError(error || 'Failed to update image');
         }
+        setSavingEdit(false);
     };
 
     const handleToggleActive = async (id: string, currentActive: boolean) => {
@@ -220,6 +225,7 @@ const SiteImages = () => {
                                             <img
                                                 src={img.image_url}
                                                 alt={img.title || PAGE_LABELS[img.page] || img.page}
+                                                loading="lazy"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
@@ -325,7 +331,7 @@ const SiteImages = () => {
 
                                 {formData.image_url ? (
                                     <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
-                                        <img src={formData.image_url} alt="Uploaded" className="w-full h-full object-cover" />
+                                        <img src={formData.image_url} alt="Uploaded" loading="lazy" className="w-full h-full object-cover" />
                                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <button
                                                 type="button"
@@ -398,7 +404,7 @@ const SiteImages = () => {
 
                         <div className="space-y-5">
                             <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
-                                <img src={editingImage.image_url} alt="" className="w-full h-full object-cover" />
+                                <img src={editingImage.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                             </div>
 
                             <div>
@@ -435,6 +441,9 @@ const SiteImages = () => {
                                 <span className="text-sm font-semibold text-gray-700">Visible on website</span>
                             </label>
 
+                            {uploadError && (
+                                <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">{uploadError}</div>
+                            )}
                             <div className="flex space-x-4 pt-2">
                                 <button
                                     type="button"

@@ -25,14 +25,18 @@ const SiteSettings = () => {
 
     const loadSettings = async () => {
         setLoading(true);
-        const { data } = await getAllSettings();
-        if (data) {
-            setSettings(data);
-            const vals: Record<string, string> = {};
-            for (const s of data) {
-                vals[s.key] = s.value;
+        try {
+            const { data } = await getAllSettings();
+            if (data) {
+                setSettings(data);
+                const vals: Record<string, string> = {};
+                for (const s of data) {
+                    vals[s.key] = s.value;
+                }
+                setEditValues(vals);
             }
-            setEditValues(vals);
+        } catch (err) {
+            console.error('Failed to load settings:', err);
         }
         setLoading(false);
     };

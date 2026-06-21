@@ -48,11 +48,15 @@ const MediaLibrary = () => {
 
     const loadFiles = async () => {
         setLoading(true);
-        const { data } = await getMediaFiles();
-        if (data) {
-            setFiles(data);
-            const unique = [...new Set(data.map(f => f.folder).filter(Boolean))] as string[];
-            setFolders(unique);
+        try {
+            const { data } = await getMediaFiles();
+            if (data) {
+                setFiles(data);
+                const unique = [...new Set(data.map(f => f.folder).filter(Boolean))] as string[];
+                setFolders(unique);
+            }
+        } catch (err) {
+            console.error('Failed to load media:', err);
         }
         setLoading(false);
     };
@@ -64,8 +68,12 @@ const MediaLibrary = () => {
             return;
         }
         setLoading(true);
-        const { data } = await getMediaByFolder(folder);
-        if (data) setFiles(data);
+        try {
+            const { data } = await getMediaByFolder(folder);
+            if (data) setFiles(data);
+        } catch (err) {
+            console.error('Failed to load filtered media:', err);
+        }
         setLoading(false);
     };
 
@@ -213,6 +221,7 @@ const MediaLibrary = () => {
                                 <img
                                     src={file.url}
                                     alt={file.alt_text || file.name}
+                                    loading="lazy"
                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                             </div>
@@ -274,7 +283,7 @@ const MediaLibrary = () => {
 
                             {uploadedUrl ? (
                                 <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
-                                    <img src={uploadedUrl} alt="Uploaded" className="w-full h-full object-cover" />
+                                    <img src={uploadedUrl} alt="Uploaded" loading="lazy" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             type="button"
@@ -348,7 +357,7 @@ const MediaLibrary = () => {
 
                         <div className="space-y-4">
                             <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
-                                <img src={editingFile.url} alt="" className="w-full h-full object-cover" />
+                                <img src={editingFile.url} alt="" loading="lazy" className="w-full h-full object-cover" />
                             </div>
 
                             <div>

@@ -56,6 +56,8 @@ const Menu = () => {
 
     // Form Data
     const [categoryForm, setCategoryForm] = useState({ name: '', sort_order: 0 });
+    const [savingCategory, setSavingCategory] = useState(false);
+    const [savingItem, setSavingItem] = useState(false);
     const [itemForm, setItemForm] = useState<ItemFormData>({
         name: '',
         description: '',
@@ -76,9 +78,11 @@ const Menu = () => {
 
     const loadMenu = async () => {
         setLoading(true);
-        const { data } = await getAdminMenu();
-        if (data) {
-            setMenu(data);
+        try {
+            const { data } = await getAdminMenu();
+            if (data) setMenu(data);
+        } catch (err) {
+            console.error('Failed to load menu:', err);
         }
         setLoading(false);
     };
@@ -86,61 +90,87 @@ const Menu = () => {
     // Category Actions
     const handleCategorySubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (editingCategory) {
-            await updateCategory(editingCategory.id, categoryForm);
-        } else {
-            await createCategory(categoryForm);
+        setSavingCategory(true);
+        try {
+            if (editingCategory) {
+                await updateCategory(editingCategory.id, categoryForm);
+            } else {
+                await createCategory(categoryForm);
+            }
+            setCategoryModalOpen(false);
+            setEditingCategory(null);
+            setCategoryForm({ name: '', sort_order: 0 });
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to save category:', err);
+        } finally {
+            setSavingCategory(false);
         }
-        setCategoryModalOpen(false);
-        setEditingCategory(null);
-        setCategoryForm({ name: '', sort_order: 0 });
-        loadMenu();
     };
 
     const handleDeleteCategory = async (id: string) => {
         if (confirm('Delete this category? All items in it will be deleted.')) {
-            await deleteCategory(id);
-            loadMenu();
+            try {
+                await deleteCategory(id);
+                loadMenu();
+            } catch (err) {
+                console.error('Failed to delete category:', err);
+            }
         }
     };
 
     // Item Actions
     const handleItemSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const itemData = {
-            ...itemForm,
-            price: Number(itemForm.price),
-        };
+        setSavingItem(true);
+        try {
+            const itemData = {
+                ...itemForm,
+                price: Number(itemForm.price),
+            };
 
-        if (editingItem) {
-            await updateMenuItem(editingItem.id, itemData);
-        } else {
-            await createMenuItem(itemData);
+            if (editingItem) {
+                await updateMenuItem(editingItem.id, itemData);
+            } else {
+                await createMenuItem(itemData);
+            }
+
+            setItemModalOpen(false);
+            setEditingItem(null);
+            setItemForm({
+                name: '',
+                description: '',
+                price: '',
+                category: '',
+                image: '',
+                available: true
+            });
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to save menu item:', err);
+        } finally {
+            setSavingItem(false);
         }
-
-        setItemModalOpen(false);
-        setEditingItem(null);
-        setItemForm({
-            name: '',
-            description: '',
-            price: '',
-            category: '',
-            image: '',
-            available: true
-        });
-        loadMenu();
     };
 
     const handleDeleteItem = async (id: string) => {
         if (confirm('Delete this item?')) {
-            await deleteMenuItem(id);
-            loadMenu();
+            try {
+                await deleteMenuItem(id);
+                loadMenu();
+            } catch (err) {
+                console.error('Failed to delete item:', err);
+            }
         }
     };
 
     const handleToggleAvailability = async (id: string, currentStatus: boolean) => {
-        await toggleItemAvailability(id, !currentStatus);
-        loadMenu();
+        try {
+            await toggleItemAvailability(id, !currentStatus);
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to toggle availability:', err);
+        }
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -398,8 +428,8 @@ const Menu = () => {
                                 >
                                     Cancel
                                 </button>
-                                <button type="submit" className="btn-primary flex-1">
-                                    {editingCategory ? 'Update' : 'Save'}
+                                <button type="submit" disabled={savingCategory} className="btn-primary flex-1">
+                                    {savingCategory ? 'Saving...' : (editingCategory ? 'Update' : 'Save')}
                                 </button>
                             </div>
                         </form>
@@ -446,7 +476,7 @@ const Menu = () => {
                                 >
                                     <option value="" disabled>Select category</option>
                                     {menu.map(cat => (
-                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -533,8 +563,8 @@ const Menu = () => {
                                 >
                                     Cancel
                                 </button>
-                                <button type="submit" disabled={uploading} className="btn-primary flex-1">
-                                    {editingItem ? 'Update Item' : 'Create Item'}
+                                <button type="submit" disabled={uploading || savingItem} className="btn-primary flex-1">
+                                    {savingItem ? 'Saving...' : (editingItem ? 'Update Item' : 'Create Item')}
                                 </button>
                             </div>
                         </form>

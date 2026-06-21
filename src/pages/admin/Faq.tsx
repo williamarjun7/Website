@@ -45,6 +45,7 @@ const Faq = () => {
     const [form, setForm] = useState<FaqFormData>(emptyForm);
     const [deleteTarget, setDeleteTarget] = useState<FaqItem | null>(null);
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+    const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState('');
 
     const showToast = (msg: string) => {
@@ -56,11 +57,15 @@ const Faq = () => {
 
     const loadItems = async () => {
         setLoading(true);
-        const { data } = await getFaqItems();
-        if (data) {
-            setItems(data);
-            const cats = new Set(data.map(i => i.category));
-            setExpandedCategories(new Set(cats));
+        try {
+            const { data } = await getFaqItems();
+            if (data) {
+                setItems(data);
+                const cats = new Set(data.map(i => i.category));
+                setExpandedCategories(new Set(cats));
+            }
+        } catch (err) {
+            console.error('Failed to load FAQs:', err);
         }
         setLoading(false);
     };
@@ -85,6 +90,7 @@ const Faq = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSaving(true);
         if (editingItem) {
             const { error } = await updateFaqItem(editingItem.id, form);
             if (error) { showToast(error); return; }
@@ -101,6 +107,7 @@ const Faq = () => {
         setForm(emptyForm);
         loadItems();
         showToast(editingItem ? 'FAQ updated' : 'FAQ added');
+        setSaving(false);
     };
 
     const handleTogglePublished = async (item: FaqItem) => {
@@ -109,6 +116,8 @@ const Faq = () => {
         if (!error) {
             loadItems();
             await addRevision({ entity_type: 'faq_items', entity_id: item.id, field_name: 'published', old_value: String(item.published), new_value: String(newPublished), user_name: 'admin' });
+        } else {
+            showToast(error);
         }
     };
 
@@ -328,8 +337,8 @@ const Faq = () => {
 
                             <div className="flex space-x-4 pt-2">
                                 <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" className="btn-primary flex-1">
-                                    {editingItem ? 'Update' : 'Save'}
+                                <button type="submit" disabled={saving} className="btn-primary flex-1">
+                                    {saving ? 'Saving...' : (editingItem ? 'Update' : 'Save')}
                                 </button>
                             </div>
                         </form>

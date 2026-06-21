@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Star, Trash2, CheckCircle, XCircle, Plus, MessageSquare } from 'lucide-react';
+import { Star, Trash2, CheckCircle, XCircle, X, Plus, MessageSquare, Loader2 } from 'lucide-react';
 import { getReviews, createReview, updateReview, deleteReview, type Review, type CreateReviewData } from '../../services/reviewService';
 import { SkeletonTableRow } from '../../components/common/Skeleton';
 
@@ -8,14 +8,19 @@ const ReviewsAdmin = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [toast, setToast] = useState('');
+    const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<CreateReviewData>({ guest_name: '', rating: 5, comment: '' });
 
     const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
     const load = async () => {
         setLoading(true);
-        const { data } = await getReviews();
-        if (data) setReviews(data);
+        try {
+            const { data } = await getReviews();
+            if (data) setReviews(data);
+        } catch (err) {
+            console.error('Failed to load reviews:', err);
+        }
         setLoading(false);
     };
 
@@ -39,8 +44,10 @@ const ReviewsAdmin = () => {
 
     const handleCreate = async () => {
         if (!form.guest_name.trim() || !form.comment.trim()) return;
+        setSaving(true);
         const { error } = await createReview(form);
         if (!error) { setShowModal(false); setForm({ guest_name: '', rating: 5, comment: '' }); load(); showToast('Review created'); }
+        setSaving(false);
     };
 
     const renderStars = (rating: number) =>
@@ -134,7 +141,7 @@ const ReviewsAdmin = () => {
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-xl font-heading">New Review</h3>
                             <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <XCircle size={20} />
+                                <X size={20} />
                             </button>
                         </div>
                         <div className="space-y-4">
@@ -152,7 +159,10 @@ const ReviewsAdmin = () => {
                                 <label className="block text-sm font-medium mb-1 text-gray-700">Comment</label>
                                 <textarea value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} className="input w-full resize-none" rows={4} placeholder="Review comment" />
                             </div>
-                            <button onClick={handleCreate} className="btn-primary w-full">Create Review</button>
+                            <button onClick={handleCreate} disabled={saving} className="btn-primary w-full flex items-center justify-center space-x-2">
+                                {saving && <Loader2 size={16} className="animate-spin" />}
+                                <span>{saving ? 'Creating...' : 'Create Review'}</span>
+                            </button>
                         </div>
                     </div>
                 </div>

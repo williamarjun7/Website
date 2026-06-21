@@ -44,6 +44,7 @@ const Navigation = () => {
     const [editingItem, setEditingItem] = useState<NavItem | null>(null);
     const [form, setForm] = useState<NavFormData>(emptyForm);
     const [deleteTarget, setDeleteTarget] = useState<NavItem | null>(null);
+    const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState('');
 
     const showToast = (msg: string) => {
@@ -55,8 +56,12 @@ const Navigation = () => {
 
     const loadItems = async () => {
         setLoading(true);
-        const { data } = await getNavigation();
-        if (data) setItems(data);
+        try {
+            const { data } = await getNavigation();
+            if (data) setItems(data);
+        } catch (err) {
+            console.error('Failed to load navigation:', err);
+        }
         setLoading(false);
     };
 
@@ -81,6 +86,7 @@ const Navigation = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSaving(true);
         const payload: Partial<NavItem> = {
             ...form,
             parent_id: form.parent_id || null
@@ -103,6 +109,7 @@ const Navigation = () => {
         setForm(emptyForm);
         loadItems();
         showToast(editingItem ? 'Navigation item updated' : 'Navigation item added');
+        setSaving(false);
     };
 
     const handleToggleVisibility = async (item: NavItem) => {
@@ -111,6 +118,8 @@ const Navigation = () => {
         if (!error) {
             loadItems();
             await addRevision({ entity_type: 'site_navigation', entity_id: item.id, field_name: 'is_visible', old_value: String(item.is_visible), new_value: String(newVisible), user_name: 'admin' });
+        } else {
+            showToast(error);
         }
     };
 
@@ -319,8 +328,8 @@ const Navigation = () => {
 
                             <div className="flex space-x-4 pt-2">
                                 <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" className="btn-primary flex-1">
-                                    {editingItem ? 'Update' : 'Save'}
+                                <button type="submit" disabled={saving} className="btn-primary flex-1">
+                                    {saving ? 'Saving...' : (editingItem ? 'Update' : 'Save')}
                                 </button>
                             </div>
                         </form>

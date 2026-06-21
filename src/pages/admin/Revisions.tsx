@@ -17,11 +17,15 @@ const Revisions = () => {
 
     const loadRevisions = async () => {
         setLoading(true);
-        const { data } = await getAllRevisions();
-        if (data) {
-            setRevisions(data);
-            const types = [...new Set(data.map(r => r.entity_type))];
-            setEntityTypes(types);
+        try {
+            const { data } = await getAllRevisions();
+            if (data) {
+                setRevisions(data);
+                const types = [...new Set(data.map(r => r.entity_type))];
+                setEntityTypes(types);
+            }
+        } catch (err) {
+            console.error('Failed to load revisions:', err);
         }
         setLoading(false);
     };
@@ -33,8 +37,12 @@ const Revisions = () => {
             return;
         }
         setLoading(true);
-        const { data } = await getRevisions(type);
-        if (data) setRevisions(data);
+        try {
+            const { data } = await getRevisions(type);
+            if (data) setRevisions(data);
+        } catch (err) {
+            console.error('Failed to load filtered revisions:', err);
+        }
         setLoading(false);
     };
 
@@ -104,7 +112,7 @@ const Revisions = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <code className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">{rev.entity_id.substring(0, 8)}...</code>
+                                            <code className="text-xs text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded">{rev.entity_id?.substring(0, 8) ?? '—'}...</code>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-700">{rev.field_name}</td>
                                         <td className="px-6 py-4 max-w-xs">
@@ -119,7 +127,7 @@ const Revisions = () => {
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-500">{rev.user_name}</td>
                                         <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                                            {new Date(rev.created_at).toLocaleString()}
+                                            {rev.created_at ? new Date(rev.created_at).toLocaleString() : '—'}
                                         </td>
                                     </tr>
                                 ))

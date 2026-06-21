@@ -69,9 +69,11 @@ const Rooms = () => {
 
     const loadRooms = async () => {
         setLoading(true);
-        const { data } = await getAllRoomsForAdmin();
-        if (data) {
-            setRooms(data);
+        try {
+            const { data } = await getAllRoomsForAdmin();
+            if (data) setRooms(data);
+        } catch (err) {
+            console.error('Failed to load rooms:', err);
         }
         setLoading(false);
     };
@@ -409,7 +411,7 @@ const Rooms = () => {
 
                             <div className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center overflow-hidden relative">
                                 {room.room_images && room.room_images.length > 0 ? (
-                                    <img src={room.room_images[0].url} alt={room.name} className="w-full h-full object-cover rounded-lg" />
+                                    <img src={room.room_images[0].url} alt={room.name} loading="lazy" className="w-full h-full object-cover rounded-lg" />
                                 ) : (
                                     <div className="flex flex-col items-center text-gray-400">
                                         <ImageIcon size={36} />
@@ -768,7 +770,7 @@ const Rooms = () => {
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {editingRoom?.room_images?.map((img: RoomImage) => (
                                         <div key={img.id} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md group/img transition-all duration-200 hover:shadow-lg">
-                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                            <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveExistingImage(img.id)}
@@ -781,7 +783,7 @@ const Rooms = () => {
                                     {pendingImages.map((img, index) => (
                                         <div key={index} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group/img transition-all duration-200 hover:shadow-lg">
                                             <div className="absolute top-1 left-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold z-10 shadow-sm">+</div>
-                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                            <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
                                             <button
                                                 type="button"
                                                 onClick={() => removePendingImage(index)}
@@ -794,12 +796,14 @@ const Rooms = () => {
                                 </div>
                                 <div
                                     role="button"
+                                    tabIndex={0}
                                     onClick={() => !uploading && fileInputRef.current?.click()}
+                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !uploading && fileInputRef.current?.click()}
                                     className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
                                         uploading
                                             ? 'bg-gray-50 border-gray-200'
                                             : 'border-gray-200 hover:border-primary hover:bg-primary/5'
-                                    }`}
+                                    } ${uploading ? 'cursor-not-allowed' : ''}`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center">

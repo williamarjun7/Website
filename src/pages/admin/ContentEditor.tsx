@@ -469,8 +469,12 @@ const ContentEditor = () => {
             if (needsSeed) {
                 for (const key of ALL_KEYS) {
                     if (!map[key] && CONTENT_DEFAULTS[key]) {
-                        await updateSiteContent(key, CONTENT_DEFAULTS[key]);
-                        map[key] = CONTENT_DEFAULTS[key];
+                        try {
+                            await updateSiteContent(key, CONTENT_DEFAULTS[key]);
+                            map[key] = CONTENT_DEFAULTS[key];
+                        } catch (err) {
+                            console.error(`Failed to seed default for ${key}:`, err);
+                        }
                     }
                 }
             } else {
@@ -480,7 +484,10 @@ const ContentEditor = () => {
             }
             setContents(map);
             setLoading(false);
-        }).catch(() => setLoading(false));
+        }).catch((err) => {
+            setLoading(false);
+            console.error('Failed to load content:', err);
+        });
     };
 
     useEffect(() => {

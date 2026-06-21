@@ -89,17 +89,16 @@ const Bookings = () => {
                 if (roomsRes.data) setRooms(roomsRes.data.map((r: { id: string; name: string; price_per_night: number }) => ({ id: r.id, name: r.name, price_per_night: r.price_per_night })));
             }
             if (!cancelled) setLoading(false);
-        }).catch(() => {
+        }).catch((err) => {
             if (!cancelled) setLoading(false);
+            console.error('Failed to load bookings:', err);
         });
         return () => { cancelled = true; };
     }, []);
 
     useEffect(() => {
-        setTimeout(() => {
-            filterAndSetBookings();
-            setCurrentPage(1);
-        }, 0);
+        filterAndSetBookings();
+        setCurrentPage(1);
     }, [bookings, searchTerm, statusFilter, filterAndSetBookings]);
 
     const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
@@ -111,7 +110,7 @@ const Bookings = () => {
     const refreshBookings = () => {
         getAllBookings().then(({ data }) => {
             if (data) setBookings(data);
-        }).catch(() => {});
+        }).catch((err) => console.error('Failed to refresh bookings:', err));
     };
 
     const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -389,14 +388,16 @@ const Bookings = () => {
                                                     <>
                                                         <button
                                                             onClick={() => handleStatusUpdate(booking.id, 'checked_in')}
-                                                            className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                                            disabled={statusLoading === booking.id}
+                                                            className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-green-600 hover:bg-green-50'}`}
                                                             title="Check In"
                                                         >
                                                             <CheckCircle size={18} />
                                                         </button>
                                                         <button
                                                             onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                                                            className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                                            disabled={statusLoading === booking.id}
+                                                            className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:bg-red-50'}`}
                                                             title="Cancel"
                                                         >
                                                             <XCircle size={18} />
@@ -406,7 +407,8 @@ const Bookings = () => {
                                                 {booking.booking_status === 'checked_in' && (
                                                     <button
                                                         onClick={() => handleStatusUpdate(booking.id, 'checked_out')}
-                                                        className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                                        disabled={statusLoading === booking.id}
+                                                        className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'}`}
                                                         title="Check Out"
                                                     >
                                                         <LogOut size={18} />

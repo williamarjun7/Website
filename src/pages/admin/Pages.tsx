@@ -54,6 +54,7 @@ const Pages = () => {
     const [editingPage, setEditingPage] = useState<SitePage | null>(null);
     const [form, setForm] = useState<PageFormData>(emptyForm);
     const [deleteTarget, setDeleteTarget] = useState<SitePage | null>(null);
+    const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState('');
 
     const showToast = (msg: string) => {
@@ -65,8 +66,12 @@ const Pages = () => {
 
     const loadPages = async () => {
         setLoading(true);
-        const { data } = await getPages();
-        if (data) setPages(data);
+        try {
+            const { data } = await getPages();
+            if (data) setPages(data);
+        } catch (err) {
+            console.error('Failed to load pages:', err);
+        }
         setLoading(false);
     };
 
@@ -95,6 +100,7 @@ const Pages = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSaving(true);
         const payload: Partial<SitePage> = {
             ...form,
             seo_title: form.seo_title || form.title,
@@ -118,6 +124,7 @@ const Pages = () => {
         setForm(emptyForm);
         loadPages();
         showToast(editingPage ? 'Page updated' : 'Page created');
+        setSaving(false);
     };
 
     const handlePublish = async (page: SitePage) => {
@@ -126,6 +133,8 @@ const Pages = () => {
             loadPages();
             showToast('Page published');
             await addRevision({ entity_type: 'site_pages', entity_id: page.id, field_name: 'status', old_value: page.status, new_value: 'published', user_name: 'admin' });
+        } else {
+            showToast(error);
         }
     };
 
@@ -358,8 +367,8 @@ const Pages = () => {
 
                             <div className="flex space-x-4 pt-2">
                                 <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" className="btn-primary flex-1">
-                                    {editingPage ? 'Update Page' : 'Create Page'}
+                                <button type="submit" disabled={saving} className="btn-primary flex-1">
+                                    {saving ? 'Saving...' : (editingPage ? 'Update Page' : 'Create Page')}
                                 </button>
                             </div>
                         </form>

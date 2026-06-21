@@ -44,8 +44,12 @@ const MenuPages = () => {
 
     const loadPages = async () => {
         setLoading(true);
-        const { data } = await getAllMenuPages();
-        if (data) setPages(data);
+        try {
+            const { data } = await getAllMenuPages();
+            if (data) setPages(data);
+        } catch (err) {
+            console.error('Failed to load menu pages:', err);
+        }
         setLoading(false);
     };
 
@@ -105,14 +109,18 @@ const MenuPages = () => {
         if (!confirm('Delete this menu page image?')) return;
         const { error } = await deleteSiteImage(id);
         if (error) {
-            alert('Failed to delete: ' + error);
+            console.error('Failed to delete: ' + error);
             return;
         }
         loadPages();
     };
 
     const handleToggleActive = async (id: string, current: boolean) => {
-        await toggleImageActive(id, !current);
+        const { error } = await toggleImageActive(id, !current);
+        if (error) {
+            alert('Failed to toggle: ' + error);
+            return;
+        }
         loadPages();
     };
 
@@ -172,6 +180,7 @@ const MenuPages = () => {
                             <img
                                 src={page.image_url}
                                 alt={page.title || `Menu page ${index + 1}`}
+                                loading="lazy"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-1">
@@ -238,7 +247,7 @@ const MenuPages = () => {
 
                             {imageUrl ? (
                                 <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
-                                    <img src={imageUrl} alt="Menu page preview" className="w-full h-full object-cover" />
+                                    <img src={imageUrl} alt="Menu page preview" loading="lazy" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
                                             type="button"
