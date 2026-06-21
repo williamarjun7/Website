@@ -54,7 +54,7 @@ export const updateSiteContent = async (key: string, value: string) => {
     try {
         const { data, error } = await insforge.database
             .from('site_content')
-            .upsert({ key, value, updated_at: new Date().toISOString() })
+            .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
             .select()
             .single();
 

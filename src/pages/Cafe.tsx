@@ -104,10 +104,7 @@ const Cafe = () => {
                                 <span>{C('cafe_hero_btn_reserve', 'Call to Reserve')}</span>
                             </a>
                             <button
-                                onClick={() => {
-                                    const menuSection = document.getElementById('menu-section');
-                                    menuSection?.scrollIntoView({ behavior: 'smooth' });
-                                }}
+                                onClick={() => setIsMenuOpen(true)}
                                 className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                             >
                                 <span>{C('cafe_hero_btn_menu', 'View Menu')}</span>
@@ -299,6 +296,7 @@ const Cafe = () => {
 
             <MenuViewer
                 images={menuImages}
+                menu={menu}
                 pdfUrl={content['view_full_menu_image']?.endsWith('.pdf') ? content['view_full_menu_image'] : null}
                 fallbackImage={!menuImages.length && content['view_full_menu_image'] && !content['view_full_menu_image'].endsWith('.pdf') ? content['view_full_menu_image'] : !menuImages.length ? menuImgFallback : undefined}
                 isOpen={isMenuOpen}
