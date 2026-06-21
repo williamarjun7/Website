@@ -103,17 +103,20 @@ const Rooms = () => {
                 <title>{C('rooms_meta_title', 'Rooms | Highlands Motel & Cafe')}</title>
                 <meta name="description" content={C('rooms_meta_desc', 'Browse our comfortable rooms in Surkhet, Nepal.')} />
             </Helmet>
-            <div className="container-custom">
-                <div className="text-center mb-12 max-w-3xl mx-auto">
-                    <span className="text-primary font-bold text-sm uppercase tracking-widest mb-4 block">{C('rooms_section_label', 'Our Accommodations')}</span>
-                    <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gray-900 leading-tight">
-                        {C('rooms_hero_title', 'Experience Premium Comfort & Serenity')}
-                    </h1>
-                    <p className="text-gray-600 text-lg leading-relaxed">
-                        {C('rooms_hero_desc', 'Handpicked rooms designed for ultimate relaxation. Each space offers a unique blend of local charm and modern amenities.')}
-                    </p>
+            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-white">
+                        <Bed size={48} className="mx-auto mb-4" />
+                        <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+                            {C('rooms_hero_title', 'Experience Premium Comfort & Serenity')}
+                        </h1>
+                        <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                            {C('rooms_hero_desc', 'Handpicked rooms designed for ultimate relaxation. Each space offers a unique blend of local charm and modern amenities.')}
+                        </p>
+                    </div>
                 </div>
-
+            </section>
+            <div className="container-custom">
                 {/* Search + Filter Bar */}
                 <div className="mb-10">
                     <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">

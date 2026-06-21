@@ -82,7 +82,7 @@ const Gallery = () => {
         <meta name="description" content={C('gallery_meta_desc', 'Explore our photo gallery showcasing rooms, cafe, exterior views, and the beautiful surroundings.')} />
       </Helmet>
 
-      <section className="relative h-72 mb-12 overflow-hidden">
+      <section className="relative h-80 mb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
           {images.length > 0 && (
             <img

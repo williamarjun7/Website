@@ -78,7 +78,7 @@ const Cafe = () => {
                 <meta name="description" content={C('cafe_meta_desc', 'Savor authentic local cuisine at our cafe in Surkhet.')} />
             </Helmet>
 
-            <section className="relative h-[560px] mb-16 overflow-hidden bg-gradient-to-br from-amber-800 to-amber-900">
+            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-br from-amber-800 to-amber-900">
                 {heroImg && (
                     <img
                         src={heroImg}

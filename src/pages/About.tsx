@@ -76,7 +76,7 @@ const About = () => {
         <meta name="description" content={C('about_meta_desc', C('about_intro_subheading', 'Learn the story behind Highlands Motel & Cafe in Surkhet.'))} />
       </Helmet>
 
-      <section className="relative h-[560px] mb-16 overflow-hidden">
+      <section className="relative h-80 mb-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
           <img
             src={heroBg}

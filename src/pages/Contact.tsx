@@ -69,17 +69,20 @@ const Contact = () => {
                 <title>{C('contact_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | Contact')}</title>
                 <meta name="description" content={C('contact_meta_desc', 'Get in touch. Call, email, or visit us in Surkhet, Nepal.')} />
             </Helmet>
-            <div className="container-custom">
-                {/* Header */}
-                <div className="text-center mb-12">
-                    <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-                        {C('contact_heading', 'Contact Us')}
-                    </h1>
-                    <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                        {C('contact_subtitle', "We're here to help make your stay unforgettable. Reach out to us for any questions or special requests.")}
-                    </p>
+            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-white">
+                        <Phone size={48} className="mx-auto mb-4" />
+                        <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
+                            {C('contact_heading', 'Contact Us')}
+                        </h1>
+                        <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                            {C('contact_subtitle', "We're here to help make your stay unforgettable. Reach out to us for any questions or special requests.")}
+                        </p>
+                    </div>
                 </div>
-
+            </section>
+            <div className="container-custom">
                 {/* Primary: Contact Info + Form (2-col on lg) */}
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 mb-16">
                     {/* Left: Contact Information — 2/5 width on desktop */}
