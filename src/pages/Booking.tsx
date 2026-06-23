@@ -277,6 +277,7 @@ const Booking = () => {
             check_in: checkIn,
             check_out: checkOut,
             guests,
+            special_requests: data.special_requests || undefined,
             payment_status
         });
 

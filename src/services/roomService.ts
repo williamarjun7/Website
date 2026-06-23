@@ -10,7 +10,6 @@ export interface Room {
     is_active: boolean;
     room_type?: string;
     amenities?: string[];
-    room_size?: string;
     bed_type?: string;
     policies?: string;
     room_number?: string;

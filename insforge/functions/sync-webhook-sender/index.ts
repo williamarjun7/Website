@@ -29,9 +29,9 @@ interface SyncEvent {
 
 export default async function handler() {
   try {
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
 
+    const anonKey = Deno.env.get("API_KEY") || ""
     if (!baseUrl || !anonKey) {
       console.error("sync-webhook-sender: Database URL or key not configured")
       return new Response(JSON.stringify({ error: "Server config error" }), { status: 500 })

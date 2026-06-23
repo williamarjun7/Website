@@ -8,9 +8,9 @@
 //   insforge functions deploy auto-heal-repair --trigger-type schedule --schedule "*/15 * * * *"
 //
 // Env vars required:
-//   INSFORGE_BASE_URL or SUPABASE_URL
-//   SUPABASE_SERVICE_ROLE_KEY or API_KEY
+//   INSFORGE_BASE_URL
 
+//   API_KEY
 export default {
   name: "auto-heal-repair",
   entry: "insforge/functions/auto-heal-repair/index.ts",
@@ -20,6 +20,6 @@ export default {
   },
   env: [
     "INSFORGE_BASE_URL",
-    "SUPABASE_SERVICE_ROLE_KEY",
+    "API_KEY",
   ],
 }

@@ -33,7 +33,7 @@ const AdminLogin = () => {
         setLoading(true);
         setError('');
 
-        try {
+    try {
             const { data, error } = await adminLogin(email, password);
 
             if (error) {
@@ -41,7 +41,7 @@ const AdminLogin = () => {
             }
 
             if (data) {
-                navigate('/admin/dashboard');
+                navigate('/admin/dashboard', { replace: true });
             }
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Invalid email or password';

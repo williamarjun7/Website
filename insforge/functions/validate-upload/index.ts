@@ -85,9 +85,9 @@ export default async function handler(req: Request) {
       status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
+  const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
 
-  const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-  const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+  const anonKey = Deno.env.get("API_KEY") || ""
   if (!baseUrl || !anonKey) {
     return new Response(JSON.stringify({ error: "Server config error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },

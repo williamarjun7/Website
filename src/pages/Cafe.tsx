@@ -122,7 +122,7 @@ const Cafe = () => {
             <div className="container-custom">
                 <div className="max-w-3xl mx-auto text-center mb-16">
                     <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                        {C('cafe_description', 'Our on-site cafe serves fresh, locally-sourced dishes prepared with love. Start your day with a hearty breakfast or enjoy a relaxing meal while taking in the stunning highland scenery.')}
+                        {C('cafe_description', 'Our on-site café serves freshly brewed coffee and refreshing beverages made to keep you energized throughout the day. Whether you\u2019re stopping by for a morning coffee or a relaxing break, enjoy your drink while taking in the peaceful beauty of Surkhet, Karnali Province.')}
                     </p>
                     <div className="flex items-center justify-center space-x-8 text-gray-700">
                         <div className="flex items-center space-x-2">

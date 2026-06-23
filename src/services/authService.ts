@@ -94,11 +94,9 @@ export const adminLogout = async () => {
 
 export const getAdminSession = async () => {
     try {
-        const session = insforge.auth.tokenManager.getSession();
-        if (!session) {
-            return { data: { session: null }, error: null };
-        }
-        return { data: { session: { user: session.user } }, error: null };
+        const result = await insforge.auth.getCurrentSession();
+        if (result.error) throw result.error;
+        return { data: { session: result.data?.session || null }, error: null };
     } catch (error) {
         return handleInsforgeError(error);
     }
@@ -106,7 +104,9 @@ export const getAdminSession = async () => {
 
 export const getCurrentAdmin = async () => {
     try {
-        const session = insforge.auth.tokenManager.getSession();
+        const result = await insforge.auth.getCurrentSession();
+        if (result.error) throw result.error;
+        const session = result.data?.session;
         if (!session?.user?.id) {
             return { data: null, error: null };
         }
@@ -138,10 +138,12 @@ export const resetPassword = async (email: string) => {
 
 export const isAuthenticated = async (): Promise<boolean> => {
     try {
-        const { data } = await getAdminSession();
-        return !!data?.session;
-    } catch {
+        const result = await insforge.auth.getCurrentUser();
+        if (result.data?.user) return true;
+        if (result.error) throw result.error;
         return false;
+    } catch {
+        return !!localStorage.getItem('saas_user_id');
     }
 };
 

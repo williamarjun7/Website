@@ -9,6 +9,7 @@
 // Batch has a hard 60-second total budget to prevent platform timeout.
 
 import { createClient } from "npm:@insforge/sdk"
+import { sendBookingNotifications, type BookingInfo } from "../_shared/notifications.ts"
 
 const FETCH_TIMEOUT_MS = 10_000
 const MAX_BATCH = 100
@@ -36,10 +37,6 @@ function checkRate(ip: string): boolean {
 }
 setInterval(() => { const n = Date.now(); for (const [k, v] of rateStore) { if (v.expires < n) rateStore.delete(k) } }, 300_000)
 
-function htmlEncode(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#x27;")
-}
-
 async function hmacSha512(secret: string, data: string): Promise<string> {
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-512" }, false, ["sign"])
@@ -47,28 +44,9 @@ async function hmacSha512(secret: string, data: string): Promise<string> {
   return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("")
 }
 
-interface EmailData { to: string; subject: string; html: string }
-async function sendEmail(data: EmailData): Promise<void> {
-  const apiKey = Deno.env.get("RESEND_API_KEY")
-  if (!apiKey) return
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn Management <noreply@highlands-motel.com>"
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: data.to, subject: data.subject, html: data.html }),
-    })
-    if (!res.ok) console.error(`Reconciliation email failed: ${res.status}`)
-  } catch (e) { console.error("Reconciliation email error:", e) }
-}
 
-function buildConfirmationHtml(p: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
-  const ge = htmlEncode
-  const advance = p.advanceAmount ?? p.totalPrice
-  const balance = p.balanceAmount ?? 0
-  const isPartial = !!p.advanceAmount
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;padding:24px;max-width:600px"><h2 style="color:#92400e">Booking Confirmed — Highlands Motel &amp; Cafe</h2><p>Dear ${ge(p.guestName)},</p><p>Your booking at Highlands Motel &amp; Cafe has been confirmed.</p><table style="width:100%;border-collapse:collapse;margin:16px 0"><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Room</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(p.roomName)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-in</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(p.checkIn)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Check-out</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>${ge(p.checkOut)}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Total Booking Amount</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${p.totalPrice.toLocaleString()}</strong></td></tr>${isPartial ? `<tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Advance Payment (60%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${advance.toLocaleString()}</strong></td></tr><tr><td style="padding:8px;border-bottom:1px solid #eee;color:#666">Balance at Property (40%)</td><td style="padding:8px;border-bottom:1px solid #eee"><strong>NPR ${balance.toLocaleString()}</strong></td></tr>` : ''}<tr><td style="padding:8px;color:#666">Booking ID</td><td style="padding:8px"><code>${ge(p.bookingId)}</code></td></tr></table><p style="color:#666;font-size:14px">If you have any questions, contact us at the property.</p><p style="font-size:12px;color:#999">— Highlands Motel &amp; Cafe</p></body></html>`
-}
+
+
 
 function errorResponse(message: string, status = 400): Response {
   return new Response(JSON.stringify({ message, error: "RECONCILIATION_ERROR" }), { headers: { "Content-Type": "application/json" }, status })
@@ -155,8 +133,8 @@ export default async function handler(req: Request) {
   if (!merchantCode || !merchantSecret) return errorResponse("Payment gateway not configured", 500)
 
   try {
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
+    const anonKey = Deno.env.get("API_KEY") || ""
     if (!baseUrl || !anonKey) return errorResponse("Database not configured", 500)
     const { database: db } = createClient({ baseUrl, anonKey })
 
@@ -246,24 +224,25 @@ export default async function handler(req: Request) {
 
           if (confirmed) {
             results.recovered++
-            // Fire-and-forget confirmation email
             ;(async () => {
               try {
-                const { data: room } = await db.from("rooms").select("name").eq("id", booking.room_id).single()
-                await sendEmail({
-                  to: booking.guest_email,
-                  subject: "Booking Confirmed — Highlands Motel & Cafe",
-                  html: buildConfirmationHtml({
-                    guestName: booking.guest_name,
-                    roomName: room?.name || "Selected Room",
-                    checkIn: booking.check_in,
-                    checkOut: booking.check_out,
-                    totalPrice: booking.total_price,
-                    advanceAmount: booking.advance_amount || undefined,
-                    balanceAmount: booking.balance_amount || undefined,
-                    bookingId: booking.id,
-                  }),
-                })
+                const { data: room } = await db.from("rooms").select("name, room_number").eq("id", booking.room_id).single()
+                const info: BookingInfo = {
+                  id: booking.id,
+                  guest_name: booking.guest_name,
+                  guest_email: booking.guest_email,
+                  guest_phone: "",
+                  room_name: room?.name || "Selected Room",
+                  room_number: room?.room_number || "",
+                  check_in: booking.check_in,
+                  check_out: booking.check_out,
+                  total_price: booking.total_price,
+                  advance_amount: booking.advance_amount || undefined,
+                  balance_amount: booking.balance_amount || undefined,
+                  booking_status: "confirmed",
+                  payment_status: "paid",
+                }
+                await sendBookingNotifications(db, info, "booking_confirmed")
               } catch { /* best-effort */ }
             })()
           } else {
@@ -364,18 +343,23 @@ export default async function handler(req: Request) {
                   results.recovered++
                   ;(async () => {
                     try {
-                      const { data: room } = await db.from("rooms").select("name").eq("id", booking.room_id).single()
-                      await sendEmail({
-                        to: booking.guest_email, subject: "Booking Confirmed — Highlands Motel & Cafe",
-                        html: buildConfirmationHtml({
-                          guestName: booking.guest_name, roomName: room?.name || "Selected Room",
-                          checkIn: booking.check_in, checkOut: booking.check_out,
-                          totalPrice: booking.total_price,
-                          advanceAmount: booking.advance_amount || undefined,
-                          balanceAmount: booking.balance_amount || undefined,
-                          bookingId: booking.id,
-                        }),
-                      })
+                      const { data: room } = await db.from("rooms").select("name, room_number").eq("id", booking.room_id).single()
+                      const info: BookingInfo = {
+                        id: booking.id,
+                        guest_name: booking.guest_name,
+                        guest_email: booking.guest_email,
+                        guest_phone: "",
+                        room_name: room?.name || "Selected Room",
+                        room_number: room?.room_number || "",
+                        check_in: booking.check_in,
+                        check_out: booking.check_out,
+                        total_price: booking.total_price,
+                        advance_amount: booking.advance_amount || undefined,
+                        balance_amount: booking.balance_amount || undefined,
+                        booking_status: "confirmed",
+                        payment_status: "paid",
+                      }
+                      await sendBookingNotifications(db, info, "booking_confirmed")
                     } catch { /* best-effort */ }
                   })()
                 } else {
@@ -399,18 +383,23 @@ export default async function handler(req: Request) {
                     results.recovered++
                     ;(async () => {
                       try {
-                        const { data: room } = await db.from("rooms").select("name").eq("id", booking.room_id).single()
-                        await sendEmail({
-                          to: booking.guest_email, subject: "Booking Confirmed — Highlands Motel & Cafe",
-                          html: buildConfirmationHtml({
-                            guestName: booking.guest_name, roomName: room?.name || "Selected Room",
-                            checkIn: booking.check_in, checkOut: booking.check_out,
-                            totalPrice: booking.total_price,
-                            advanceAmount: booking.advance_amount || undefined,
-                            balanceAmount: booking.balance_amount || undefined,
-                            bookingId: booking.id,
-                          }),
-                        })
+                        const { data: room } = await db.from("rooms").select("name, room_number").eq("id", booking.room_id).single()
+                        const info: BookingInfo = {
+                          id: booking.id,
+                          guest_name: booking.guest_name,
+                          guest_email: booking.guest_email,
+                          guest_phone: "",
+                          room_name: room?.name || "Selected Room",
+                          room_number: room?.room_number || "",
+                          check_in: booking.check_in,
+                          check_out: booking.check_out,
+                          total_price: booking.total_price,
+                          advance_amount: booking.advance_amount || undefined,
+                          balance_amount: booking.balance_amount || undefined,
+                          booking_status: "confirmed",
+                          payment_status: "paid",
+                        }
+                        await sendBookingNotifications(db, info, "booking_confirmed")
                       } catch { /* best-effort */ }
                     })()
                   }

@@ -18,7 +18,7 @@ import { describe, it, expect, beforeAll } from 'vitest'
 // ── Configuration ───────────────────────────────────────────────────────────
 const INSFORGE_BASE_URL = process.env.VITE_INSFORGE_BASE_URL || 'https://6aiag3ra.us-east.insforge.app'
 const ANON_KEY = process.env.VITE_INSFORGE_ANON_KEY || ''
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+const SERVICE_ROLE_KEY = process.env.INSFORGE_SERVICE_ROLE_KEY || ''
 const BOOKING_WEBHOOK_SECRET = process.env.TEST_WEBHOOK_SECRET || 'whsec_sync_integration_test_key_2026'
 
 const CONCURRENCY = 10

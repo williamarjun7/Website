@@ -125,7 +125,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     cafe_hero_btn_menu: 'View Menu',
 
     // Cafe - Description
-    cafe_description: 'Our on-site cafe serves fresh, locally-sourced dishes prepared with love. Start your day with a hearty breakfast or enjoy a relaxing meal while taking in the stunning highland scenery.',
+    cafe_description: 'Our on-site café serves freshly brewed coffee and refreshing beverages made to keep you energized throughout the day. Whether you\'re stopping by for a morning coffee or a relaxing break, enjoy your drink while taking in the peaceful beauty of Surkhet, Karnali Province.',
     cafe_hours: 'Open Daily',
 
     // Cafe - Menu

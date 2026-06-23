@@ -31,7 +31,7 @@ export default async function handler(req: Request) {
   }
 
   const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
-  const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+  const anonKey = Deno.env.get("API_KEY") || ""
 
   const checks: Record<string, { status: string; latencyMs?: number; error?: string }> = {}
 

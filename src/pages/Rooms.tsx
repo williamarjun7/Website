@@ -303,7 +303,6 @@ const Rooms = () => {
                                                 </h2>
                                                 <div className="flex items-center space-x-2 flex-wrap">
                                                     <span className="text-primary text-xs font-bold uppercase tracking-wider">{room.room_type || C('rooms_type_fallback', 'Standard Room')}</span>
-                                                    {room.room_size && <span className="text-gray-400 text-xs">• {room.room_size}</span>}
                                                     {room.room_number && (
                                                         <span className="text-gray-400 text-xs">• #{room.room_number}</span>
                                                     )}

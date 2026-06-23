@@ -150,9 +150,9 @@ export default async function (req: Request) {
     if (guest_name.length < 2 || guest_name.length > 100) {
       throw new Error("guest_name must be between 2 and 100 characters")
     }
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
 
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const anonKey = Deno.env.get("API_KEY") || ""
 
     if (!baseUrl || !anonKey) {
       throw new Error("Server configuration error")

@@ -21,7 +21,7 @@ import { assertEquals, assert } from "https://deno.land/std@0.208.0/assert/mod.t
 const BASE_URL = Deno.env.get("INSFORGE_BASE_URL") ?? "https://6aiag3ra.us-east.insforge.app"
 const ANON_KEY = Deno.env.get("VITE_INSFORGE_ANON_KEY") ?? ""
 const AUTH_KEY = Deno.env.get("TEST_AUTH_JWT") ?? ""
-const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+const SERVICE_ROLE_KEY = Deno.env.get("API_KEY") ?? ""
 
 interface TableAccess {
   table: string
@@ -260,7 +260,7 @@ Deno.test({
   name: "RLS-SYNC-2: service_role has access to sync tables",
   fn: async () => {
     if (!SERVICE_ROLE_KEY) {
-      console.log("  ⚠️  SUPABASE_SERVICE_ROLE_KEY not set — skipping service_role tests")
+      console.log("  ⚠️  API_KEY not set — skipping service_role tests")
       return
     }
     for (const table of SYNC_TABLES) {

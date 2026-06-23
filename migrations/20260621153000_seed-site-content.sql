@@ -239,7 +239,6 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Rooms - Labels
 INSERT INTO site_content (key, value) VALUES
-    ('rooms_size_fallback', '350 sq.ft'),
     ('rooms_status_available', 'Available'),
     ('rooms_label_guests', 'Guests'),
     ('rooms_label_people', 'People'),
@@ -267,7 +266,6 @@ INSERT INTO site_content (key, value) VALUES
     ('roomdetails_policies_heading', 'Policies & Notes'),
     ('roomdetails_reviews_heading', 'Guest Reviews'),
     ('roomdetails_reserve_heading', 'Reserve Your Stay'),
-    ('roomdetails_location_heading', 'Location'),
     ('roomdetails_capacity_label', 'CAPACITY'),
     ('roomdetails_size_label', 'SIZE'),
     ('roomdetails_bedtype_label', 'BED TYPE'),
@@ -284,8 +282,6 @@ INSERT INTO site_content (key, value) VALUES
     ('roomdetails_type_fallback', 'Standard Room'),
     ('roomdetails_room_number_label', 'Room #{number}'),
     ('roomdetails_floor_label', 'Floor {floor}'),
-    ('roomdetails_map_placeholder', 'Map'),
-    ('roomdetails_map_address', 'Birendranagar-07, Khajura, Surkhet'),
     ('roomdetails_no_ac_label', 'Non-AC'),
     ('roomdetails_ac_label', 'AC')
 ON CONFLICT (key) DO NOTHING;

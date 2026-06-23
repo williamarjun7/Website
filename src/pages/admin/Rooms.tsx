@@ -49,7 +49,6 @@ const Rooms = () => {
         max_guests: '2',
         room_type: '',
         amenities: '',
-        room_size: '',
         bed_type: '',
         policies: '',
         is_active: true,
@@ -87,7 +86,6 @@ const Rooms = () => {
             max_guests: room.max_guests.toString(),
             room_type: room.room_type || '',
             amenities: room.amenities?.join(', ') || '',
-            room_size: room.room_size || '',
             bed_type: room.bed_type || '',
             policies: room.policies || '',
             is_active: room.is_active,
@@ -309,7 +307,6 @@ const Rooms = () => {
         max_guests: '2',
         room_type: '',
         amenities: '',
-        room_size: '',
         bed_type: '',
         policies: '',
         is_active: true,
@@ -449,7 +446,6 @@ const Rooms = () => {
                                     </span>
                                 )}
                                 {room.floor_number && <span className="text-gray-400">• Floor {room.floor_number}</span>}
-                                {room.room_size && <span className="text-gray-400">• {room.room_size}</span>}
                                 {room.bed_type && <span className="text-gray-400">• {room.bed_type}</span>}
                                 {room.featured && <span className="text-amber-500">★ Featured</span>}
                                 {room.discount_percent && room.discount_percent > 0 && (
@@ -595,19 +591,6 @@ const Rooms = () => {
                                             <option value="King Bed">King Bed</option>
                                             <option value="Twin Bed">Twin Bed</option>
                                         </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Size</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
-                                            <input
-                                                type="text"
-                                                value={formData.room_size}
-                                                onChange={(e) => setFormData({ ...formData, room_size: e.target.value })}
-                                                className="input w-full pl-10 text-sm font-medium"
-                                                placeholder="350 sq ft"
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                                 <div className="mt-4">

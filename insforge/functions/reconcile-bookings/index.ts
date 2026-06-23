@@ -135,9 +135,9 @@ export default async function handler(): Promise<Response> {
   const startTime = Date.now()
 
   try {
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
 
+    const anonKey = Deno.env.get("API_KEY") || ""
     if (!baseUrl || !anonKey) {
       return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 500 })
     }

@@ -99,8 +99,8 @@ async function verifyAdminSession(request: Request): Promise<{ authorized: boole
     return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
   }
 
-  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-  const svcKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
+  const svcKey = Deno.env.get("API_KEY") || ""
   if (!insforgeUrl || !svcKey) {
     return { authorized: false, error: "Server configuration error", errorStatus: 500 }
   }
@@ -150,8 +150,8 @@ export default async function handler(req: Request) {
     return errorResponse("Request body too large", 413, corsHeaders)
   }
 
-  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-  const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+  const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
+  const anonKey = Deno.env.get("API_KEY") || ""
   if (!insforgeUrl || !anonKey) return errorResponse("Database not configured", 500, corsHeaders)
   const { database: db } = createClient({ baseUrl: insforgeUrl, anonKey })
 

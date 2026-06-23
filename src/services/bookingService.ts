@@ -28,6 +28,7 @@ export interface CreateBookingData {
     check_in: string;
     check_out: string;
     guests?: number;
+    special_requests?: string;
     payment_status?: 'pending' | 'paid' | 'failed' | 'pay_at_property';
     advance_amount?: number;
     balance_amount?: number;

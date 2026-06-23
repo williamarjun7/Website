@@ -68,6 +68,16 @@ const GuestInfoStep: React.FC<GuestInfoStepProps> = ({
             </div>
 
             <div>
+                <label htmlFor="special_requests" className="block text-sm font-medium mb-2">{C('booking_special_requests_label', 'Special Requests or Notes')} <span className="text-gray-400 font-normal">({C('booking_optional', 'optional')})</span></label>
+                <textarea id="special_requests" {...register('special_requests')}
+                    rows={3}
+                    className="input w-full resize-none"
+                    placeholder={C('booking_special_requests_placeholder', 'e.g., early check-in, ground floor room, extra pillows...')}
+                    aria-invalid={errors.special_requests ? "true" : "false"} />
+                {errors.special_requests && <p className="text-red-500 text-sm mt-1">{errors.special_requests.message}</p>}
+            </div>
+
+            <div>
                 <label className="block text-sm font-medium mb-3">{C('booking_payment_method_label', 'Payment Method')}</label>
                 <div className="grid gap-3">
                     <label className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 hover:shadow-md ${selectedPaymentMethod === 'pay_at_property' ? 'border-amber-900 bg-amber-50 shadow-sm' : 'border-gray-200 bg-white hover:border-amber-300'}`}>

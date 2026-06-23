@@ -10,14 +10,21 @@ const AdminGate = () => {
 
     useEffect(() => {
         let cancelled = false;
-        setIsAuth(null);
+        setIsAuth((prev) => {
+            if (prev === true) return true;
+            return null;
+        });
 
         const checkAuth = async () => {
             const auth = await isAuthenticated();
             if (cancelled) return;
             setIsAuth(auth);
             if (auth) {
-                await refreshPermissions();
+                try {
+                    await refreshPermissions();
+                } catch {
+                    // Permission refresh failed but user is still authenticated
+                }
             }
         };
         checkAuth();

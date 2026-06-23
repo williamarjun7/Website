@@ -7,8 +7,8 @@
 // Schedule: */15 * * * *
 //
 // Env vars required:
-//   INSFORGE_BASE_URL or SUPABASE_URL
-//   SUPABASE_SERVICE_ROLE_KEY or API_KEY
+//   INSFORGE_BASE_URL
+//   API_KEY
 //   POS_WEBHOOK_URL (optional, for cross-reference)
 //   POS_SYNC_API_KEY (optional, for cross-reference)
 //
@@ -24,7 +24,7 @@ export default {
   },
   env: [
     "INSFORGE_BASE_URL",
-    "SUPABASE_SERVICE_ROLE_KEY",
+    "API_KEY",
     "POS_WEBHOOK_URL",
     "POS_SYNC_API_KEY",
   ],

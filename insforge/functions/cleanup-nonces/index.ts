@@ -1,8 +1,8 @@
 import { createClient } from "npm:@insforge/sdk"
 
 export default async function handler(req: Request) {
-  const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-  const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+  const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
+  const anonKey = Deno.env.get("API_KEY") || ""
   if (!baseUrl || !anonKey) {
     return new Response(JSON.stringify({ error: "Server config error" }), { status: 500, headers: { "Content-Type": "application/json" } })
   }

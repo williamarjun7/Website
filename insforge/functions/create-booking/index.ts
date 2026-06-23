@@ -1,6 +1,7 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
 import { generateTraceId } from "../_shared/sync-harden.ts"
+import { sendBookingNotifications, type BookingInfo } from "../_shared/notifications.ts"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://highlandsmotelinn.insforge.site",
@@ -72,6 +73,7 @@ const CreateBookingSchema = z.object({
   guest_email: z.string().email({ message: "guest_email must be a valid email" }),
   guest_phone: z.string().regex(/^(\+?\d{1,3}[- ]?)?\d{7,15}$/, { message: "guest_phone is invalid" }),
   guests: z.number().int().min(1).max(20).optional(),
+  special_requests: z.string().max(1000).optional(),
   payment_status: z.enum(["pending", "failed", "pay_at_property"]).optional(),
 })
 
@@ -120,7 +122,7 @@ export default async function (req: Request) {
       throw new Error(`Validation failed: ${messages}`)
     }
 
-    const { room_id, check_in, check_out, guest_name: rawName, guest_email, guest_phone, guests, payment_status } = parseResult.data
+    const { room_id, check_in, check_out, guest_name: rawName, guest_email, guest_phone, guests, special_requests, payment_status } = parseResult.data
     const guest_name = sanitizeString(rawName)
 
     const checkInDate = new Date(check_in)
@@ -141,9 +143,9 @@ export default async function (req: Request) {
     if (guest_name.length < 2 || guest_name.length > 100) {
       throw new Error("guest_name must be between 2 and 100 characters")
     }
+    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
 
-    const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || Deno.env.get("SUPABASE_URL") || ""
-    const anonKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("API_KEY") || ""
+    const anonKey = Deno.env.get("API_KEY") || ""
 
     if (!baseUrl || !anonKey) {
       throw new Error("Server configuration error")
@@ -234,6 +236,7 @@ export default async function (req: Request) {
         guest_name,
         guest_email,
         guest_phone,
+        special_requests: special_requests || null,
         payment_status: payment_status || "pending",
         booking_status: bookingStatus,
         hold_expires_at: holdExpiresAt,
@@ -259,6 +262,34 @@ export default async function (req: Request) {
         status: isOverlap ? 409 : 502,
       })
     }
+
+    // ── Fire notification (fire-and-forget, never block response) ────────
+    ;(async () => {
+      try {
+        const { data: room } = await db.from("rooms").select("name, room_number").eq("id", room_id).single()
+        const info: BookingInfo = {
+          id: booking.id,
+          guest_name: booking.guest_name,
+          guest_email: booking.guest_email,
+          guest_phone: booking.guest_phone,
+          room_name: room?.name || "Selected Room",
+          room_number: room?.room_number || "",
+          check_in: booking.check_in,
+          check_out: booking.check_out,
+          total_price: booking.total_price,
+          advance_amount: booking.advance_amount || undefined,
+          balance_amount: booking.balance_amount || undefined,
+          booking_status: booking.booking_status,
+          payment_status: booking.payment_status,
+          guests: guestCount,
+          created_at: booking.created_at,
+          special_requests: booking.special_requests || undefined,
+        }
+        await sendBookingNotifications(db, info, "booking_created")
+      } catch (e) {
+        console.error("[create-booking] Notification error:", e)
+      }
+    })()
 
     return new Response(JSON.stringify(booking), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

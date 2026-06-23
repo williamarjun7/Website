@@ -1,38 +1,29 @@
-/**
- * sync-harden.ts
- *
- * Shared utilities for hardened sync:
- *   - HMAC signing (strict hex, lowercase)
- *   - HMAC verification with timing-safe compare
- *   - Per-endpoint circuit breaker
- *   - Exponential backoff with jitter
- */
-
-// ── Inlined from timing-safe.ts ──
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) { return false }
-  const encoder = new TextEncoder()
-  const aBuf = encoder.encode(a)
-  const bBuf = encoder.encode(b)
-  if (aBuf.length !== bBuf.length) { return false }
-  try { return crypto.subtle.timingSafeEqual(aBuf, bBuf) } catch {
-    let result = 0
-    for (let i = 0; i < aBuf.length; i++) result |= aBuf[i] ^ bBuf[i]
-    return result === 0
+// ── Inlined from _shared/timing-safe.ts ──
+export function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const encoder = new TextEncoder();
+  const aBuf = encoder.encode(a);
+  const bBuf = encoder.encode(b);
+  if (aBuf.length !== bBuf.length) {
+    return false;
+  }
+  try {
+    return crypto.subtle.timingSafeEqual(aBuf, bBuf);
+  } catch {
+    let result = 0;
+    for (let i = 0; i < aBuf.length; i++) {
+      result |= aBuf[i] ^ bBuf[i];
+    }
+    return result === 0;
   }
 }
 // ── End inlined ──
-
-// ── HMAC ──────────────────────────────────────────────────────────
+// ── Inlined from _shared/sync-harden.ts ──
 
 const HMAC_ALGORITHM = { name: "HMAC", hash: "SHA-256" } as const
 
-/**
- * Signs a payload using HMAC-SHA256.
- * Returns lowercase hex string.
- *
- * Format: HMAC-SHA256(secret, payload + "." + timestamp_ms)
- */
 export async function signHmac(
   secret: string,
   payload: string,
@@ -47,10 +38,6 @@ export async function signHmac(
     .join("")
 }
 
-/**
- * Verifies an HMAC signature with ±5 minute timestamp tolerance.
- * Uses timing-safe comparison to prevent timing attacks.
- */
 export async function verifyHmac(
   secret: string,
   payload: string,
@@ -71,8 +58,6 @@ export async function verifyHmac(
   }
   return { valid: true }
 }
-
-// ── Circuit Breaker ──────────────────────────────────────────────
 
 type CircuitState = "closed" | "open" | "half-open"
 
@@ -96,7 +81,6 @@ interface CircuitEntry {
   halfOpenAttempts: number
 }
 
-// Shared across all invocations (per-worker, in-memory)
 const circuitBreakerStore = new Map<string, CircuitEntry>()
 
 function getCircuitEntry(endpoint: string): CircuitEntry {
@@ -108,9 +92,6 @@ function getCircuitEntry(endpoint: string): CircuitEntry {
   return entry
 }
 
-/**
- * Check if a request to endpoint is allowed through the circuit breaker.
- */
 export function circuitBreakerAllow(endpoint: string): { allowed: boolean; state: CircuitState } {
   const entry = getCircuitEntry(endpoint)
   const now = Date.now()
@@ -135,21 +116,14 @@ export function circuitBreakerAllow(endpoint: string): { allowed: boolean; state
   return { allowed: true, state: "closed" }
 }
 
-/**
- * Record a successful request to the circuit breaker.
- */
 export function circuitBreakerSuccess(endpoint: string): void {
   const entry = getCircuitEntry(endpoint)
   entry.failureCount = 0
   entry.state = "closed"
 }
 
-/**
- * Record a failed request to the circuit breaker.
- * Only 5xx responses count toward the threshold.
- */
 export function circuitBreakerFailure(endpoint: string, statusCode: number): void {
-  if (statusCode < 500) return // only 5xx opens circuit
+  if (statusCode < 500) return
   const entry = getCircuitEntry(endpoint)
   entry.failureCount++
   entry.lastFailureAt = Date.now()
@@ -159,45 +133,27 @@ export function circuitBreakerFailure(endpoint: string, statusCode: number): voi
   }
 }
 
-// ── Exponential Backoff ──────────────────────────────────────────
-
 const BASE_DELAY_MS = 1_000
 const MAX_DELAY_MS = 60_000
 const JITTER_FACTOR = 0.2
 
-/**
- * Returns the delay in ms for the given retry attempt (1-indexed).
- * Implements: min(BASE * 2^(attempt-1), MAX) with ±20% jitter.
- */
 export function backoffDelay(attempt: number): number {
   const exponential = Math.min(BASE_DELAY_MS * Math.pow(2, attempt - 1), MAX_DELAY_MS)
   const jitter = exponential * JITTER_FACTOR * (Math.random() * 2 - 1)
   return Math.round(exponential + jitter)
 }
 
-/**
- * Determines if a retry is allowed based on attempt count and HTTP status.
- * Only 5xx and network errors should be retried (4xx = non-retryable).
- */
 export function isRetryable(statusCode: number | null): boolean {
-  if (statusCode === null) return true // network error
+  if (statusCode === null) return true
   if (statusCode >= 500) return true
-  if (statusCode === 429) return true // rate limit — retry
+  if (statusCode === 429) return true
   return false
 }
 
-// ── Trace / Lineage ──────────────────────────────────────────────
-
-/**
- * Generates a v4 UUID (used for trace_id).
- */
 export function generateTraceId(): string {
   return crypto.randomUUID()
 }
 
-/**
- * Builds sync event lineage metadata.
- */
 export function buildLineage(
   originSystem: "website" | "pos",
   traceId?: string,
@@ -214,18 +170,12 @@ export function buildLineage(
   }
 }
 
-// ── Sync Event Sender ────────────────────────────────────────────
-
 export interface SyncSendResult {
   success: boolean
   statusCode: number
   body: string
 }
 
-/**
- * Sends a sync event to a webhook endpoint with HMAC signing,
- * circuit breaker, and retry support.
- */
 export async function sendSyncEvent(
   webhookUrl: string,
   webhookSecret: string,
@@ -278,7 +228,7 @@ export async function sendSyncEvent(
     return { success: response.ok, statusCode: response.status, body: bodyText }
   } catch (err) {
     clearTimeout(timer)
-    circuitBreakerFailure(webhookUrl, 503) // network error treated as 503
+    circuitBreakerFailure(webhookUrl, 503)
     return {
       success: false,
       statusCode: 0,
@@ -286,3 +236,6 @@ export async function sendSyncEvent(
     }
   }
 }
+// ── End inlined ──
+
+export default async function handler() { return new Response('ok') }
