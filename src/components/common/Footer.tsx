@@ -28,7 +28,7 @@ const Footer = memo(() => {
         ]).then(([contentRes, settingsRes, navRes]) => {
             if (contentRes.data) setContent(contentRes.data);
             if (settingsRes.data) setSettings(settingsRes.data);
-            if (navRes.data) setNavItems(navRes.data.filter(n => n.is_visible));
+            if (navRes.data) setNavItems(navRes.data.filter((n: { is_visible: boolean }) => n.is_visible));
         }).catch(() => {});
     }, []);
 
