@@ -3,8 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
 import { getSiteImagesByPage, getSiteContentMap, getMenuPages } from '../services/contentService';
-import menuImgFallback from '../assets/menu.png';
-import MenuViewer from '../components/cafe/MenuViewer';
+import menuImgFallback from '../assets/menu.jpeg';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
 interface MenuCategory {
@@ -21,6 +20,8 @@ interface MenuItem {
     price: number;
     image?: string;
     available: boolean;
+    is_featured: boolean;
+    is_most_sold: boolean;
 }
 
 const Cafe = () => {
@@ -29,9 +30,14 @@ const Cafe = () => {
     const [content, setContent] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
     const [menuImages, setMenuImages] = useState<{ id: string; image_url: string; title?: string }[]>([]);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
+
+    const openMenuInNewTab = () => {
+        const imgUrl = menuImages[0]?.image_url
+            || (content['view_full_menu_image'] && !content['view_full_menu_image'].endsWith('.pdf') ? content['view_full_menu_image'] : null)
+            || menuImgFallback;
+        window.open(imgUrl, '_blank');
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -62,10 +68,9 @@ const Cafe = () => {
 
     const getFeaturedItems = () => {
         if (!menu.length) return [];
-        const featuredCategories = menu.slice(0, 2);
-        return featuredCategories.map(category => ({
+        return menu.map(category => ({
             ...category,
-            items: category.items.slice(0, 2)
+            items: category.items.filter(item => item.is_featured)
         })).filter(category => category.items.length > 0);
     };
 
@@ -104,7 +109,7 @@ const Cafe = () => {
                                 <span>{C('cafe_hero_btn_reserve', 'Call to Reserve')}</span>
                             </a>
                             <button
-                                onClick={() => setIsMenuOpen(true)}
+                                onClick={openMenuInNewTab}
                                 className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                             >
                                 <span>{C('cafe_hero_btn_menu', 'View Menu')}</span>
@@ -171,59 +176,62 @@ const Cafe = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <h2 className="font-heading text-3xl font-bold mb-8 text-center">
-                                        {C('cafe_featured_heading', 'Featured Dishes')}
-                                    </h2>
-                                    <div className="space-y-12 max-w-4xl mx-auto">
-                                        {featuredItems.length > 0 ? (
-                                            featuredItems.map((category) => (
-                                                <div key={category.id}>
-                                                    <h3 className="font-heading text-xl font-semibold mb-4 text-center text-amber-800">
-                                                        {category.name}
-                                                    </h3>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                        {category.items.map((item) => (
-                                                            <div
-                                                                key={item.id}
-                                                                className="flex items-start space-x-4 p-4 rounded-lg bg-amber-50/50 border border-amber-100"
-                                                            >
-                                                                {item.image && (
-                                                                    <img
-                                                                        src={item.image}
-                                                                        alt={item.name}
-                                                                        className="w-24 h-24 object-cover rounded-lg"
-                                                                        onError={(e) => {
-                                                                            const target = e.target as HTMLImageElement;
-                                                                            target.style.display = 'none';
-                                                                        }}
-                                                                    />
-                                                                )}
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-start justify-between mb-2">
-                                                                        <h4 className="font-heading text-lg font-semibold">
-                                                                            {item.name}
-                                                                        </h4>
-                                                                        <span className="font-bold text-primary ml-4 whitespace-nowrap">
-                                                                            NPR {item.price.toLocaleString()}
-                                                                        </span>
-                                                                    </div>
-                                                                    {item.description && (
-                                                                        <p className="text-gray-600 text-sm leading-relaxed mb-3">
-                                                                            {item.description}
-                                                                        </p>
+                                    {featuredItems.length > 0 && (
+                                        <div className="mb-12">
+                                            <h2 className="font-heading text-3xl font-bold mb-8 text-center">
+                                                {C('cafe_featured_heading', 'Featured Dishes')}
+                                            </h2>
+                                            <div className="space-y-12 max-w-4xl mx-auto">
+                                                {featuredItems.map((category) => (
+                                                    <div key={category.id}>
+                                                        <h3 className="font-heading text-xl font-semibold mb-4 text-center text-amber-800">
+                                                            {category.name}
+                                                        </h3>
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                            {category.items.map((item) => (
+                                                                <div
+                                                                    key={item.id}
+                                                                    className="flex items-start space-x-4 p-4 rounded-lg bg-amber-50/50 border border-amber-100"
+                                                                >
+                                                                    {item.image && (
+                                                                        <img
+                                                                            src={item.image}
+                                                                            alt={item.name}
+                                                                            className="w-24 h-24 object-cover rounded-lg"
+                                                                            onError={(e) => {
+                                                                                const target = e.target as HTMLImageElement;
+                                                                                target.style.display = 'none';
+                                                                            }}
+                                                                        />
                                                                     )}
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <div className="flex items-start justify-between mb-2">
+                                                                            <div>
+                                                                                <h4 className="font-heading text-lg font-semibold">
+                                                                                    {item.name}
+                                                                                </h4>
+                                                                                {item.is_most_sold && (
+                                                                                    <span className="inline-block text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded uppercase tracking-wider mt-0.5">Most Sold</span>
+                                                                                )}
+                                                                            </div>
+                                                                            <span className="font-bold text-primary ml-4 whitespace-nowrap">
+                                                                                NPR {item.price.toLocaleString()}
+                                                                            </span>
+                                                                        </div>
+                                                                        {item.description && (
+                                                                            <p className="text-gray-600 text-sm leading-relaxed mb-3">
+                                                                                {item.description}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        ))}
+                                                            ))}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="text-center py-8 text-gray-600">
-                                                <p>{C('cafe_featured_empty', 'Featured dishes will be displayed here')}</p>
+                                                ))}
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    )}
                                 </>
                             )}
 
@@ -242,9 +250,20 @@ const Cafe = () => {
                                                     {category.items.map((item) => (
                                                         <div
                                                             key={item.id}
-                                                            className="flex items-center justify-between p-3 rounded-lg border border-gray-200"
+                                                            className="flex items-center space-x-4 p-3 rounded-lg border border-gray-200"
                                                         >
-                                                            <div className="min-w-0 flex-1 mr-3">
+                                                            {item.image && (
+                                                                <img
+                                                                    src={item.image}
+                                                                    alt={item.name}
+                                                                    className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                                                                    onError={(e) => {
+                                                                        const target = e.target as HTMLImageElement;
+                                                                        target.style.display = 'none';
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
                                                                 <div className="font-medium text-gray-900 truncate">{item.name}</div>
                                                                 <div className="text-sm text-gray-500">NPR {item.price.toLocaleString()}</div>
                                                             </div>
@@ -259,7 +278,7 @@ const Cafe = () => {
 
                             <div className="text-center mt-12">
                                 <button
-                                    onClick={() => setIsMenuOpen(true)}
+                                    onClick={openMenuInNewTab}
                                     className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
                                 >
                                     <MenuIcon size={24} />
@@ -293,15 +312,6 @@ const Cafe = () => {
                     </div>
                 </div>
             </div>
-
-            <MenuViewer
-                images={menuImages}
-                menu={menu}
-                pdfUrl={content['view_full_menu_image']?.endsWith('.pdf') ? content['view_full_menu_image'] : null}
-                fallbackImage={!menuImages.length && content['view_full_menu_image'] && !content['view_full_menu_image'].endsWith('.pdf') ? content['view_full_menu_image'] : !menuImages.length ? menuImgFallback : undefined}
-                isOpen={isMenuOpen}
-                onClose={() => setIsMenuOpen(false)}
-            />
         </div>
     );
 };

@@ -53,7 +53,6 @@ const allGroups: NavGroup[] = [
         icon: FileText,
         items: [
             { name: 'Pages', path: '/admin/pages', icon: FileSymlink, resource: 'page', action: 'read' },
-            { name: 'Menu Pages', path: '/admin/menu-pages', icon: ImageIcon },
             { name: 'Cafe Menu', path: '/admin/menu', icon: Coffee },
             { name: 'FAQ', path: '/admin/faq', icon: HelpCircle, resource: 'faq', action: 'read' },
             { name: 'Website Content', path: '/admin/content', icon: FileText },

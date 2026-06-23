@@ -17,6 +17,8 @@ export interface MenuItem {
     image?: string;
     available: boolean;
     category: string;
+    is_featured?: boolean;
+    is_most_sold?: boolean;
 }
 
 export const getFullMenu = async () => {
@@ -29,7 +31,7 @@ export const getFullMenu = async () => {
                 .order('sort_order', { ascending: true }),
             insforge.database
                 .from('menu_items')
-                .select('id, name, description, price, image, available, category')
+                .select('id, name, description, price, image, available, category, is_featured, is_most_sold')
                 .eq('available', true)
                 .is('deleted_at', null)
                 .order('name', { ascending: true }),
@@ -54,6 +56,8 @@ export const getFullMenu = async () => {
                     image: item.image || undefined,
                     available: item.available,
                     category: item.category,
+                    is_featured: item.is_featured ?? false,
+                    is_most_sold: item.is_most_sold ?? false,
                 }));
             return {
                 id: cat.id,
@@ -80,7 +84,7 @@ export const getAdminMenu = async () => {
                 .order('sort_order', { ascending: true }),
             insforge.database
                 .from('menu_items')
-                .select('id, name, description, price, image, available, category')
+                .select('id, name, description, price, image, available, category, is_featured, is_most_sold')
                 .is('deleted_at', null)
                 .order('name', { ascending: true }),
         ]);
@@ -104,6 +108,8 @@ export const getAdminMenu = async () => {
                     image: item.image || undefined,
                     available: item.available,
                     category: item.category,
+                    is_featured: item.is_featured ?? false,
+                    is_most_sold: item.is_most_sold ?? false,
                 }));
             return {
                 id: cat.id,
@@ -248,6 +254,38 @@ export const toggleItemAvailability = async (id: string, available: boolean) => 
         const { data, error } = await insforge.database
             .from('menu_items')
             .update({ available })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
+export const toggleItemFeatured = async (id: string, is_featured: boolean) => {
+    try {
+        const { data, error } = await insforge.database
+            .from('menu_items')
+            .update({ is_featured })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { data, error: null };
+    } catch (error) {
+        return handleInsforgeError(error);
+    }
+};
+
+export const toggleItemMostSold = async (id: string, is_most_sold: boolean) => {
+    try {
+        const { data, error } = await insforge.database
+            .from('menu_items')
+            .update({ is_most_sold })
             .eq('id', id)
             .select()
             .single();

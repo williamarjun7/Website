@@ -97,7 +97,7 @@ const pagesConfig: PageConfig[] = [
         groups: [{
             label: 'Room Details Page',
             sections: [
-                { id: 'headings', label: 'Section Headings', fields: ['roomdetails_desc_heading', 'roomdetails_amenities_heading', 'roomdetails_policies_heading', 'roomdetails_reviews_heading', 'roomdetails_reserve_heading', 'roomdetails_location_heading', 'roomdetails_type_fallback', 'roomdetails_room_number_label', 'roomdetails_floor_label', 'roomdetails_map_placeholder', 'roomdetails_map_address', 'roomdetails_no_ac_label', 'roomdetails_ac_label'] },
+                { id: 'headings', label: 'Section Headings', fields: ['roomdetails_desc_heading', 'roomdetails_amenities_heading', 'roomdetails_policies_heading', 'roomdetails_reviews_heading', 'roomdetails_reserve_heading', 'roomdetails_type_fallback', 'roomdetails_room_number_label', 'roomdetails_floor_label', 'roomdetails_no_ac_label', 'roomdetails_ac_label'] },
                 { id: 'stats', label: 'Room Stats Labels', fields: ['roomdetails_capacity_label', 'roomdetails_size_label', 'roomdetails_bedtype_label', 'roomdetails_availability_label', 'roomdetails_per_night', 'roomdetails_guests_suffix'] },
                 { id: 'policies', label: 'Policies Section', fields: ['roomdetails_checkin_heading', 'roomdetails_cancel_heading', 'roomdetails_checkin_text', 'roomdetails_cancel_text'] },
                 { id: 'sidebar', label: 'Sidebar Features', fields: ['room_sidebar_feature_1', 'room_sidebar_feature_2', 'room_sidebar_feature_3', 'room_back_link', 'room_discover_heading', 'room_book_this_room', 'room_no_credit_card_text', 'room_unavailable_maintenance'] },
@@ -311,7 +311,6 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     roomdetails_policies_heading: { label: 'Policies Section Heading', type: 'text', section: 'Headings' },
     roomdetails_reviews_heading: { label: 'Reviews Section Heading', type: 'text', section: 'Headings' },
     roomdetails_reserve_heading: { label: 'Reserve Section Heading', type: 'text', section: 'Headings' },
-    roomdetails_location_heading: { label: 'Location Sidebar Heading', type: 'text', section: 'Headings' },
     roomdetails_capacity_label: { label: 'Capacity Label', type: 'text', section: 'Stats' },
     roomdetails_size_label: { label: 'Size Label', type: 'text', section: 'Stats' },
     roomdetails_bedtype_label: { label: 'Bed Type Label', type: 'text', section: 'Stats' },
@@ -328,8 +327,6 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     roomdetails_type_fallback: { label: 'Room Type Fallback', type: 'text', section: 'Headings' },
     roomdetails_room_number_label: { label: 'Room Number Label Template', type: 'text', section: 'Headings', description: 'Use {number} as placeholder' },
     roomdetails_floor_label: { label: 'Floor Label Template', type: 'text', section: 'Headings', description: 'Use {floor} as placeholder' },
-    roomdetails_map_placeholder: { label: 'Map Placeholder Text', type: 'text', section: 'Headings' },
-    roomdetails_map_address: { label: 'Map Address Text', type: 'text', section: 'Headings' },
     roomdetails_no_ac_label: { label: 'Non-AC Display Label', type: 'text', section: 'Headings' },
     roomdetails_ac_label: { label: 'AC Display Label', type: 'text', section: 'Headings' },
 

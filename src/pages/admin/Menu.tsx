@@ -8,7 +8,14 @@ import {
     Utensils,
     Upload,
     Loader2,
-    X
+    X,
+    Star,
+    TrendingUp,
+    Image as ImageIcon,
+    Eye,
+    EyeOff,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import {
     getAdminMenu,
@@ -19,8 +26,17 @@ import {
     updateMenuItem,
     deleteMenuItem,
     toggleItemAvailability,
+    toggleItemFeatured,
+    toggleItemMostSold,
     MenuItem
 } from '../../services/menuService';
+import {
+    getAllMenuPages,
+    addSiteImage,
+    deleteSiteImage,
+    toggleImageActive,
+    updateMenuPage,
+} from '../../services/contentService';
 import { uploadFile } from '../../services/storageService';
 import Skeleton from '../../components/common/Skeleton';
 
@@ -32,6 +48,14 @@ interface MenuCategoryData {
     items: MenuItem[];
 }
 
+interface MenuPageData {
+    id: string;
+    image_url: string;
+    title?: string;
+    is_active: boolean;
+    sort_order?: number;
+}
+
 interface ItemFormData {
     name: string;
     description: string;
@@ -39,6 +63,8 @@ interface ItemFormData {
     category: string;
     image: string;
     available: boolean;
+    is_featured: boolean;
+    is_most_sold: boolean;
 }
 
 const Menu = () => {
@@ -64,7 +90,9 @@ const Menu = () => {
         price: '',
         category: '',
         image: '',
-        available: true
+        available: true,
+        is_featured: false,
+        is_most_sold: false
     });
 
     // Upload state
@@ -72,8 +100,18 @@ const Menu = () => {
     const [uploadError, setUploadError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // Menu Pages state
+    const [menuPages, setMenuPages] = useState<MenuPageData[]>([]);
+    const [menuPagesLoading, setMenuPagesLoading] = useState(true);
+    const [menuPageModalOpen, setMenuPageModalOpen] = useState(false);
+    const [mpUploading, setMpUploading] = useState(false);
+    const [mpUploadError, setMpUploadError] = useState('');
+    const [mpImageUrl, setMpImageUrl] = useState('');
+    const mpFileInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
         loadMenu();
+        loadMenuPages();
     }, []);
 
     const loadMenu = async () => {
@@ -127,6 +165,8 @@ const Menu = () => {
             const itemData = {
                 ...itemForm,
                 price: Number(itemForm.price),
+                is_featured: itemForm.is_featured,
+                is_most_sold: itemForm.is_most_sold,
             };
 
             if (editingItem) {
@@ -143,7 +183,9 @@ const Menu = () => {
                 price: '',
                 category: '',
                 image: '',
-                available: true
+                available: true,
+                is_featured: false,
+                is_most_sold: false
             });
             loadMenu();
         } catch (err) {
@@ -173,6 +215,24 @@ const Menu = () => {
         }
     };
 
+    const handleToggleFeatured = async (id: string, current: boolean) => {
+        try {
+            await toggleItemFeatured(id, !current);
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to toggle featured:', err);
+        }
+    };
+
+    const handleToggleMostSold = async (id: string, current: boolean) => {
+        try {
+            await toggleItemMostSold(id, !current);
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to toggle most sold:', err);
+        }
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -199,6 +259,103 @@ const Menu = () => {
         } finally {
             setUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+    // Menu Pages handlers
+    const loadMenuPages = async () => {
+        setMenuPagesLoading(true);
+        try {
+            const { data } = await getAllMenuPages();
+            if (data) setMenuPages(data);
+        } catch (err) {
+            console.error('Failed to load menu pages:', err);
+        }
+        setMenuPagesLoading(false);
+    };
+
+    const handleMenuPageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setMpUploading(true);
+        setMpUploadError('');
+
+        try {
+            if (!file.type.startsWith('image/')) {
+                throw new Error('Please upload an image file');
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                throw new Error('Image size should be less than 10MB');
+            }
+
+            const { data, error } = await uploadFile(file, 'menu-pages');
+            if (error) throw error;
+            if (data) setMpImageUrl(data.url);
+        } catch (err: unknown) {
+            setMpUploadError(err instanceof Error ? err.message : 'Upload failed');
+        } finally {
+            setMpUploading(false);
+            if (mpFileInputRef.current) mpFileInputRef.current.value = '';
+        }
+    };
+
+    const handleMenuPageAdd = async () => {
+        if (!mpImageUrl) {
+            setMpUploadError('Please upload an image first');
+            return;
+        }
+
+        const nextOrder = menuPages.length;
+        const { error } = await addSiteImage({
+            image_url: mpImageUrl,
+            page: 'menu',
+            title: `Menu Page ${menuPages.length + 1}`,
+            is_active: true,
+            sort_order: nextOrder,
+        });
+
+        if (error) {
+            setMpUploadError(error);
+            return;
+        }
+
+        setMenuPageModalOpen(false);
+        setMpImageUrl('');
+        setMpUploadError('');
+        loadMenuPages();
+    };
+
+    const handleMenuPageDelete = async (id: string) => {
+        if (!confirm('Delete this menu page image?')) return;
+        const { error } = await deleteSiteImage(id);
+        if (error) {
+            console.error('Failed to delete: ' + error);
+            return;
+        }
+        loadMenuPages();
+    };
+
+    const handleMenuPageToggleActive = async (id: string, current: boolean) => {
+        const { error } = await toggleImageActive(id, !current);
+        if (error) {
+            alert('Failed to toggle: ' + error);
+            return;
+        }
+        loadMenuPages();
+    };
+
+    const handleMenuPageMove = async (index: number, direction: 'up' | 'down') => {
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= menuPages.length) return;
+
+        const updated = [...menuPages];
+        [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+
+        setMenuPages(updated);
+
+        for (let i = 0; i < updated.length; i++) {
+            await updateMenuPage(updated[i].id, { sort_order: i } as any);
         }
     };
 
@@ -299,9 +456,11 @@ const Menu = () => {
                                                 name: '',
                                                 description: '',
                                                 price: '',
-                                                category: '',
+                                                category: category.name,
                                                 image: '',
-                                                available: true
+                                                available: true,
+                                                is_featured: false,
+                                                is_most_sold: false
                                             });
                                             setItemModalOpen(true);
                                         }}
@@ -335,25 +494,53 @@ const Menu = () => {
                                                 {/* Content */}
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
-                                                        <h3 className="font-semibold text-gray-900 truncate pr-2">{item.name}</h3>
-                                                        <button
-                                                            onClick={() => handleToggleAvailability(item.id, item.available)}
-                                                            title={item.available ? "Mark as Unavailable" : "Mark as Available"}
-                                                        >
-                                                            {item.available ? (
-                                                                <ToggleRight className="text-green-500" size={24} />
-                                                            ) : (
-                                                                <ToggleLeft className="text-gray-400" size={24} />
-                                                            )}
-                                                        </button>
+                                                        <div className="truncate pr-2">
+                                                            <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
+                                                            <div className="flex flex-wrap gap-1 mt-0.5">
+                                                                {item.is_featured && (
+                                                                    <span className="inline-block text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded uppercase tracking-wider">Featured</span>
+                                                                )}
+                                                                {item.is_most_sold && (
+                                                                    <span className="inline-block text-[10px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded uppercase tracking-wider">Most Sold</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleToggleAvailability(item.id, item.available)}
+                                                title={item.available ? "Mark as Unavailable" : "Mark as Available"}
+                                            >
+                                                {item.available ? (
+                                                    <ToggleRight className="text-green-500" size={24} />
+                                                ) : (
+                                                    <ToggleLeft className="text-gray-400" size={24} />
+                                                )}
+                                            </button>
                                                     </div>
                                                     <p className="text-sm text-gray-500 line-clamp-1 mb-1">{item.description}</p>
                                                     <div className="flex justify-between items-end mt-2">
                                                         <span className="font-bold text-primary">
                                                             NPR {Number(item.price).toLocaleString()}
                                                         </span>
-                                                        <div className="flex space-x-1">
+                                                        <div className="flex items-center space-x-1">
                                                             <button
+                                                                type="button"
+                                                                onClick={() => handleToggleFeatured(item.id, item.is_featured ?? false)}
+                                                                className={`p-1 rounded transition-colors ${item.is_featured ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-amber-500'}`}
+                                                                title={item.is_featured ? "Remove Featured" : "Mark as Featured"}
+                                                            >
+                                                                <Star size={16} className={item.is_featured ? 'fill-amber-500' : ''} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleToggleMostSold(item.id, item.is_most_sold ?? false)}
+                                                                className={`p-1 rounded transition-colors ${item.is_most_sold ? 'text-green-500 hover:text-green-600' : 'text-gray-400 hover:text-green-500'}`}
+                                                                title={item.is_most_sold ? "Remove Most Sold" : "Mark as Most Sold"}
+                                                            >
+                                                                <TrendingUp size={16} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
                                                                 onClick={() => {
                                                                     setActiveCategoryId(category.id);
                                                                     setEditingItem(item);
@@ -364,7 +551,9 @@ const Menu = () => {
                                                                         price: item.price.toString(),
                                                                         category: item.category || '',
                                                                         image: item.image || '',
-                                                                        available: item.available
+                                                                        available: item.available,
+                                                                        is_featured: item.is_featured ?? false,
+                                                                        is_most_sold: item.is_most_sold ?? false
                                                                     });
                                                                     setItemModalOpen(true);
                                                                 }}
@@ -373,6 +562,7 @@ const Menu = () => {
                                                                 <Edit2 size={16} />
                                                             </button>
                                                             <button
+                                                                type="button"
                                                                 onClick={() => handleDeleteItem(item.id)}
                                                                 className="p-1 text-gray-400 hover:text-red-500"
                                                             >
@@ -476,7 +666,7 @@ const Menu = () => {
                                 >
                                     <option value="" disabled>Select category</option>
                                     {menu.map(cat => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
                                     ))}
                                 </select>
                             </div>
@@ -555,6 +745,27 @@ const Menu = () => {
                                 />
                             </div>
 
+                            <div className="flex items-center space-x-6 pt-2">
+                                <label className="flex items-center space-x-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={itemForm.is_featured}
+                                        onChange={(e) => setItemForm({ ...itemForm, is_featured: e.target.checked })}
+                                        className="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-amber-600 transition-colors">Featured</span>
+                                </label>
+                                <label className="flex items-center space-x-2 cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={itemForm.is_most_sold}
+                                        onChange={(e) => setItemForm({ ...itemForm, is_most_sold: e.target.checked })}
+                                        className="w-5 h-5 text-green-500 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-600 transition-colors">Most Sold</span>
+                                </label>
+                            </div>
+
                             <div className="flex space-x-3 pt-4 border-t">
                                 <button
                                     type="button"
@@ -568,6 +779,189 @@ const Menu = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Menu Pages / Full Menu Images ── */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-12">
+                <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                    <div>
+                        <h2 className="text-lg font-bold font-heading text-gray-900">Full Menu Images</h2>
+                        <p className="text-sm text-gray-500">Upload and arrange menu card images for the cafe viewer</p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setMpUploadError('');
+                            setMpImageUrl('');
+                            setMenuPageModalOpen(true);
+                        }}
+                        className="btn-primary flex items-center space-x-2"
+                    >
+                        <Plus size={18} />
+                        <span>Add Image</span>
+                    </button>
+                </div>
+                <div className="p-6">
+                    {menuPagesLoading ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <Skeleton key={i} className="aspect-[3/4] rounded-xl" />
+                            ))}
+                        </div>
+                    ) : menuPages.length === 0 ? (
+                        <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
+                            <ImageIcon className="mx-auto text-gray-400 mb-3" size={40} />
+                            <h3 className="text-base font-semibold text-gray-700">No menu card images yet</h3>
+                            <p className="text-sm text-gray-500 mt-1">Upload images of your menu card to display in the menu viewer.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {menuPages.map((page, index) => (
+                                <div
+                                    key={page.id}
+                                    className="group relative aspect-[3/4] bg-gray-100 rounded-xl overflow-hidden border border-gray-200 shadow-sm"
+                                >
+                                    <img
+                                        src={page.image_url}
+                                        alt={page.title || `Menu page ${index + 1}`}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = '';
+                                            target.alt = 'Failed to load';
+                                        }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMenuPageMove(index, 'up')}
+                                            disabled={index === 0}
+                                            className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-primary'}`}
+                                            title="Move up"
+                                        >
+                                            <ArrowUp size={14} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMenuPageMove(index, 'down')}
+                                            disabled={index === menuPages.length - 1}
+                                            className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${index === menuPages.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-primary'}`}
+                                            title="Move down"
+                                        >
+                                            <ArrowDown size={14} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMenuPageToggleActive(page.id, page.is_active)}
+                                            className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${page.is_active ? 'text-green-600' : 'text-gray-400'}`}
+                                            title={page.is_active ? 'Hide' : 'Show'}
+                                        >
+                                            {page.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleMenuPageDelete(page.id)}
+                                            className="p-1.5 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg"
+                                            title="Delete"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                    {!page.is_active && (
+                                        <div className="absolute top-2 left-2 px-2 py-0.5 bg-red-500/90 text-white text-[10px] rounded-full font-bold">
+                                            Hidden
+                                        </div>
+                                    )}
+                                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+                                        <span className="text-white text-xs font-medium">Page {index + 1}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Menu Pages Add Modal */}
+            {menuPageModalOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="font-bold text-xl font-heading">Add Menu Card Image</h3>
+                            <button type="button" onClick={() => setMenuPageModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-5">
+                            {mpUploadError && (
+                                <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">
+                                    {mpUploadError}
+                                </div>
+                            )}
+
+                            {mpImageUrl ? (
+                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
+                                    <img src={mpImageUrl} alt="Menu page preview" loading="lazy" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setMpImageUrl('')}
+                                            className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div
+                                    onClick={() => !mpUploading && mpFileInputRef.current?.click()}
+                                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${mpUploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5'}`}
+                                >
+                                    {mpUploading ? (
+                                        <div className="flex flex-col items-center text-gray-500">
+                                            <Loader2 size={32} className="animate-spin mb-3 text-primary" />
+                                            <span className="font-medium">Uploading...</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center text-gray-500">
+                                            <Upload size={36} className="mb-2 text-gray-400" />
+                                            <span className="text-sm font-bold text-gray-700">Click to upload menu card image</span>
+                                            <span className="text-xs text-gray-400 mt-2">PNG, JPG, WebP up to 10MB</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <input
+                                ref={mpFileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleMenuPageUpload}
+                                className="hidden"
+                            />
+
+                            <div className="flex space-x-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setMenuPageModalOpen(false)}
+                                    className="btn-secondary flex-1"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleMenuPageAdd}
+                                    disabled={mpUploading || !mpImageUrl}
+                                    className={`btn-primary flex-1 ${(!mpImageUrl || mpUploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    Add Image
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

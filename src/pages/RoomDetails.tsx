@@ -4,13 +4,11 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
     Users,
     Bed,
-    Maximize,
     CheckCircle2,
     ArrowLeft,
     Star,
     ShieldCheck,
     Clock,
-    MapPin,
     Wifi,
     Tv,
     Wind,
@@ -236,23 +234,18 @@ const RoomDetails = () => {
                             </div>
 
                             {/* Quick Stats */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100 shadow-inner">
-                                <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0 md:last:border-0 lg:border-r">
+                            <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-xl mb-8 border border-gray-100 shadow-inner">
+                                <div className="flex flex-col items-center text-center p-2 border-r border-gray-200">
                                     <Users className="text-primary mb-2" size={24} />
                                     <span className="text-xs text-gray-500 font-medium">{C('roomdetails_capacity_label', 'CAPACITY')}</span>
                                     <span className="text-sm font-bold text-gray-900">{room.max_guests} {C('roomdetails_guests_suffix', 'Guests')}</span>
                                 </div>
-                                <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0 md:last:border-r">
-                                    <Maximize className="text-primary mb-2" size={24} />
-                                    <span className="text-xs text-gray-500 font-medium">{C('roomdetails_size_label', 'SIZE')}</span>
-                                    <span className="text-sm font-bold text-gray-900">{room.room_size || C('rooms_size_fallback', '350 sq.ft')}</span>
-                                </div>
-                                <div className="flex flex-col items-center text-center p-2 border-r border-gray-200 last:border-0">
+                                <div className="flex flex-col items-center text-center p-2 border-r border-gray-200">
                                     <Bed className="text-primary mb-2" size={24} />
                                     <span className="text-xs text-gray-500 font-medium">{C('roomdetails_bedtype_label', 'BED TYPE')}</span>
                                     <span className="text-sm font-bold text-gray-900">{room.bed_type || C('rooms_bed_fallback', 'King Size')}</span>
                                 </div>
-                                <div className="flex flex-col items-center text-center p-2 last:border-0">
+                                <div className="flex flex-col items-center text-center p-2">
                                     <ShieldCheck className="text-primary mb-2" size={24} />
                                     <span className="text-xs text-gray-500 font-medium">{C('roomdetails_availability_label', 'AVAILABILITY')}</span>
                                     <span className={`text-sm font-bold ${room.availability_status === 'available' ? 'text-green-600' : 'text-amber-600'}`}>
@@ -424,23 +417,6 @@ const RoomDetails = () => {
                             </p>
                         </div>
 
-                        {/* Location Mini-map (Mock) */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <h4 className="font-bold text-gray-900 mb-4 flex items-center">
-                                <MapPin size={18} className="mr-2 text-primary" />
-                                {C('roomdetails_location_heading', 'Location')}
-                            </h4>
-                            <div className="aspect-square bg-gray-100 rounded-xl mb-4 overflow-hidden relative">
-                                <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-sm">
-                                    {C('roomdetails_map_placeholder', 'Map')}
-                                </div>
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-4 h-4 bg-primary rounded-full animate-ping" />
-                                    <div className="absolute w-3 h-3 bg-primary rounded-full border-2 border-white" />
-                                </div>
-                            </div>
-                            <p className="text-xs text-gray-500 line-clamp-1">{C('roomdetails_map_address', 'Birendranagar-8, Khajura, Surkhet, Karnali Province, Nepal')}</p>
-                        </div>
                     </div>
                 </div>
 
