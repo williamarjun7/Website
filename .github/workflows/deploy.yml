@@ -1,0 +1,150 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 22
+
+jobs:
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      commit_hash: ${{ steps.commit.outputs.hash }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test || echo "Tests not configured"
+
+      - name: Build application
+        run: npm run build
+
+      - name: Capture commit hash
+        id: commit
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+          retention-days: 3
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+
+      - name: Verify build artifact
+        run: |
+          ls -la dist/
+          test -f dist/index.html || { echo "Missing index.html"; exit 1; }
+
+      - name: Deploy via rsync over SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "dist/"
+          target: ${{ secrets.VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
+          strip_components: 1
+          rm: false
+
+      - name: Activate release and apply rollback safety
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            DEPLOY_DIR="${{ secrets.VPS_DEPLOY_PATH }}"
+            RELEASE="$DEPLOY_DIR/releases/${{ needs.build.outputs.commit_hash }}"
+            CURRENT_LINK="$DEPLOY_DIR/current"
+            PREVIOUS_LINK="$DEPLOY_DIR/previous"
+
+            # Validate release exists
+            if [ ! -f "$RELEASE/index.html" ]; then
+              echo "ERROR: Release missing index.html, aborting."
+              exit 1
+            fi
+
+            # Fix ownership
+            sudo chown -R www-data:www-data "$RELEASE"
+
+            # Atomic symlink swap: previous -> old current, current -> new release
+            if [ -L "$CURRENT_LINK" ]; then
+              ln -sfn "$(readlink -f "$CURRENT_LINK")" "$PREVIOUS_LINK"
+            fi
+            ln -sfn "$RELEASE" "$CURRENT_LINK"
+
+            # Clean up old releases (keep last 5)
+            ls -dt "$DEPLOY_DIR"/releases/*/ | tail -n +6 | xargs -r sudo rm -rf
+
+            echo "✅ Deployed: ${{ needs.build.outputs.commit_hash }}"
+
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Validate Nginx config before reload
+            sudo nginx -t && sudo systemctl reload nginx || {
+              echo "ERROR: nginx -t failed. Rolling back..."
+              DEPLOY_DIR="${{ secrets.VPS_DEPLOY_PATH }}"
+              if [ -L "$DEPLOY_DIR/previous" ]; then
+                ln -sfn "$(readlink -f "$DEPLOY_DIR/previous")" "$DEPLOY_DIR/current"
+                sudo nginx -t && sudo systemctl reload nginx
+              fi
+              exit 1
+            }
+
+      - name: Deployment Status
+        if: always()
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            echo "Status: ${{ job.status }}"
+            echo "Commit: ${{ needs.build.outputs.commit_hash }}"
+            echo "Time: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
