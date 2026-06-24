@@ -44,7 +44,7 @@ const Terms = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>{C('terms_meta_title', 'Terms of Service | Highlands Motel & Cafe')}</title>
+        <title>{C('terms_meta_title', 'Terms of Service | Highlands Cafe & Motel Inn')}</title>
         <meta name="description" content={C('terms_meta_desc', 'Read the Terms of Service. Learn about booking policies, cancellation, payment terms, and guest responsibilities.')} />
       </Helmet>
 

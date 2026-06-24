@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { Lock, AtSign, ArrowLeft, Mail } from 'lucide-react';
 import { adminLogin, resetPassword } from '../../services/authService';
@@ -58,6 +59,7 @@ const AdminLogin = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+            <Helmet><title>Login | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 {/* Header */}
                 <div className="bg-primary/5 p-8 text-center">
@@ -65,7 +67,7 @@ const AdminLogin = () => {
                         {showReset ? <Mail className="text-primary" size={32} /> : <Lock className="text-primary" size={32} />}
                     </div>
                     <h2 className="text-2xl font-bold font-heading text-primary">{showReset ? 'Reset Password' : 'Admin Access'}</h2>
-                    <p className="text-gray-500 mt-2">{showReset ? 'Enter your email to receive a reset link' : 'Log in to manage Highlands Motel & Cafe'}</p>
+                    <p className="text-gray-500 mt-2">{showReset ? 'Enter your email to receive a reset link' : 'Log in to manage Highlands Cafe & Motel Inn'}</p>
                 </div>
 
                 {/* Form */}

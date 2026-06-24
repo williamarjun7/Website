@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
+import SplashScreen from './components/common/SplashScreen';
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -60,57 +61,77 @@ const PublicLayout = () => (
 );
 
 function App() {
-  return (
-    <ErrorBoundary>
-      <TenantProvider>
-        <PermissionProvider>
-          <Router>
-            <ScrollToTop />
-            <Routes>
-              {/* Public Routes */}
-              <Route element={<PublicLayout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/rooms" element={<Rooms />} />
-                <Route path="/rooms/:id" element={<RoomDetails />} />
-                <Route path="/booking" element={<Booking />} />
-                <Route path="/cafe" element={<Cafe />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/payment-result" element={<PaymentResult />} />
-                <Route path="/gallery" element={<Gallery />} />
-                <Route path="/:slug" element={<DynamicPage />} />
-              </Route>
+  const [splashDone, setSplashDone] = useState(false);
+  const [appReady, setAppReady] = useState(false);
 
-              {/* Admin Routes */}
-              <Route path="/admin" element={<Suspense fallback={<LoadingFallback />}><AdminGate /></Suspense>}>
-                <Route path="login" element={<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>} />
-                <Route path="signup" element={<Suspense fallback={<LoadingFallback />}><AdminSignup /></Suspense>} />
-                <Route path="verify" element={<Suspense fallback={<LoadingFallback />}><AdminVerify /></Suspense>} />
-                <Route element={<Suspense fallback={<LoadingFallback />}><AdminLayout /></Suspense>}>
-                  <Route index element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
-                  <Route path="dashboard" element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
-                  <Route path="bookings" element={<Suspense fallback={<LoadingFallback />}><Bookings /></Suspense>} />
-                  <Route path="rooms" element={<Suspense fallback={<LoadingFallback />}><AdminRooms /></Suspense>} />
-                  <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
-                  <Route path="images" element={<Navigate to="/admin/media" replace />} />
-                  <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
-                  <Route path="reviews" element={<Suspense fallback={<LoadingFallback />}><AdminReviews /></Suspense>} />
-                  <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />
-                  <Route path="navigation" element={<Suspense fallback={<LoadingFallback />}><AdminNavigation /></Suspense>} />
-                  <Route path="pages" element={<Suspense fallback={<LoadingFallback />}><AdminPages /></Suspense>} />
-                  <Route path="faq" element={<Suspense fallback={<LoadingFallback />}><AdminFaq /></Suspense>} />
-                  <Route path="media" element={<Suspense fallback={<LoadingFallback />}><AdminMedia /></Suspense>} />
-                  <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><AdminSiteSettings /></Suspense>} />
-                  <Route path="revisions" element={<Suspense fallback={<LoadingFallback />}><AdminRevisions /></Suspense>} />
+  useEffect(() => {
+    let raf1: number;
+    let raf2: number;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setAppReady(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+
+  return (
+    <>
+      {!splashDone && (
+        <SplashScreen ready={appReady} onFinish={() => setSplashDone(true)} />
+      )}
+      <ErrorBoundary>
+        <TenantProvider>
+          <PermissionProvider>
+            <Router>
+              <ScrollToTop />
+              <Routes>
+                {/* Public Routes */}
+                <Route element={<PublicLayout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/rooms" element={<Rooms />} />
+                  <Route path="/rooms/:id" element={<RoomDetails />} />
+                  <Route path="/booking" element={<Booking />} />
+                  <Route path="/cafe" element={<Cafe />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/terms" element={<Terms />} />
+                  <Route path="/privacy" element={<Privacy />} />
+                  <Route path="/payment-result" element={<PaymentResult />} />
+                  <Route path="/gallery" element={<Gallery />} />
+                  <Route path="/:slug" element={<DynamicPage />} />
                 </Route>
-              </Route>
-            </Routes>
-          </Router>
-        </PermissionProvider>
-      </TenantProvider>
-    </ErrorBoundary>
+
+                {/* Admin Routes */}
+                <Route path="/admin" element={<Suspense fallback={<LoadingFallback />}><AdminGate /></Suspense>}>
+                  <Route path="login" element={<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>} />
+                  <Route path="signup" element={<Suspense fallback={<LoadingFallback />}><AdminSignup /></Suspense>} />
+                  <Route path="verify" element={<Suspense fallback={<LoadingFallback />}><AdminVerify /></Suspense>} />
+                  <Route element={<Suspense fallback={<LoadingFallback />}><AdminLayout /></Suspense>}>
+                    <Route index element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
+                    <Route path="dashboard" element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />
+                    <Route path="bookings" element={<Suspense fallback={<LoadingFallback />}><Bookings /></Suspense>} />
+                    <Route path="rooms" element={<Suspense fallback={<LoadingFallback />}><AdminRooms /></Suspense>} />
+                    <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
+                    <Route path="images" element={<Navigate to="/admin/media" replace />} />
+                    <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
+                    <Route path="reviews" element={<Suspense fallback={<LoadingFallback />}><AdminReviews /></Suspense>} />
+                    <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />
+                    <Route path="navigation" element={<Suspense fallback={<LoadingFallback />}><AdminNavigation /></Suspense>} />
+                    <Route path="pages" element={<Suspense fallback={<LoadingFallback />}><AdminPages /></Suspense>} />
+                    <Route path="faq" element={<Suspense fallback={<LoadingFallback />}><AdminFaq /></Suspense>} />
+                    <Route path="media" element={<Suspense fallback={<LoadingFallback />}><AdminMedia /></Suspense>} />
+                    <Route path="settings" element={<Suspense fallback={<LoadingFallback />}><AdminSiteSettings /></Suspense>} />
+                    <Route path="revisions" element={<Suspense fallback={<LoadingFallback />}><AdminRevisions /></Suspense>} />
+                  </Route>
+                </Route>
+              </Routes>
+            </Router>
+          </PermissionProvider>
+        </TenantProvider>
+      </ErrorBoundary>
+    </>
   );
 }
 

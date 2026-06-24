@@ -66,7 +66,7 @@ const Contact = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>{C('contact_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | Contact')}</title>
+                <title>{C('contact_meta_title', C('site_name', 'Highlands Cafe & Motel Inn') + ' | Contact')}</title>
                 <meta name="description" content={C('contact_meta_desc', 'Get in touch. Call, email, or visit us in Surkhet, Nepal.')} />
             </Helmet>
             <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">

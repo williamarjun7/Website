@@ -86,7 +86,7 @@ const PaymentResult = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>Payment Status | Highlands Motel & Cafe</title>
+        <title>Payment Status | Highlands Cafe & Motel Inn</title>
       </Helmet>
       <div className="container-custom max-w-2xl">
         {status === 'verifying' && (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ShieldCheck, ArrowLeft, RefreshCw } from 'lucide-react';
 import { verifyEmail, resendVerification } from '../../services/authService';
@@ -69,6 +70,7 @@ const AdminVerify = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
+            <Helmet><title>Verify Email | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
                 {/* Header */}
                 <div className="bg-primary/5 p-8 text-center">

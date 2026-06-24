@@ -346,7 +346,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
           <SectionHeading icon={Building} label={C('confirmation_help_heading', 'Need Assistance?')} />
           <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2.5">
-              <p className="font-semibold text-gray-900 text-sm">{C('confirmation_hotel_name', 'Highlands Motel & Cafe')}</p>
+              <p className="font-semibold text-gray-900 text-sm">{C('confirmation_hotel_name', 'Highlands Cafe & Motel Inn')}</p>
               <div className="flex items-start gap-2 text-sm text-gray-600">
                 <MapPin size="14" className="mt-0.5 shrink-0 text-gray-400" />
                 <span>{C('confirmation_location', 'Surkhet, Nepal')}</span>

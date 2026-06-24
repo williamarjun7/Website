@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
     FileText, Menu, Image, HelpCircle,
@@ -351,6 +352,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-8">
+            <Helmet><title>Dashboard | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 font-heading">CMS Control Center</h1>

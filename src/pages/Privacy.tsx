@@ -44,7 +44,7 @@ const Privacy = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>{C('privacy_meta_title', 'Privacy Policy | Highlands Motel & Cafe')}</title>
+        <title>{C('privacy_meta_title', 'Privacy Policy | Highlands Cafe & Motel Inn')}</title>
         <meta name="description" content={C('privacy_meta_desc', 'Read our Privacy Policy. Learn how we collect, use, and protect your personal information.')} />
       </Helmet>
 

@@ -72,8 +72,8 @@ const About = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>{C('about_meta_title', 'About Us | Highlands Motel & Cafe')}</title>
-        <meta name="description" content={C('about_meta_desc', C('about_intro_subheading', 'Learn the story behind Highlands Motel & Cafe in Surkhet.'))} />
+        <title>{C('about_meta_title', 'About Us | Highlands Cafe & Motel Inn')}</title>
+        <meta name="description" content={C('about_meta_desc', C('about_intro_subheading', 'Learn the story behind Highlands Cafe & Motel Inn in Surkhet.'))} />
       </Helmet>
 
       <section className="relative h-80 mb-16 overflow-hidden">

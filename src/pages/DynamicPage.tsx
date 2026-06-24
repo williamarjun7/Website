@@ -64,7 +64,7 @@ const DynamicPage = () => {
     return (
       <div className="min-h-screen pt-24 pb-16 flex items-center justify-center">
         <Helmet>
-          <title>Page Not Found | Highlands Motel & Cafe</title>
+          <title>Page Not Found | Highlands Cafe & Motel Inn</title>
           <meta name="description" content="The page you are looking for does not exist." />
         </Helmet>
         <div className="text-center max-w-md">
@@ -85,7 +85,7 @@ const DynamicPage = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>{page.seo_title || page.title} | Highlands Motel & Cafe</title>
+        <title>{page.seo_title || page.title} | Highlands Cafe & Motel Inn</title>
         {page.seo_description && <meta name="description" content={page.seo_description} />}
       </Helmet>
 

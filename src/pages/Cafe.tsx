@@ -79,7 +79,7 @@ const Cafe = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>{C('cafe_meta_title', 'Cafe Menu | Highlands Motel & Cafe')}</title>
+                <title>{C('cafe_meta_title', 'Cafe Menu | Highlands Cafe & Motel Inn')}</title>
                 <meta name="description" content={C('cafe_meta_desc', 'Savor authentic local cuisine at our cafe in Surkhet.')} />
             </Helmet>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
     Search,
     Filter,
@@ -219,6 +220,7 @@ const Bookings = () => {
 
     return (
         <div className="space-y-6">
+            <Helmet><title>Bookings | Highlands Cafe & Motel Inn</title></Helmet>
             {/* Toast Notification */}
             {toastMessage && (
                 <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm animate-fade-in bg-blue-50 text-blue-700 border border-blue-200" role="alert">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { History, Filter } from 'lucide-react';
 import {
     getRevisions,
@@ -51,6 +52,7 @@ const Revisions = () => {
 
     return (
         <div className="space-y-6">
+            <Helmet><title>Revisions | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold font-heading text-gray-900">Revision History</h1>

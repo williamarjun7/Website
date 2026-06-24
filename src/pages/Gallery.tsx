@@ -78,7 +78,7 @@ const Gallery = () => {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <Helmet>
-        <title>{C('gallery_meta_title', 'Gallery | Highlands Motel & Cafe')}</title>
+        <title>{C('gallery_meta_title', 'Gallery | Highlands Cafe & Motel Inn')}</title>
         <meta name="description" content={C('gallery_meta_desc', 'Explore our photo gallery showcasing rooms, cafe, exterior views, and the beautiful surroundings.')} />
       </Helmet>
 

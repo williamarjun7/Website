@@ -349,7 +349,7 @@ const Booking = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>{C('booking_meta_title', 'Booking | Highlands Motel & Cafe')}</title>
+                <title>{C('booking_meta_title', 'Booking | Highlands Cafe & Motel Inn')}</title>
                 <meta name="description" content={C('booking_meta_desc', 'Book your stay. Select your dates and reserve a comfortable room today.')} />
             </Helmet>
 

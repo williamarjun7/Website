@@ -137,7 +137,7 @@ const RoomDetails = () => {
     return (
         <div className="min-h-screen pt-24 pb-16 bg-gray-50/50">
             <Helmet>
-                <title>{room.name} | {C('site_name', 'Highlands Motel & Cafe')}</title>
+                <title>{room.name} | {C('site_name', 'Highlands Cafe & Motel Inn')}</title>
                 <meta name="description" content={`Book ${room.name}. ${room.description?.substring(0, 120)}`} />
             </Helmet>
             <div className="container-custom">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Save, RefreshCw, ChevronDown, ChevronRight, Image, FileText, Settings, Eye, Phone, Home, Info, BookOpen, Layout, Camera, Coffee } from 'lucide-react';
 import { getAllSiteContent, updateSiteContent } from '../../services/contentService';
 import { CONTENT_DEFAULTS } from '../../services/contentDefaults';
@@ -631,6 +632,7 @@ const ContentEditor = () => {
 
     return (
         <div className="space-y-6">
+            <Helmet><title>Content Editor | Highlands Cafe & Motel Inn</title></Helmet>
             {toastMessage && (
                 <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm animate-fade-in bg-green-50 text-green-700 border border-green-200" role="alert">
                     {toastMessage}

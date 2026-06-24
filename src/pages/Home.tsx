@@ -82,7 +82,7 @@ const Home = () => {
     return (
         <div className="min-h-screen">
             <Helmet>
-                <title>{C('home_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | Home')}</title>
+                <title>{C('home_meta_title', C('site_name', 'Highlands Cafe & Motel Inn') + ' | Home')}</title>
                 <meta name="description" content={C('home_meta_desc', 'Experience a warm, cozy stay. Book comfortable rooms and enjoy great food.')} />
             </Helmet>
             {/* Hero Section */}

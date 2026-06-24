@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
     Plus,
     Trash2,
@@ -149,6 +150,7 @@ const Faq = () => {
 
     return (
         <div className="space-y-6">
+            <Helmet><title>FAQ | Highlands Cafe & Motel Inn</title></Helmet>
             {toast && (
                 <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm bg-green-50 text-green-700 border border-green-200">
                     {toast}

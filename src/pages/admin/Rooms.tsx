@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
     Plus,
     Trash2,
@@ -322,6 +323,7 @@ const Rooms = () => {
 
     return (
         <div className="space-y-6">
+            <Helmet><title>Rooms | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold font-heading text-gray-900">Rooms</h1>

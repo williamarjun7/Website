@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Star, Trash2, CheckCircle, XCircle, X, Plus, MessageSquare, Loader2 } from 'lucide-react';
 import { getReviews, createReview, updateReview, deleteReview, type Review, type CreateReviewData } from '../../services/reviewService';
 import { SkeletonTableRow } from '../../components/common/Skeleton';
@@ -57,6 +58,7 @@ const ReviewsAdmin = () => {
 
     return (
         <div>
+            <Helmet><title>Reviews | Highlands Cafe & Motel Inn</title></Helmet>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold font-heading">Guest Reviews</h1>
                 <button onClick={() => setShowModal(true)} className="btn-primary flex items-center space-x-2">

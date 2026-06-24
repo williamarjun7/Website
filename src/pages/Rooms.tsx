@@ -100,7 +100,7 @@ const Rooms = () => {
     return (
         <div className="min-h-screen pt-24 pb-16 bg-gray-50/30">
             <Helmet>
-                <title>{C('rooms_meta_title', 'Rooms | Highlands Motel & Cafe')}</title>
+                <title>{C('rooms_meta_title', 'Rooms | Highlands Cafe & Motel Inn')}</title>
                 <meta name="description" content={C('rooms_meta_desc', 'Browse our comfortable rooms in Surkhet, Nepal.')} />
             </Helmet>
             <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">

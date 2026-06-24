@@ -41,6 +41,25 @@ export default {
         '200': '200ms',
         '300': '300ms',
       },
+      keyframes: {
+        'splash-enter': {
+          '0%': { opacity: '0', transform: 'scale(0.8)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'splash-breathe': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.03)' },
+        },
+        'dot-pulse': {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(0.8)' },
+          '50%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'splash-enter': 'splash-enter 0.7s ease-out forwards',
+        'splash-breathe': 'splash-breathe 3s ease-in-out 0.7s infinite',
+        'dot-pulse': 'dot-pulse 1.4s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

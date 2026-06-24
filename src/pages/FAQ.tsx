@@ -53,7 +53,7 @@ const FAQ = () => {
     return (
         <div className="min-h-screen pt-24 pb-16">
             <Helmet>
-                <title>{C('faq_meta_title', C('site_name', 'Highlands Motel & Cafe') + ' | FAQ')}</title>
+                <title>{C('faq_meta_title', C('site_name', 'Highlands Cafe & Motel Inn') + ' | FAQ')}</title>
                 <meta name="description" content={C('faq_meta_desc', 'Find answers to frequently asked questions about booking, rooms, amenities, check-in/out, payments, and more.')} />
             </Helmet>
             {/* Hero Section */}
