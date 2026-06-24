@@ -5,7 +5,7 @@ import { getSiteContentMap } from '../../services/contentService';
 import { getSettingsMap } from '../../services/settingsService';
 import { getNavigation, type NavItem } from '../../services/navigationService';
 
-import logo from '../../assets/logo.png';
+import defaultLogo from '../../assets/logo.png';
 
 const Navbar = memo(() => {
     const [isOpen, setIsOpen] = useState(false);
@@ -83,7 +83,7 @@ const Navbar = memo(() => {
                     >
                         <div className="relative">
                             <img
-                                src={logo}
+                                src={C('logo_url', '') || defaultLogo}
                                 alt={C('site_name', 'Highlands Cafe & Motel Inn')}
                                 className={`h-16 w-16 rounded-full object-cover drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 ${isTransparent ? 'drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]' : ''}`}
                             />

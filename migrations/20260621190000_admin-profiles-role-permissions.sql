@@ -1,7 +1,6 @@
 -- Create tenants, admin_profiles, role_permissions tables (SaaS multi-tenant RBAC)
 -- Extracted from 004_saas_multitenant.sql (schema-only, no table deps on other tables)
 
-BEGIN;
 
 CREATE TABLE IF NOT EXISTS tenants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -94,4 +93,3 @@ BEGIN
     END IF;
 END $$;
 
-COMMIT;

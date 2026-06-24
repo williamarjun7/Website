@@ -31,7 +31,7 @@ const pagesConfig: PageConfig[] = [
         groups: [{
             label: 'Home Page',
             sections: [
-                { id: 'hero', label: 'Hero Section', fields: ['hero_title', 'hero_subtitle'] },
+                { id: 'hero', label: 'Hero Section', fields: ['hero_title', 'hero_subtitle', 'hero_video_url'] },
                 { id: 'features', label: 'Features Section', fields: ['home_feature_1_title', 'home_feature_1_desc', 'home_feature_2_title', 'home_feature_2_desc', 'home_feature_3_title', 'home_feature_3_desc'] },
                 { id: 'rooms', label: 'Rooms Section', fields: ['home_rooms_title', 'home_rooms_desc'] },
                 { id: 'cafe', label: 'Cafe Highlight Section', fields: ['home_cafe_title', 'home_cafe_desc', 'home_cafe_bullets'] },
@@ -143,7 +143,7 @@ const pagesConfig: PageConfig[] = [
         groups: [
             {
                 label: 'Navbar', sections: [
-                    { id: 'navbar', label: 'Navbar Content', fields: ['site_name', 'navbar_phone', 'navbar_email'] },
+                    { id: 'navbar', label: 'Navbar Content', fields: ['site_name', 'navbar_phone', 'navbar_email', 'logo_url'] },
                 ]
             },
             {
@@ -184,6 +184,7 @@ const pagesConfig: PageConfig[] = [
 const FIELD_DEFS: Record<string, FieldDef> = {
     hero_title: { label: 'Hero Title', type: 'text', section: 'Hero' },
     hero_subtitle: { label: 'Hero Subtitle', type: 'text', section: 'Hero' },
+    hero_video_url: { label: 'Hero Background Video URL', type: 'image', section: 'Hero', description: 'Optional video to play behind hero slides' },
     home_feature_1_title: { label: 'Feature 1 Title', type: 'text', section: 'Features' },
     home_feature_1_desc: { label: 'Feature 1 Description', type: 'textarea', section: 'Features' },
     home_feature_2_title: { label: 'Feature 2 Title', type: 'text', section: 'Features' },
@@ -362,6 +363,7 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     site_name: { label: 'Site Name', type: 'text', section: 'Navbar' },
     navbar_phone: { label: 'Phone Number', type: 'text', section: 'Navbar' },
     navbar_email: { label: 'Email Address', type: 'text', section: 'Navbar' },
+    logo_url: { label: 'Logo Image URL', type: 'image', section: 'Navbar', description: 'Leave empty to use default logo' },
     footer_text: { label: 'Footer Description', type: 'textarea', section: 'Footer' },
     footer_quicklinks_heading: { label: 'Quick Links Section Heading', type: 'text', section: 'Footer' },
     footer_getintouch_heading: { label: 'Get in Touch Heading', type: 'text', section: 'Footer' },

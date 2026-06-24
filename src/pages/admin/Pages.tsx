@@ -26,6 +26,7 @@ interface PageFormData {
     seo_title: string;
     seo_description: string;
     page_content: string;
+    featured_image: string;
     status: SitePage['status'];
     author: string;
 }
@@ -36,6 +37,7 @@ const emptyForm: PageFormData = {
     seo_title: '',
     seo_description: '',
     page_content: '',
+    featured_image: '',
     status: 'draft',
     author: ''
 };
@@ -92,6 +94,7 @@ const Pages = () => {
             seo_title: page.seo_title || '',
             seo_description: page.seo_description || '',
             page_content: page.page_content || '',
+            featured_image: page.featured_image || '',
             status: page.status,
             author: page.author || ''
         });
@@ -337,6 +340,17 @@ const Pages = () => {
                                     onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
                                     className="input w-full resize-none"
                                     placeholder="Meta description"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Featured Image URL</label>
+                                <input
+                                    type="text"
+                                    value={form.featured_image}
+                                    onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
+                                    className="input w-full font-mono text-sm"
+                                    placeholder="https://..."
                                 />
                             </div>
 

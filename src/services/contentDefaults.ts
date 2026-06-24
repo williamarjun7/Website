@@ -2,6 +2,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     // Home - Hero
     hero_title: 'Welcome to Highlands',
     hero_subtitle: 'Experience Comfort in the Heart of the Highlands',
+    hero_video_url: '',
 
     // Home - Features
     home_feature_1_title: 'Prime Location',
@@ -265,6 +266,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     site_name: 'Highlands Cafe & Motel Inn',
     navbar_phone: '+977 9763215874',
     navbar_email: 'highlandsmotelinn@gmail.com',
+    logo_url: '',
 
     // Global - Footer
     footer_text: 'Experience cozy comfort in the heart of the highlands. Your perfect retreat with breathtaking views, warm hospitality, and unforgettable memories waiting to be created.',

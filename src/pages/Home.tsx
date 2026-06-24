@@ -14,6 +14,7 @@ import TikTokFeed from '../components/TikTokFeed';
 const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
+    const [heroVideoUrl, setHeroVideoUrl] = useState('');
     const [cafeImg, setCafeImg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
     const [featuredReviews, setFeaturedReviews] = useState<Review[]>([]);
@@ -33,7 +34,10 @@ const Home = () => {
                 getSiteContentMap(),
                 getFeaturedReviews(6),
             ]);
-            if (contentRes.data) setContent(contentRes.data);
+            if (contentRes.data) {
+                setContent(contentRes.data);
+                setHeroVideoUrl(contentRes.data.hero_video_url || '');
+            }
             if (reviewsRes.data) setFeaturedReviews(reviewsRes.data);
 
             if (roomsRes.data) {
@@ -83,6 +87,16 @@ const Home = () => {
             </Helmet>
             {/* Hero Section */}
             <section className="relative min-h-screen overflow-hidden">
+                {heroVideoUrl && (
+                    <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                        src={heroVideoUrl}
+                    />
+                )}
                 {heroSlides.length > 0 ? (
                     <>
                         {heroSlides.map((slide, index) => (

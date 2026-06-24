@@ -56,11 +56,8 @@ CREATE POLICY IF NOT EXISTS "Admin full access notification_settings" ON notific
     USING (true);
 
 -- Updated-at trigger for notification_settings
-DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'set_notification_settings_updated_at' AND tgrelid = 'notification_settings'::regclass) THEN
-        CREATE TRIGGER set_notification_settings_updated_at BEFORE UPDATE ON notification_settings
-            FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-    END IF;
-END $$;
+DROP TRIGGER IF EXISTS set_notification_settings_updated_at ON notification_settings;
+CREATE TRIGGER set_notification_settings_updated_at BEFORE UPDATE ON notification_settings
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 SELECT 'Migration 20260622100000 applied — notification system schema created' AS status;

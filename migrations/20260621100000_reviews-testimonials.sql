@@ -37,9 +37,9 @@ CREATE POLICY "anon_can_read_approved_reviews" ON public.reviews
     FOR SELECT
     USING (is_approved = true);
 
--- RLS: service_role full access
-DROP POLICY IF EXISTS "service_role_full_access_reviews" ON public.reviews;
-CREATE POLICY "service_role_full_access_reviews" ON public.reviews
+-- RLS: project_admin full access
+DROP POLICY IF EXISTS "project_admin_full_access_reviews" ON public.reviews;
+CREATE POLICY "project_admin_full_access_reviews" ON public.reviews
     FOR ALL
     USING (true)
     WITH CHECK (true);

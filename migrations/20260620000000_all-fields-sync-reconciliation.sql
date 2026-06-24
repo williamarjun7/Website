@@ -219,8 +219,8 @@ COMMENT ON TABLE public.sync_reconciliation_logs IS
 ALTER TABLE public.sync_reconciliation_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sync_reconciliation_logs FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS service_role_recon_all ON public.sync_reconciliation_logs;
-CREATE POLICY service_role_recon_all ON public.sync_reconciliation_logs
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS project_admin_recon_all ON public.sync_reconciliation_logs;
+CREATE POLICY project_admin_recon_all ON public.sync_reconciliation_logs
+  FOR ALL TO project_admin USING (true) WITH CHECK (true);
 
 SELECT 'Migration 20260620000000 applied — expanded sync trigger, reconciliation logs table' AS status;

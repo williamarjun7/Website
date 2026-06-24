@@ -2,6 +2,7 @@ import { insforge, handleInsforgeError } from './insforge';
 import { getCurrentTenantId } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logMediaEvent } from './auditService';
+import { deleteFile, extractStorageKey } from './storageService';
 
 export interface MediaFile {
     id: string;
@@ -108,6 +109,19 @@ export const updateMediaFile = async (id: string, updates: Partial<MediaFile>) =
 export const deleteMediaFile = async (id: string) => {
     try {
         const tenantId = applyTenantFilter();
+        const { data: file, error: fetchError } = await insforge.database
+            .from('media_files')
+            .select('url')
+            .eq('id', id)
+            .eq('tenant_id', tenantId)
+            .single();
+        if (fetchError) throw fetchError;
+
+        if (file?.url) {
+            const key = extractStorageKey(file.url);
+            if (key) await deleteFile(key);
+        }
+
         const { error } = await insforge.database
             .from('media_files')
             .delete()

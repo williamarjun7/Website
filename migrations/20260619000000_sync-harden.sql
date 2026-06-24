@@ -22,10 +22,10 @@ COMMENT ON TABLE public.idempotency_keys IS 'Crash-safe idempotency: reserve →
 ALTER TABLE public.idempotency_keys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.idempotency_keys FORCE ROW LEVEL SECURITY;
 
--- Only edge functions (service_role) can access; block public/anon/authenticated.
-DROP POLICY IF EXISTS service_role_idempotency_all ON public.idempotency_keys;
-CREATE POLICY service_role_idempotency_all ON public.idempotency_keys
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
+-- Only edge functions (project_admin) can access; block public/anon/authenticated.
+DROP POLICY IF EXISTS project_admin_idempotency_all ON public.idempotency_keys;
+CREATE POLICY project_admin_idempotency_all ON public.idempotency_keys
+  FOR ALL TO project_admin USING (true) WITH CHECK (true);
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 2. Extend sync_events with lineage tracking
@@ -253,14 +253,14 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.fail_sync_event(uuid, text, integer) FROM public, anon;
 
 -- ═══════════════════════════════════════════════════════════════════
--- 7. RLS for sync_events (service_role only)
+-- 7. RLS for sync_events (project_admin only)
 -- ═══════════════════════════════════════════════════════════════════
 
 ALTER TABLE public.sync_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sync_events FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS service_role_sync_events_all ON public.sync_events;
-CREATE POLICY service_role_sync_events_all ON public.sync_events
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS project_admin_sync_events_all ON public.sync_events;
+CREATE POLICY project_admin_sync_events_all ON public.sync_events
+  FOR ALL TO project_admin USING (true) WITH CHECK (true);
 
 SELECT 'Migration 20260619000000 applied — sync hardened, idempotency_keys, loop prevention, lineage' AS status;

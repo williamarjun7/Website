@@ -1,5 +1,6 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { deleteFile, extractStorageKey } from './storageService';
+import { invalidateCmsCache } from './cacheService';
 
 export interface SiteContent {
     id: string;
@@ -59,6 +60,7 @@ export const updateSiteContent = async (key: string, value: string) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('site_content');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -110,6 +112,7 @@ export const addSiteImage = async (image: Partial<SiteImage>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('site_images');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -138,6 +141,7 @@ export const deleteSiteImage = async (id: string) => {
             .eq('id', id);
 
         if (error) throw error;
+        invalidateCmsCache('site_images');
         return { data: true, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -190,6 +194,7 @@ export const updateMenuPage = async (id: string, updates: Partial<SiteImage>) =>
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('site_images');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -227,6 +232,7 @@ export const toggleImageActive = async (id: string, isActive: boolean) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('site_images');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -244,6 +250,7 @@ export const updateSiteImage = async (id: string, updates: Partial<SiteImage>) =
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('site_images');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);

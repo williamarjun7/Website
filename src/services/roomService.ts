@@ -1,5 +1,6 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { deleteFile, extractStorageKey } from './storageService';
+import { invalidateCmsCache } from './cacheService';
 
 export interface Room {
     id: string;
@@ -148,6 +149,7 @@ export const createRoom = async (room: Partial<Room>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -165,6 +167,7 @@ export const updateRoom = async (id: string, updates: Partial<Room>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -180,6 +183,7 @@ export const deleteRoom = async (id: string) => {
             .eq('id', id);
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data: true, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -196,6 +200,7 @@ export const addRoomImage = async (roomImage: Partial<RoomImage>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -224,6 +229,7 @@ export const deleteRoomImage = async (id: string) => {
             .eq('id', id);
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data: true, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -241,6 +247,7 @@ export const updateRoomImageSortOrder = async (id: string, sortOrder: number) =>
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('rooms');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);

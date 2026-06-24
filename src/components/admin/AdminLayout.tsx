@@ -62,8 +62,7 @@ const allGroups: NavGroup[] = [
         label: 'Media',
         icon: FolderOpen,
         items: [
-            { name: 'Media Library', path: '/admin/media', icon: FolderOpen, resource: 'media', action: 'read' },
-            { name: 'Site Images', path: '/admin/images', icon: ImageIcon, resource: 'media', action: 'read' },
+            { name: 'Media', path: '/admin/media', icon: ImageIcon, resource: 'media', action: 'read' },
         ],
     },
     {

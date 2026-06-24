@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee, UtensilsCrossed, Tv, Shield, Sun } from 'lucide-react';
-import logo from '../../assets/logo.png';
+import defaultLogo from '../../assets/logo.png';
 import { getSiteContentMap } from '../../services/contentService';
 import { getSettingsMap } from '../../services/settingsService';
 import { getNavigation, type NavItem } from '../../services/navigationService';
@@ -50,7 +50,7 @@ const Footer = memo(() => {
                     <div className="md:col-span-2 lg:col-span-2">
                         <div className="relative mb-6">
                             <h3 className="font-heading text-2xl font-bold mb-4 flex items-center gap-3">
-                                <img src={logo} alt={C('site_name', 'Highlands Cafe & Motel Inn')} className="h-12 w-12 rounded-full object-cover drop-shadow-lg" />
+                                <img src={C('logo_url', '') || defaultLogo} alt={C('site_name', 'Highlands Cafe & Motel Inn')} className="h-12 w-12 rounded-full object-cover drop-shadow-lg" />
                                 <span className="bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">{C('site_name', 'Highlands Cafe & Motel Inn')}</span>
                             </h3>
                             <div className="flex items-center space-x-1 mb-4">

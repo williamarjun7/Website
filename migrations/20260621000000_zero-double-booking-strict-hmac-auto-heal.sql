@@ -73,9 +73,7 @@ ALTER TABLE public.bookings
   WHERE (booking_status = ANY (ARRAY['pending_payment', 'confirmed', 'checked_in']));
 
 COMMENT ON CONSTRAINT no_overlapping_active_bookings ON public.bookings IS
-  'Guarantees zero overlapping bookings per room for active statuses (pending_payment, confirmed, checked_in). ' ||
-  'This is the database-level defense against double-booking. ' ||
-  'Application-level pre-checks are redundant and have been removed.';
+  'Guarantees zero overlapping bookings per room for active statuses (pending_payment, confirmed, checked_in). This is the database-level defense against double-booking. Application-level pre-checks are redundant and have been removed.';
 
 -- ═══════════════════════════════════════════════════════════════════
 -- PHASE 1e: Fix sync_events event_type CHECK constraint
@@ -174,9 +172,9 @@ COMMENT ON COLUMN public.sync_repair_jobs.rollback_sql IS
 ALTER TABLE public.sync_repair_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sync_repair_jobs FORCE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS service_role_repair_jobs_all ON public.sync_repair_jobs;
-CREATE POLICY service_role_repair_jobs_all ON public.sync_repair_jobs
-  FOR ALL TO service_role USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS project_admin_repair_jobs_all ON public.sync_repair_jobs;
+CREATE POLICY project_admin_repair_jobs_all ON public.sync_repair_jobs
+  FOR ALL TO project_admin USING (true) WITH CHECK (true);
 
 -- ═══════════════════════════════════════════════════════════════════
 -- PHASE 3b: Add repair tracking to sync_reconciliation_logs
@@ -220,12 +218,12 @@ $$;
 
 -- These tables were already handled in migration 20260618112514.
 -- Add explicit deny policies for anon/authenticated on sync tables
--- that should be service_role-only.
+-- that should be project_admin-only.
 
--- sync_events: already service_role-only (20260619000000)
--- idempotency_keys: already service_role-only (20260619000000)
--- sync_reconciliation_logs: already service_role-only (20260620000000)
--- sync_repair_jobs: service_role-only (this migration, above)
+-- sync_events: already project_admin-only (20260619000000)
+-- idempotency_keys: already project_admin-only (20260619000000)
+-- sync_reconciliation_logs: already project_admin-only (20260620000000)
+-- sync_repair_jobs: project_admin-only (this migration, above)
 
 -- ═══════════════════════════════════════════════════════════════════
 -- PHASE 4c: Revoke all EXECUTE on sync functions from anon/authenticated

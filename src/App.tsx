@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
@@ -30,7 +30,6 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const Bookings = lazy(() => import('./pages/admin/Bookings'));
 const AdminRooms = lazy(() => import('./pages/admin/Rooms'));
 const Menu = lazy(() => import('./pages/admin/Menu'));
-const Images = lazy(() => import('./pages/admin/Images'));
 const ContentEditor = lazy(() => import('./pages/admin/ContentEditor'));
 const PaymentRecovery = lazy(() => import('./pages/admin/PaymentRecovery'));
 const AdminReviews = lazy(() => import('./pages/admin/Reviews'));
@@ -95,7 +94,7 @@ function App() {
                   <Route path="bookings" element={<Suspense fallback={<LoadingFallback />}><Bookings /></Suspense>} />
                   <Route path="rooms" element={<Suspense fallback={<LoadingFallback />}><AdminRooms /></Suspense>} />
                   <Route path="menu" element={<Suspense fallback={<LoadingFallback />}><Menu /></Suspense>} />
-                  <Route path="images" element={<Suspense fallback={<LoadingFallback />}><Images /></Suspense>} />
+                  <Route path="images" element={<Navigate to="/admin/media" replace />} />
                   <Route path="content" element={<Suspense fallback={<LoadingFallback />}><ContentEditor /></Suspense>} />
                   <Route path="reviews" element={<Suspense fallback={<LoadingFallback />}><AdminReviews /></Suspense>} />
                   <Route path="payment-recovery" element={<Suspense fallback={<LoadingFallback />}><PaymentRecovery /></Suspense>} />

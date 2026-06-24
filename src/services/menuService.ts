@@ -1,4 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
+import { invalidateCmsCache } from './cacheService';
 
 export interface MenuCategory {
     id: string;
@@ -168,6 +169,7 @@ export const createCategory = async (category: Record<string, unknown>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -184,6 +186,7 @@ export const updateCategory = async (id: string, updates: Record<string, unknown
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -198,6 +201,7 @@ export const deleteCategory = async (id: string) => {
             .eq('id', id);
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data: true, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -213,6 +217,7 @@ export const createMenuItem = async (item: Record<string, unknown>) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -229,6 +234,7 @@ export const updateMenuItem = async (id: string, updates: Record<string, unknown
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -243,6 +249,7 @@ export const deleteMenuItem = async (id: string) => {
             .eq('id', id);
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data: true, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -259,6 +266,7 @@ export const toggleItemAvailability = async (id: string, available: boolean) => 
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -275,6 +283,7 @@ export const toggleItemFeatured = async (id: string, is_featured: boolean) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
@@ -291,6 +300,7 @@ export const toggleItemMostSold = async (id: string, is_most_sold: boolean) => {
             .single();
 
         if (error) throw error;
+        invalidateCmsCache('menu');
         return { data, error: null };
     } catch (error) {
         return handleInsforgeError(error);
