@@ -84,7 +84,7 @@ jobs:
           rm: false
 
       - name: Activate staging release
-        uses: appleboy/ssh-action@v2.1.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.STAGING_VPS_HOST }}
           port: 22
@@ -116,7 +116,7 @@ jobs:
             echo "Staging deployed: ${{ needs.build.outputs.commit_hash }}"
 
       - name: Reload Nginx (staging)
-        uses: appleboy/ssh-action@v2.1.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.STAGING_VPS_HOST }}
           port: 22
@@ -177,7 +177,7 @@ jobs:
           rm: false
 
       - name: Activate release and apply rollback safety
-        uses: appleboy/ssh-action@v2.1.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
@@ -208,7 +208,7 @@ jobs:
             echo "Deployed: ${{ needs.build.outputs.commit_hash }}"
 
       - name: Reload Nginx
-        uses: appleboy/ssh-action@v2.1.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
@@ -227,7 +227,7 @@ jobs:
 
       - name: Deployment Status
         if: always()
-        uses: appleboy/ssh-action@v2.1.0
+        uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
