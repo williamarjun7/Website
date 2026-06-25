@@ -92,9 +92,9 @@ export const checkPermission = async (role: Role, resource: Resource, action: Ac
 
 export const can = async (resource: Resource, action: Action): Promise<boolean> => {
     try {
-        const userId = localStorage.getItem('saas_user_id');
-        if (!userId) return false;
-        const { data: profile } = await getAdminProfile(userId);
+        const { data: userData } = await insforge.auth.getCurrentUser();
+        if (!userData?.user?.id) return false;
+        const { data: profile } = await getAdminProfile(userData.user.id);
         if (!profile || !profile.is_active) return false;
         if (profile.role === 'super_admin') return true;
         return checkPermission(profile.role, resource, action);

@@ -112,10 +112,35 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
-
     const anonKey = Deno.env.get("API_KEY") || ""
     if (!baseUrl || !anonKey) {
       return new Response(JSON.stringify({ error: "Server configuration error" }), { status: 500 })
+    }
+
+    // ── Admin authentication ──
+    const authHeader = req.headers.get("authorization") || ""
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
+    }
+    const jwt = authHeader.slice(7)
+    if (!jwt) {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), { status: 401 })
+    }
+
+    const { auth: authClient } = createClient({ baseUrl, anonKey: jwt })
+    const { data: userData, error: userErr } = await authClient.getCurrentUser()
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Invalid or expired session" }), { status: 401 })
+    }
+
+    const { data: adminRecord } = await createClient({ baseUrl, anonKey })
+      .database.from("admins")
+      .select("id")
+      .eq("user_id", userData.user.id)
+      .maybeSingle()
+
+    if (!adminRecord) {
+      return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403 })
     }
 
     const { database: db } = createClient({ baseUrl, anonKey })

@@ -3,6 +3,7 @@ import { getCurrentTenantId } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logMediaEvent } from './auditService';
 import { deleteFile, extractStorageKey } from './storageService';
+import { can } from './rbacService';
 
 export interface MediaFile {
     id: string;
@@ -73,6 +74,7 @@ export const getMediaByFolder = async (folder: string) => {
 
 export const addMediaFile = async (fileData: Partial<MediaFile>) => {
     try {
+        if (!await can('media', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = applyTenantFilter();
         const { data, error } = await insforge.database
             .from('media_files')
@@ -90,6 +92,7 @@ export const addMediaFile = async (fileData: Partial<MediaFile>) => {
 
 export const updateMediaFile = async (id: string, updates: Partial<MediaFile>) => {
     try {
+        if (!await can('media', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = applyTenantFilter();
         const { data, error } = await insforge.database
             .from('media_files')
@@ -108,6 +111,7 @@ export const updateMediaFile = async (id: string, updates: Partial<MediaFile>) =
 
 export const deleteMediaFile = async (id: string) => {
     try {
+        if (!await can('media', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = applyTenantFilter();
         const { data: file, error: fetchError } = await insforge.database
             .from('media_files')
@@ -138,6 +142,7 @@ export const deleteMediaFile = async (id: string) => {
 
 export const recordFileVersion = async (mediaFileId: string, url: string, size: number, mimeType: string, uploadedBy: string) => {
     try {
+        if (!await can('media', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data: versions, error: fetchError } = await insforge.database
             .from('file_versions')
             .select('version_number')

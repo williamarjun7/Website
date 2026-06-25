@@ -143,7 +143,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
         if (result.error) throw result.error;
         return false;
     } catch {
-        return !!localStorage.getItem('saas_user_id');
+        return false;
     }
 };
 

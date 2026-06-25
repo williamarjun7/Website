@@ -1196,8 +1196,8 @@ export default async function handler(req: Request) {
 
     return _err("Unknown action", 400)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error"
-    return new Response(JSON.stringify({ error: message }), {
+    console.error("fonepay-payment error:", error instanceof Error ? error.message : String(error))
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     })

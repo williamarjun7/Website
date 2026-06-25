@@ -1,6 +1,7 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { deleteFile, extractStorageKey } from './storageService';
 import { invalidateCmsCache } from './cacheService';
+import { can } from './rbacService';
 
 export interface Room {
     id: string;
@@ -142,6 +143,7 @@ export const getAvailableRooms = async (checkIn: string, checkOut: string) => {
 // Admin: Create room
 export const createRoom = async (room: Partial<Room>) => {
     try {
+        if (!await can('page', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('rooms')
             .insert(room)
@@ -159,6 +161,7 @@ export const createRoom = async (room: Partial<Room>) => {
 // Admin: Update room
 export const updateRoom = async (id: string, updates: Partial<Room>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('rooms')
             .update(updates)
@@ -177,6 +180,7 @@ export const updateRoom = async (id: string, updates: Partial<Room>) => {
 // Admin: Delete room
 export const deleteRoom = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { error } = await insforge.database
             .from('rooms')
             .delete()
@@ -193,6 +197,7 @@ export const deleteRoom = async (id: string) => {
 // Admin: Add room image
 export const addRoomImage = async (roomImage: Partial<RoomImage>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('room_images')
             .insert(roomImage)
@@ -210,6 +215,7 @@ export const addRoomImage = async (roomImage: Partial<RoomImage>) => {
 // Admin: Delete room image (also removes from storage)
 export const deleteRoomImage = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
             const { data: image, error: fetchError } = await insforge.database
             .from('room_images')
             .select('url')
@@ -239,6 +245,7 @@ export const deleteRoomImage = async (id: string) => {
 // Admin: Update room image sort order
 export const updateRoomImageSortOrder = async (id: string, sortOrder: number) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('room_images')
             .update({ sort_order: sortOrder })

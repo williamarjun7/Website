@@ -1,4 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
+import { can } from './rbacService';
 
 export interface Review {
     id: string;
@@ -76,6 +77,7 @@ export const createReview = async (review: CreateReviewData) => {
 
 export const updateReview = async (id: string, updates: Partial<Review>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('reviews')
             .update(updates)
@@ -91,6 +93,7 @@ export const updateReview = async (id: string, updates: Partial<Review>) => {
 
 export const deleteReview = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { error } = await insforge.database
             .from('reviews')
             .delete()

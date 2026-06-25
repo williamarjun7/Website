@@ -16,7 +16,7 @@ const AdminVerify = () => {
 
     useEffect(() => {
         // Get email from navigation state or local storage
-        const stateEmail = location.state?.email || localStorage.getItem('pending_verify_email');
+        const stateEmail = location.state?.email || sessionStorage.getItem('pending_verify_email');
         if (stateEmail) {
             setEmail(stateEmail);
         } else {
@@ -40,7 +40,7 @@ const AdminVerify = () => {
 
             if (data) {
                 setSuccess('Email verified successfully! Redirecting to dashboard...');
-                localStorage.removeItem('pending_verify_email');
+                sessionStorage.removeItem('pending_verify_email');
                 setTimeout(() => {
                     navigate('/admin/dashboard');
                 }, 2000);

@@ -1,6 +1,7 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
+import { can } from './rbacService';
 
 export interface SiteSetting {
     key: string;
@@ -43,6 +44,7 @@ export const getAllSettings = async () => {
 
 export const updateSetting = async (key: string, value: string) => {
     try {
+        if (!await can('setting', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { data, error } = await insforge.database
             .from('site_settings')

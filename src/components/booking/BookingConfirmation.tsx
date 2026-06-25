@@ -192,7 +192,12 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
       setLoading(false);
     }, 0);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearConfirmedBooking();
+      sessionStorage.removeItem('pendingBookingId');
+      sessionStorage.removeItem('pendingBookingData');
+    };
   }, [propData, data, content]);
 
   const total = data?.total_price || 0;

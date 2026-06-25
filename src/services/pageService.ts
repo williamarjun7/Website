@@ -2,6 +2,7 @@ import { insforge, handleInsforgeError } from './insforge';
 import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logPageEvent } from './auditService';
+import { can } from './rbacService';
 
 export interface SitePage {
     id: string;
@@ -82,6 +83,7 @@ export const getPageById = async (id: string) => {
 
 export const createPage = async (data: Partial<SitePage>) => {
     try {
+        if (!await can('page', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { data: page, error } = await insforge.database
             .from('site_pages')
@@ -100,6 +102,7 @@ export const createPage = async (data: Partial<SitePage>) => {
 
 export const updatePage = async (id: string, data: Partial<SitePage>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data: page, error } = await applyTenantFilter(
             insforge.database
                 .from('site_pages')
@@ -117,6 +120,7 @@ export const updatePage = async (id: string, data: Partial<SitePage>) => {
 
 export const deletePage = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await applyTenantFilter(
             insforge.database
                 .from('site_pages')
@@ -134,6 +138,7 @@ export const deletePage = async (id: string) => {
 
 export const publishPage = async (id: string) => {
     try {
+        if (!await can('page', 'publish')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await applyTenantFilter(
             insforge.database
                 .from('site_pages')

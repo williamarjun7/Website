@@ -56,14 +56,14 @@ setInterval(() => {
   }
 }, 300_000)
 
-function verifyPosApiKey(request: Request): boolean {
+async function verifyPosApiKey(request: Request): Promise<boolean> {
   const expectedKey = Deno.env.get("POS_SYNC_API_KEY")
   if (!expectedKey) return false
   const apiKey = request.headers.get("x-pos-api-key")
-  if (apiKey === expectedKey) return true
+  if (apiKey && await timingSafeEqual(apiKey, expectedKey)) return true
   const authHeader = request.headers.get("authorization") || ""
   const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i)
-  return bearerMatch !== null && bearerMatch[1] === expectedKey
+  return bearerMatch !== null && await timingSafeEqual(bearerMatch[1], expectedKey)
 }
 
 function errorResponse(message: string, status = 400, corsHeaders?: Record<string, string>): Response {
@@ -143,7 +143,7 @@ export default async function handler(req: Request) {
 
   // Verify POS API key (except for GET availability — public for booking form)
   const isAvailabilityGet = req.method === "GET" && path === "/availability"
-  if (!isAvailabilityGet && !verifyPosApiKey(req)) {
+  if (!isAvailabilityGet && !(await verifyPosApiKey(req))) {
     return errorResponse("Unauthorized: Invalid or missing POS API key", 401, corsHeaders)
   }
 
@@ -439,11 +439,7 @@ export default async function handler(req: Request) {
 
     return errorResponse("Not found", 404, corsHeaders)
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error"
-    console.error("pos-sync-api error:", error)
-    return new Response(JSON.stringify({ error: message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    })
+    console.error("pos-sync-api error:", error instanceof Error ? error.message : String(error))
+    return errorResponse("Internal server error", 500, corsHeaders)
   }
 }

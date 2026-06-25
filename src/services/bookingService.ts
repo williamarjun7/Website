@@ -1,4 +1,5 @@
 import { insforge, handleInsforgeError } from './insforge';
+import { can } from './rbacService';
 
 export interface Booking {
     id: string;
@@ -89,6 +90,7 @@ export const getBookingsByEmail = async (email: string) => {
 // Admin: Get all bookings
 export const getAllBookings = async () => {
     try {
+        if (!await can('page', 'read')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('bookings')
             .select('*, rooms(*)')
@@ -119,6 +121,7 @@ export const updateBookingStatus = async (
     status: Booking['booking_status']
 ) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data: current, error: fetchError } = await insforge.database
             .from('bookings')
             .select('booking_status')
@@ -147,9 +150,24 @@ export const updateBookingStatus = async (
     }
 };
 
-// Admin: Cancel booking
+// Admin: Cancel booking with state machine validation
 export const cancelBooking = async (id: string) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
+        const { data: current, error: fetchError } = await insforge.database
+            .from('bookings')
+            .select('booking_status')
+            .eq('id', id)
+            .single();
+
+        if (fetchError) throw fetchError;
+        if (!current) throw new Error('Booking not found');
+
+        const allowed = VALID_TRANSITIONS[current.booking_status];
+        if (!allowed || !allowed.includes('cancelled')) {
+            throw new Error(`Cannot cancel a booking with status "${current.booking_status}"`);
+        }
+
         const { data, error } = await insforge.database
             .from('bookings')
             .update({ booking_status: 'cancelled' })
@@ -167,6 +185,7 @@ export const cancelBooking = async (id: string) => {
 // Admin: Get bookings by date range
 export const getBookingsByDateRange = async (startDate: string, endDate: string) => {
     try {
+        if (!await can('page', 'read')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('bookings')
             .select('*, rooms(*)')
@@ -184,6 +203,7 @@ export const getBookingsByDateRange = async (startDate: string, endDate: string)
 // Admin: Get upcoming check-ins
 export const getUpcomingCheckIns = async (days: number = 7) => {
     try {
+        if (!await can('page', 'read')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const today = new Date().toISOString().split('T')[0];
         const futureDate = new Date();
         futureDate.setDate(futureDate.getDate() + days);

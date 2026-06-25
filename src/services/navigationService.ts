@@ -2,6 +2,7 @@ import { insforge, handleInsforgeError } from './insforge';
 import { getCurrentTenantId, applyTenantFilter } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logNavEvent } from './auditService';
+import { can } from './rbacService';
 
 export interface NavItem {
     id: string;
@@ -34,6 +35,7 @@ export const getNavigation = async () => {
 
 export const addNavItem = async (data: Partial<NavItem>) => {
     try {
+        if (!await can('navigation', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { data: item, error } = await insforge.database
             .from('site_navigation')
@@ -52,6 +54,7 @@ export const addNavItem = async (data: Partial<NavItem>) => {
 
 export const updateNavItem = async (id: string, data: Partial<NavItem>) => {
     try {
+        if (!await can('navigation', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data: item, error } = await applyTenantFilter(
             insforge.database
                 .from('site_navigation')
@@ -69,6 +72,7 @@ export const updateNavItem = async (id: string, data: Partial<NavItem>) => {
 
 export const deleteNavItem = async (id: string) => {
     try {
+        if (!await can('navigation', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { error } = await applyTenantFilter(
             insforge.database
                 .from('site_navigation')
@@ -86,6 +90,7 @@ export const deleteNavItem = async (id: string) => {
 
 export const reorderNavItems = async (items: { id: string; sort_order: number }[]) => {
     try {
+        if (!await can('navigation', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         for (const item of items) {
             const { error } = await applyTenantFilter(
                 insforge.database

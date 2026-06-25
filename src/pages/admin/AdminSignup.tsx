@@ -41,7 +41,7 @@ const AdminSignup = () => {
             }
 
             if (data?.requireEmailVerification) {
-                localStorage.setItem('pending_verify_email', email);
+                sessionStorage.setItem('pending_verify_email', email);
                 setSuccess('Account created! Please check your email for the verification code.');
                 setTimeout(() => {
                     navigate('/admin/verify', { state: { email } });

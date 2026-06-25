@@ -50,7 +50,7 @@ const AdminLogin = () => {
 
             // If verification is required, give them a way to go to the verify page
             if (msg.toLowerCase().includes('verification')) {
-                localStorage.setItem('pending_verify_email', email);
+                sessionStorage.setItem('pending_verify_email', email);
             }
         } finally {
             setLoading(false);

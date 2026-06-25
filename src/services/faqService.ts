@@ -2,6 +2,7 @@ import { insforge, handleInsforgeError } from './insforge';
 import { getCurrentTenantId } from './tenantService';
 import { invalidateCmsCache } from './cacheService';
 import { logFaqEvent } from './auditService';
+import { can } from './rbacService';
 
 export interface FaqItem {
     id: string;
@@ -52,6 +53,7 @@ export const getPublishedFaqItems = async () => {
 
 export const addFaqItem = async (data: Partial<FaqItem>) => {
     try {
+        if (!await can('faq', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { data: item, error } = await insforge.database
             .from('faq_items')
@@ -70,6 +72,7 @@ export const addFaqItem = async (data: Partial<FaqItem>) => {
 
 export const updateFaqItem = async (id: string, data: Partial<FaqItem>) => {
     try {
+        if (!await can('faq', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { data: item, error } = await insforge.database
             .from('faq_items')
@@ -90,6 +93,7 @@ export const updateFaqItem = async (id: string, data: Partial<FaqItem>) => {
 
 export const deleteFaqItem = async (id: string) => {
     try {
+        if (!await can('faq', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const tenantId = getCurrentTenantId();
         const { error } = await insforge.database
             .from('faq_items')

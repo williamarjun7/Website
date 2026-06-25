@@ -1,5 +1,6 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { invalidateCmsCache } from './cacheService';
+import { can } from './rbacService';
 
 export interface MenuCategory {
     id: string;
@@ -162,6 +163,7 @@ export const getMenuCategories = async () => {
 
 export const createCategory = async (category: Record<string, unknown>) => {
     try {
+        if (!await can('page', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_categories')
             .insert(category)
@@ -178,6 +180,7 @@ export const createCategory = async (category: Record<string, unknown>) => {
 
 export const updateCategory = async (id: string, updates: Record<string, unknown>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_categories')
             .update(updates)
@@ -195,6 +198,7 @@ export const updateCategory = async (id: string, updates: Record<string, unknown
 
 export const deleteCategory = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { error } = await insforge.database
             .from('menu_categories')
             .delete()
@@ -210,6 +214,7 @@ export const deleteCategory = async (id: string) => {
 
 export const createMenuItem = async (item: Record<string, unknown>) => {
     try {
+        if (!await can('page', 'create')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_items')
             .insert(item)
@@ -226,6 +231,7 @@ export const createMenuItem = async (item: Record<string, unknown>) => {
 
 export const updateMenuItem = async (id: string, updates: Record<string, unknown>) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_items')
             .update(updates)
@@ -243,6 +249,7 @@ export const updateMenuItem = async (id: string, updates: Record<string, unknown
 
 export const deleteMenuItem = async (id: string) => {
     try {
+        if (!await can('page', 'delete')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { error } = await insforge.database
             .from('menu_items')
             .update({ deleted_at: new Date().toISOString() })
@@ -258,6 +265,7 @@ export const deleteMenuItem = async (id: string) => {
 
 export const toggleItemAvailability = async (id: string, available: boolean) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_items')
             .update({ available })
@@ -275,6 +283,7 @@ export const toggleItemAvailability = async (id: string, available: boolean) => 
 
 export const toggleItemFeatured = async (id: string, is_featured: boolean) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_items')
             .update({ is_featured })
@@ -292,6 +301,7 @@ export const toggleItemFeatured = async (id: string, is_featured: boolean) => {
 
 export const toggleItemMostSold = async (id: string, is_most_sold: boolean) => {
     try {
+        if (!await can('page', 'update')) return { data: null, error: 'Forbidden: insufficient permissions' };
         const { data, error } = await insforge.database
             .from('menu_items')
             .update({ is_most_sold })

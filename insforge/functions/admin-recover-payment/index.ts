@@ -76,27 +76,14 @@ function successResponse(data: unknown, corsHeaders?: Record<string, string>): R
   })
 }
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const payload = token.split(".")[1]
-    return JSON.parse(new TextDecoder().decode(
-      Uint8Array.from(atob(payload), c => c.charCodeAt(0))
-    ))
-  } catch {
-    return null
-  }
-}
-
 async function verifyAdminSession(request: Request): Promise<{ authorized: boolean; error?: string; errorStatus?: number }> {
   const authHeader = request.headers.get("authorization") || ""
   if (!authHeader.startsWith("Bearer ")) {
     return { authorized: false, error: "Unauthorized", errorStatus: 401 }
   }
   const jwt = authHeader.slice(7)
-
-  const payload = decodeJwtPayload(jwt)
-  if (!payload?.sub) {
-    return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
+  if (!jwt) {
+    return { authorized: false, error: "Missing authorization header", errorStatus: 401 }
   }
 
   const insforgeUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
@@ -106,11 +93,17 @@ async function verifyAdminSession(request: Request): Promise<{ authorized: boole
   }
 
   try {
+    const { auth: authClient } = createClient({ baseUrl: insforgeUrl, anonKey: jwt })
+    const { data: userData, error: userErr } = await authClient.getCurrentUser()
+    if (userErr || !userData?.user) {
+      return { authorized: false, error: "Invalid or expired session", errorStatus: 401 }
+    }
+
     const { database: db } = createClient({ baseUrl: insforgeUrl, anonKey: svcKey })
     const { data: adminRecord } = await db
       .from("admins")
       .select("id")
-      .eq("user_id", payload.sub)
+      .eq("user_id", userData.user.id)
       .maybeSingle()
 
     if (!adminRecord) {
@@ -274,8 +267,7 @@ export default async function handler(req: Request) {
 
     return errorResponse("Unknown action", 400, corsHeaders)
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : "Internal error"
-    console.error("admin-recover-payment error:", err)
-    return errorResponse(msg, 500, corsHeaders)
+    console.error("admin-recover-payment error:", err instanceof Error ? err.message : String(err))
+    return errorResponse("Internal server error", 500, corsHeaders)
   }
 }
