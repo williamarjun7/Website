@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_INSFORGE_BASE_URL: string;
   readonly VITE_INSFORGE_ANON_KEY: string;
+  readonly VITE_INSFORGE_API_KEY: string;
 }
 
 interface ImportMeta {
