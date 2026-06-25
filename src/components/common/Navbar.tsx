@@ -5,6 +5,7 @@ import WhatsAppIcon from './WhatsAppIcon';
 import { getSiteContentMap } from '../../services/contentService';
 import { getSettingsMap } from '../../services/settingsService';
 import { getNavigation, type NavItem } from '../../services/navigationService';
+import { useSplash } from '../../contexts/SplashContext';
 
 import defaultLogo from '../../assets/logo.png';
 
@@ -16,6 +17,7 @@ const Navbar = memo(() => {
     const [content, setContent] = useState<Record<string, string>>({});
     const [settings, setSettings] = useState<Record<string, string>>({});
     const [navItems, setNavItems] = useState<NavItem[]>([]);
+    const { splashActive } = useSplash();
 
     const C = (key: string, fallback: string) => { const v = settings[key] || content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
 
@@ -82,13 +84,13 @@ const Navbar = memo(() => {
                         to="/"
                         className="group flex items-center space-x-3 transform hover:scale-105 transition-all duration-300"
                     >
-                        <div className="relative">
+                        <div className="relative" data-splash-target="logo">
                             <img
                                 src={C('logo_url', '') || defaultLogo}
                                 alt={C('site_name', 'Highlands Cafe & Motel Inn')}
-                                className={`h-16 w-16 rounded-full object-cover drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 ${isTransparent ? 'drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]' : ''}`}
+                                className={`h-16 w-16 rounded-full object-cover drop-shadow-md group-hover:drop-shadow-xl transition-all duration-300 ${splashActive ? 'opacity-0' : 'opacity-100'} ${isTransparent ? 'drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]' : ''}`}
                             />
-                            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full opacity-0 group-hover:opacity-20 blur-lg transition-all duration-300"></div>
+                            <div className={`absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-full blur-lg transition-all duration-300 ${splashActive ? 'opacity-0' : 'opacity-0 group-hover:opacity-20'}`}></div>
                         </div>
                     </Link>
 

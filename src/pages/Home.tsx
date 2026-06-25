@@ -15,6 +15,7 @@ const Home = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [heroSlides, setHeroSlides] = useState<{ image: string; title: string; subtitle: string }[]>([]);
     const [heroVideoUrl, setHeroVideoUrl] = useState('');
+    const [videoLoaded, setVideoLoaded] = useState(false);
     const [cafeImg, setCafeImg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
     const [featuredReviews, setFeaturedReviews] = useState<Review[]>([]);
@@ -88,90 +89,104 @@ const Home = () => {
             </Helmet>
             {/* Hero Section */}
             <section className="relative min-h-screen overflow-hidden">
-                {heroVideoUrl && (
-                    <video
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="absolute inset-0 w-full h-full object-cover"
-                        src={heroVideoUrl}
-                    />
-                )}
-                {heroSlides.length > 0 ? (
-                    <>
-                        {heroSlides.map((slide, index) => (
-                            <div
-                                key={index}
-                                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-                                    }`}
-                            >
-                                <img
-                                    src={slide.image}
-                                    alt={slide.title}
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
-                                <div className="absolute inset-0 flex items-center justify-center text-center">
-                                    <div className="container-custom text-white pt-20">
-                                        <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
-                                            {slide.title}
-                                        </h1>
-                                        <p className="text-xl md:text-2xl mb-8 text-white/90">
-                                            {slide.subtitle}
-                                        </p>
+                {/* Video Layer */}
+                <div
+                    className={`absolute inset-0 transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+                >
+                    {heroVideoUrl && (
+                        <video
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            onLoadedData={() => setVideoLoaded(true)}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            src={heroVideoUrl}
+                        />
+                    )}
+                </div>
 
-                                        {/* CTA Buttons */}
-                                        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                            <Link to="/booking" className="btn-primary inline-block">
-                                                {C('btn_book_stay', 'Book Your Stay')}
-                                                <ArrowRight className="inline ml-2" size={20} />
-                                            </Link>
-                                            <Link
-                                                to="/cafe"
-                                                className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
-                                            >
-                                                <Coffee size={20} />
-                                                <span>{C('btn_view_menu', 'View Menu')}</span>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {/* Slide Indicators */}
-                        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-                            {heroSlides.map((_, index) => (
-                                <button
+                {/* Poster Layer */}
+                <div
+                    className={`absolute inset-0 transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+                >
+                    {heroSlides.length > 0 ? (
+                        <>
+                            {heroSlides.map((slide, index) => (
+                                <div
                                     key={index}
-                                    onClick={() => setCurrentSlide(index)}
-                                    className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
-                                        }`}
-                                    aria-label={`Go to slide ${index + 1}`}
-                                />
-                            ))}
-                        </div>
-                    </>
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 flex items-center justify-center text-center">
-                        <div className="text-center text-white pt-20">
-                            <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">{C('hero_title', 'Welcome to Highlands')}</h1>
-                            <p className="text-xl mb-8">{C('hero_subtitle', 'Experience Cozy Comfort')}</p>
-
-                            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                <Link to="/booking" className="btn-primary inline-block">
-                                    {C('btn_book_stay', 'Book Your Stay')}
-                                    <ArrowRight className="inline ml-2" size={20} />
-                                </Link>
-                                <Link
-                                    to="/cafe"
-                                    className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                                    className={`absolute inset-0 transition-opacity duration-1000 ${
+                                        index === currentSlide ? 'opacity-100' : 'opacity-0'
+                                    }`}
                                 >
-                                    <Coffee size={20} />
-                                    <span>{C('btn_view_menu', 'View Menu')}</span>
-                                </Link>
-                            </div>
+                                    <img
+                                        src={slide.image}
+                                        alt={slide.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                            ))}
+                        </>
+                    ) : (
+                        <div className="absolute inset-0 bg-gradient-to-b from-amber-950 to-amber-900" />
+                    )}
+                </div>
+
+                {/* Gradient overlay (over everything) */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70 pointer-events-none" />
+
+                {/* Content Layer */}
+                <div className="absolute inset-0 flex items-center justify-center text-center">
+                    <div className="container-custom text-white pt-20">
+                        {heroSlides.length > 0 ? (
+                            <>
+                                <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 animate-fade-in">
+                                    {heroSlides[currentSlide].title}
+                                </h1>
+                                <p className="text-xl md:text-2xl mb-8 text-white/90">
+                                    {heroSlides[currentSlide].subtitle}
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">
+                                    {C('hero_title', 'Welcome to Highlands')}
+                                </h1>
+                                <p className="text-xl mb-8 text-white/90">
+                                    {C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')}
+                                </p>
+                            </>
+                        )}
+
+                        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <Link to="/booking" className="btn-primary inline-block">
+                                {C('btn_book_stay', 'Book Your Stay')}
+                                <ArrowRight className="inline ml-2" size={20} />
+                            </Link>
+                            <Link
+                                to="/cafe"
+                                className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                            >
+                                <Coffee size={20} />
+                                <span>{C('btn_view_menu', 'View Menu')}</span>
+                            </Link>
                         </div>
+                    </div>
+                </div>
+
+                {/* Slide Indicators */}
+                {heroSlides.length > 1 && (
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                        {heroSlides.map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentSlide(index)}
+                                className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
+                                    index === currentSlide ? 'bg-white w-8' : 'bg-white/50'
+                                }`}
+                                aria-label={`Go to slide ${index + 1}`}
+                            />
+                        ))}
                     </div>
                 )}
             </section>

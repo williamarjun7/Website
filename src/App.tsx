@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import SplashScreen from './components/common/SplashScreen';
 import { BrowserRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar';
@@ -7,6 +7,9 @@ import ScrollToTop from './components/common/ScrollToTop';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { TenantProvider } from './hooks/useTenant';
 import { PermissionProvider } from './hooks/usePermission';
+import { SplashContext } from './contexts/SplashContext';
+
+const SPLASH_KEY = 'highlands_splash_seen';
 
 // Public Pages (lazy loaded)
 const Home = lazy(() => import('./pages/Home'));
@@ -62,7 +65,10 @@ const PublicLayout = () => (
 
 function App() {
   const [splashDone, setSplashDone] = useState(false);
+  const [splashActive, setSplashActive] = useState(true);
   const [appReady, setAppReady] = useState(false);
+
+  const isRepeat = typeof window !== 'undefined' && sessionStorage.getItem(SPLASH_KEY) === 'true';
 
   useEffect(() => {
     let frameId = requestAnimationFrame(() => {
@@ -71,10 +77,24 @@ function App() {
     return () => cancelAnimationFrame(frameId);
   }, []);
 
+  const handleNavbarReady = useCallback(() => {
+    setSplashActive(false);
+  }, []);
+
+  const handleSplashFinish = useCallback(() => {
+    sessionStorage.setItem(SPLASH_KEY, 'true');
+    setSplashDone(true);
+  }, []);
+
   return (
-    <>
+    <SplashContext.Provider value={{ splashActive }}>
       {!splashDone && (
-        <SplashScreen ready={appReady} onFinish={() => setSplashDone(true)} />
+        <SplashScreen
+          ready={appReady}
+          onFinish={handleSplashFinish}
+          onNavbarReady={handleNavbarReady}
+          isRepeat={isRepeat}
+        />
       )}
       <ErrorBoundary>
         <TenantProvider>
@@ -126,7 +146,7 @@ function App() {
           </PermissionProvider>
         </TenantProvider>
       </ErrorBoundary>
-    </>
+    </SplashContext.Provider>
   );
 }
 
