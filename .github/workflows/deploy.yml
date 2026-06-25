@@ -84,7 +84,7 @@ jobs:
           source: "dist/"
           target: ${{ secrets.STAGING_VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
           strip_components: 1
-          rm: false
+          rm: true
 
       - name: Activate staging release
         uses: appleboy/ssh-action@v1.2.5
@@ -177,7 +177,7 @@ jobs:
           source: "dist/"
           target: ${{ secrets.VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
           strip_components: 1
-          rm: false
+          rm: true
 
       - name: Activate release and apply rollback safety
         uses: appleboy/ssh-action@v1.2.5
