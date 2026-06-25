@@ -120,6 +120,7 @@ const SplashScreen = ({ onFinish, onExitStart }: { onFinish: () => void; onExitS
       const el = document.getElementById(styleId);
       if (el) el.remove();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (phase === 'gone') return null;

@@ -61,7 +61,22 @@ const Bookings = () => {
     });
     const [createSaving, setCreateSaving] = useState(false);
 
-    const loadData = () => {
+    useEffect(() => {
+        Promise.all([
+            getAllBookings(),
+            getAllRoomsForAdmin(),
+        ]).then(([bookingsRes, roomsRes]) => {
+            if (bookingsRes.data) setBookings(bookingsRes.data);
+            if (roomsRes.data) setRooms(roomsRes.data.map((r: { id: string; name: string; price_per_night: number }) => ({ id: r.id, name: r.name, price_per_night: r.price_per_night })));
+            setLoading(false);
+        }).catch((err) => {
+            setLoading(false);
+            setLoadError('Failed to load bookings. Please try again.');
+            console.error('Failed to load bookings:', err);
+        });
+    }, []);
+
+    const retryLoad = () => {
         setLoading(true);
         setLoadError('');
         Promise.all([
@@ -77,10 +92,6 @@ const Bookings = () => {
             console.error('Failed to load bookings:', err);
         });
     };
-
-    useEffect(() => {
-        loadData();
-    }, []);
 
     const filteredBookings = useMemo(() => {
         let result = [...bookings];
@@ -316,7 +327,7 @@ const Bookings = () => {
             {loadError && (
                 <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-100 flex items-center justify-between">
                     <span>{loadError}</span>
-                    <button onClick={loadData} className="text-red-700 font-medium hover:underline">Retry</button>
+                    <button onClick={retryLoad} className="text-red-700 font-medium hover:underline">Retry</button>
                 </div>
             )}
 
