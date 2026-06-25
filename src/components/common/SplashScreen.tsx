@@ -223,7 +223,7 @@ export default function SplashScreen({ ready, onFinish, onNavbarReady, isRepeat 
             ? 'splash-tagline-exit' : 'splash-tagline text-amber-400/50'
         }`}
       >
-        Stay &bull; Dine &bull; Relax
+        Stay {'\u00B7'} Dine {'\u00B7'} Relax
       </p>
 
       <style>{`
