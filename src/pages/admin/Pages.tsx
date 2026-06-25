@@ -116,12 +116,12 @@ const Pages = () => {
         if (editingPage) {
             const { error } = await updatePage(editingPage.id, payload);
             if (error) { showToast(error); return; }
-            await addRevision({ entity_type: 'site_pages', entity_id: editingPage.id, field_name: 'content', old_value: JSON.stringify(editingPage), new_value: JSON.stringify(payload), user_name: profile?.name || 'admin' });
+            await addRevision({ entity_type: 'site_pages', entity_id: editingPage.id, field_name: 'content', old_value: JSON.stringify(editingPage), new_value: JSON.stringify(payload), user_name: profile?.display_name || 'admin' });
         } else {
             const { data: newPage, error } = await createPage(payload);
             if (error) { showToast(error); return; }
             if (newPage) {
-                await addRevision({ entity_type: 'site_pages', entity_id: newPage.id, field_name: 'created', old_value: '', new_value: JSON.stringify(newPage), user_name: profile?.name || 'admin' });
+                await addRevision({ entity_type: 'site_pages', entity_id: newPage.id, field_name: 'created', old_value: '', new_value: JSON.stringify(newPage), user_name: profile?.display_name || 'admin' });
             }
         }
 
@@ -138,7 +138,7 @@ const Pages = () => {
         if (!error) {
             loadPages();
             showToast('Page published');
-            await addRevision({ entity_type: 'site_pages', entity_id: page.id, field_name: 'status', old_value: page.status, new_value: 'published', user_name: profile?.name || 'admin' });
+            await addRevision({ entity_type: 'site_pages', entity_id: page.id, field_name: 'status', old_value: page.status, new_value: 'published', user_name: profile?.display_name || 'admin' });
         } else {
             showToast(error);
         }
@@ -148,7 +148,7 @@ const Pages = () => {
         if (!deleteTarget) return;
         const { error } = await deletePage(deleteTarget.id);
         if (error) { showToast(error); setDeleteTarget(null); return; }
-        await addRevision({ entity_type: 'site_pages', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: profile?.name || 'admin' });
+        await addRevision({ entity_type: 'site_pages', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: profile?.display_name || 'admin' });
         setDeleteTarget(null);
         loadPages();
         showToast('Page deleted');

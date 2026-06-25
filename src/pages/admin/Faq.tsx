@@ -97,12 +97,12 @@ const Faq = () => {
         if (editingItem) {
             const { error } = await updateFaqItem(editingItem.id, form);
             if (error) { showToast(error); return; }
-            await addRevision({ entity_type: 'faq_items', entity_id: editingItem.id, field_name: 'content', old_value: JSON.stringify(editingItem), new_value: JSON.stringify(form), user_name: profile?.name || 'admin' });
+            await addRevision({ entity_type: 'faq_items', entity_id: editingItem.id, field_name: 'content', old_value: JSON.stringify(editingItem), new_value: JSON.stringify(form), user_name: profile?.display_name || 'admin' });
         } else {
             const { data, error } = await addFaqItem(form);
             if (error) { showToast(error); return; }
             if (data) {
-                await addRevision({ entity_type: 'faq_items', entity_id: data.id, field_name: 'created', old_value: '', new_value: JSON.stringify(data), user_name: profile?.name || 'admin' });
+                await addRevision({ entity_type: 'faq_items', entity_id: data.id, field_name: 'created', old_value: '', new_value: JSON.stringify(data), user_name: profile?.display_name || 'admin' });
             }
         }
         setModalOpen(false);
@@ -118,7 +118,7 @@ const Faq = () => {
         const { error } = await updateFaqItem(item.id, { published: newPublished });
         if (!error) {
             loadItems();
-            await addRevision({ entity_type: 'faq_items', entity_id: item.id, field_name: 'published', old_value: String(item.published), new_value: String(newPublished), user_name: profile?.name || 'admin' });
+            await addRevision({ entity_type: 'faq_items', entity_id: item.id, field_name: 'published', old_value: String(item.published), new_value: String(newPublished), user_name: profile?.display_name || 'admin' });
         } else {
             showToast(error);
         }
@@ -128,7 +128,7 @@ const Faq = () => {
         if (!deleteTarget) return;
         const { error } = await deleteFaqItem(deleteTarget.id);
         if (error) { showToast(error); setDeleteTarget(null); return; }
-        await addRevision({ entity_type: 'faq_items', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: profile?.name || 'admin' });
+        await addRevision({ entity_type: 'faq_items', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: profile?.display_name || 'admin' });
         setDeleteTarget(null);
         loadItems();
         showToast('FAQ deleted');

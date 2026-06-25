@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
-import { getSiteImagesByPage, getSiteContentMap, getMenuPages } from '../services/contentService';
+import { getSiteImagesByPage, getSiteContentMap } from '../services/contentService';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
 interface MenuCategory {
