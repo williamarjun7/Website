@@ -183,7 +183,6 @@ jobs:
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             set -e
 
@@ -215,7 +214,6 @@ jobs:
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back..."
@@ -235,7 +233,6 @@ jobs:
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             echo "Status: ${{ job.status }}"
             echo "Commit: ${{ needs.build.outputs.commit_hash }}"
