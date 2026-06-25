@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, type ComponentType } from 'react';
 import { Bold, Italic, Heading, List, Link, Image, AlignLeft, ListOrdered } from 'lucide-react';
 import MediaPicker from './MediaPicker';
 
@@ -9,6 +9,17 @@ interface RichTextEditorProps {
     minHeight?: number;
     label?: string;
 }
+
+const ToolbarButton = ({ icon: Icon, onClick, title }: { icon: ComponentType<{ size?: number }>; onClick: () => void; title: string }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        title={title}
+        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
+    >
+        <Icon size={16} />
+    </button>
+);
 
 const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...', minHeight = 250, label }: RichTextEditorProps) => {
     const editorRef = useRef<HTMLDivElement>(null);
@@ -60,17 +71,6 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
         handleInput();
     };
 
-    const toolbarButtons = [
-        { icon: Bold, action: handleBold, label: 'Bold' },
-        { icon: Italic, action: handleItalic, label: 'Italic' },
-        { icon: Heading, action: handleHeading, label: 'Heading' },
-        { icon: List, action: handleBulletList, label: 'Bullet List' },
-        { icon: ListOrdered, action: handleOrderedList, label: 'Numbered List' },
-        { icon: AlignLeft, action: handleAlignLeft, label: 'Align Left' },
-        { icon: Link, action: handleLink, label: 'Link' },
-        { icon: Image, action: () => setShowMediaPicker(true), label: 'Image' },
-    ];
-
     return (
         <div className="border border-gray-200 rounded-xl overflow-hidden">
             {label && (
@@ -79,17 +79,14 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
                 </div>
             )}
             <div className="flex flex-wrap gap-0.5 px-3 py-2 bg-white border-b border-gray-200">
-                {toolbarButtons.map((btn) => (
-                    <button
-                        key={btn.label}
-                        type="button"
-                        onClick={btn.action}
-                        title={btn.label}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
-                    >
-                        <btn.icon size={16} />
-                    </button>
-                ))}
+                <ToolbarButton icon={Bold} onClick={handleBold} title="Bold" />
+                <ToolbarButton icon={Italic} onClick={handleItalic} title="Italic" />
+                <ToolbarButton icon={Heading} onClick={handleHeading} title="Heading" />
+                <ToolbarButton icon={List} onClick={handleBulletList} title="Bullet List" />
+                <ToolbarButton icon={ListOrdered} onClick={handleOrderedList} title="Numbered List" />
+                <ToolbarButton icon={AlignLeft} onClick={handleAlignLeft} title="Align Left" />
+                <ToolbarButton icon={Link} onClick={handleLink} title="Link" />
+                <ToolbarButton icon={Image} onClick={() => setShowMediaPicker(true)} title="Image" />
             </div>
             {showLinkInput && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200">

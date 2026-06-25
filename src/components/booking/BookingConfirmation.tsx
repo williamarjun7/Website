@@ -33,10 +33,12 @@ export interface ConfirmedBookingData {
 
 const STORAGE_KEY = 'confirmedBooking';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function storeConfirmedBooking(data: ConfirmedBookingData) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function clearConfirmedBooking() {
   sessionStorage.removeItem(STORAGE_KEY);
 }
@@ -139,50 +141,59 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
       if (r.data) setContent(r.data);
     });
 
-    if (propData) {
-      setData(propData);
-      setLoading(false);
-      return;
-    }
-
-    const stored = loadConfirmedBooking();
-    if (stored) {
-      setData(stored);
-      setLoading(false);
-      return;
-    }
-
-    const pendingId = sessionStorage.getItem('pendingBookingId');
-    if (pendingId) {
-      getBookingById(pendingId).then((res) => {
-        const b = res.data;
-        if (b) {
-          const d: ConfirmedBookingData = {
-            id: b.id,
-            guest_name: b.guest_name,
-            guest_email: b.guest_email,
-            guest_phone: b.guest_phone,
-            check_in: b.check_in,
-            check_out: b.check_out,
-            guests: b.adults || 1,
-            room: b.rooms || { id: '', name: C('confirmation_room_fallback', 'Selected Room') },
-            total_price: b.total_price,
-            advance_amount: b.advance_amount,
-            balance_amount: b.balance_amount,
-            payment_method: b.payment_status === 'pay_at_property' ? 'pay_at_property' : 'fonepay_web',
-            payment_status: b.payment_status,
-            booking_status: b.booking_status,
-          };
-          setData(d);
-          storeConfirmedBooking(d);
-        }
+    const timer = setTimeout(() => {
+      if (propData && propData !== data) {
+        setData(propData);
         setLoading(false);
-      });
-      return;
-    }
+        return;
+      }
 
-    setLoading(false);
-  }, [propData]);
+      if (data) {
+        setLoading(false);
+        return;
+      }
+
+      const stored = loadConfirmedBooking();
+      if (stored) {
+        setData(stored);
+        setLoading(false);
+        return;
+      }
+
+      const pendingId = sessionStorage.getItem('pendingBookingId');
+      if (pendingId) {
+        getBookingById(pendingId).then((res) => {
+          const b = res.data;
+          if (b) {
+            const d: ConfirmedBookingData = {
+              id: b.id,
+              guest_name: b.guest_name,
+              guest_email: b.guest_email,
+              guest_phone: b.guest_phone,
+              check_in: b.check_in,
+              check_out: b.check_out,
+              guests: b.adults || 1,
+              room: b.rooms || { id: '', name: content['confirmation_room_fallback'] || 'Selected Room' },
+              total_price: b.total_price,
+              advance_amount: b.advance_amount,
+              balance_amount: b.balance_amount,
+              payment_method: b.payment_status === 'pay_at_property' ? 'pay_at_property' : 'fonepay_web',
+              payment_status: b.payment_status,
+              booking_status: b.booking_status,
+            };
+            setData(d);
+            storeConfirmedBooking(d);
+          }
+          setLoading(false);
+        });
+        return;
+      }
+
+      setLoading(false);
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [propData, data, content]);
 
   const total = data?.total_price || 0;
   const advance = data?.advance_amount ?? Math.round(total * 60) / 100;

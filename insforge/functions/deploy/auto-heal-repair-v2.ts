@@ -1,12 +1,5 @@
 import { createClient } from "npm:@insforge/sdk"
 
-const REPAIR_TYPES = [
-  "guest_name", "guest_email", "guest_phone",
-  "payment_status", "booking_status",
-  "advance_amount", "balance_amount", "total_price",
-  "check_in", "check_out", "adults", "children",
-] as const
-
 const NEVER_AUTO_FIX = new Set([
   "missing_booking", "duplicate_booking",
   "room_mismatch", "orphaned_record", "stale_booking",

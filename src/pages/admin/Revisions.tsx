@@ -14,8 +14,6 @@ const Revisions = () => {
     const [entityTypeFilter, setEntityTypeFilter] = useState('all');
     const [entityTypes, setEntityTypes] = useState<string[]>([]);
 
-    useEffect(() => { loadRevisions(); }, []);
-
     const loadRevisions = async () => {
         setLoading(true);
         try {
@@ -30,6 +28,8 @@ const Revisions = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => { setTimeout(() => loadRevisions(), 0); }, []);
 
     const loadFiltered = async (type: string) => {
         setEntityTypeFilter(type);

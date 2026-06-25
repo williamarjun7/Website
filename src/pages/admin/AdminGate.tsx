@@ -10,10 +10,6 @@ const AdminGate = () => {
 
     useEffect(() => {
         let cancelled = false;
-        setIsAuth((prev) => {
-            if (prev === true) return true;
-            return null;
-        });
 
         const checkAuth = async () => {
             const auth = await isAuthenticated();

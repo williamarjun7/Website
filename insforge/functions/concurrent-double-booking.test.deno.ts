@@ -30,7 +30,7 @@ Deno.test({
   fn: async () => {
     // This test verifies the exclusion constraint exists by inspecting
     // the database schema. It runs as a direct DB query via the API.
-    const resp = await fetch(`${BASE}/rest/v1/rpc/`, {
+    await fetch(`${BASE}/rest/v1/rpc/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

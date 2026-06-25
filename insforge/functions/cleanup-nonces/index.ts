@@ -1,6 +1,6 @@
 import { createClient } from "npm:@insforge/sdk"
 
-export default async function handler(req: Request) {
+export default async function handler(_req: Request) {
   const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""
   const anonKey = Deno.env.get("API_KEY") || ""
   if (!baseUrl || !anonKey) {

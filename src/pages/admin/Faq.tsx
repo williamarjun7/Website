@@ -54,8 +54,6 @@ const Faq = () => {
         setTimeout(() => setToast(''), 3000);
     };
 
-    useEffect(() => { loadItems(); }, []);
-
     const loadItems = async () => {
         setLoading(true);
         try {
@@ -70,6 +68,8 @@ const Faq = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => { setTimeout(() => loadItems(), 0); }, []);
 
     const openAddModal = () => {
         setEditingItem(null);

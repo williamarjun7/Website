@@ -71,7 +71,7 @@ function generateRollbackSql(
 function getRepairValue(
   repairType: string,
   posValue: Record<string, unknown> | null,
-  websiteValue: Record<string, unknown> | null,
+  _websiteValue: Record<string, unknown> | null,
 ): unknown {
   if (!posValue) return null
   if (repairType === "booking_status") return posValue.booking_status || posValue.status
@@ -109,7 +109,6 @@ function getWebsiteFieldName(repairType: string): string {
 
 export default async function handler(req: Request): Promise<Response> {
   const dryRun = req.method === "POST" && req.headers.get("x-repair-mode") === "dry_run"
-  const isAdminRequest = req.method === "POST" && (req.method === "POST")
 
   try {
     const baseUrl = Deno.env.get("INSFORGE_BASE_URL") || ""

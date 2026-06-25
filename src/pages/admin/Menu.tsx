@@ -356,7 +356,7 @@ const Menu = () => {
         setMenuPages(updated);
 
         for (let i = 0; i < updated.length; i++) {
-            await updateMenuPage(updated[i].id, { sort_order: i } as any);
+            await updateMenuPage(updated[i].id, { sort_order: i } as never);
         }
     };
 

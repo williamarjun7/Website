@@ -13,7 +13,7 @@
 // Run: deno test --no-check --allow-net qa-certification.test.deno.ts
 // ═══════════════════════════════════════════════════════════════════
 
-import { assertEquals, assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts"
+import { assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts"
 
 const BASE = Deno.env.get("INSFORGE_BASE_URL") ?? "https://6aiag3ra.us-east.insforge.app"
 const API_KEY = Deno.env.get("TEST_API_KEY") ?? ""
@@ -30,7 +30,7 @@ interface CertificationEntry {
   severity: "critical" | "high" | "medium" | "low"
 }
 
-interface CertificationResult {
+interface _CertificationResult {
   score: number
   critical_failures: number
   security_failures: number
@@ -489,8 +489,8 @@ Deno.test({
   fn: async () => {
     const testDate = new Date()
     testDate.setDate(testDate.getDate() + 60)
-    const checkIn = testDate.toISOString().slice(0, 10)
-    const checkOut = new Date(testDate.getTime() + 2 * 86400000).toISOString().slice(0, 10)
+    const _checkIn = testDate.toISOString().slice(0, 10)
+    const _checkOut = new Date(testDate.getTime() + 2 * 86400000).toISOString().slice(0, 10)
 
     record("Cancellation", "Cancelled bookings free the date", true,
       "Test validates exclusion constraint handles cancelled status correctly", "medium")
@@ -514,7 +514,7 @@ Deno.test({
     }
 
     let allMatch = true
-    for (const [eventType, expectedStatus] of Object.entries(statusMap)) {
+    for (const [_eventType, _expectedStatus] of Object.entries(statusMap)) {
       // The mapping in the handler uses:
       //   booking_cancelled → cancelled
       //   booking.checked_in → checked_in

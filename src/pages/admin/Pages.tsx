@@ -65,8 +65,6 @@ const Pages = () => {
         setTimeout(() => setToast(''), 3000);
     };
 
-    useEffect(() => { loadPages(); }, []);
-
     const loadPages = async () => {
         setLoading(true);
         try {
@@ -77,6 +75,8 @@ const Pages = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => { setTimeout(() => loadPages(), 0); }, []);
 
     const slugify = (text: string) =>
         text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

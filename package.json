@@ -18,8 +18,8 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@insforge/sdk": "^1.0.0",
+    "@sentry/react": "^10.60.0",
     "date-fns": "^4.1.0",
-
     "lucide-react": "^0.468.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.3",

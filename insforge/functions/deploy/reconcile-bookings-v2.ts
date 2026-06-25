@@ -14,9 +14,6 @@ const COMPARISON_FIELDS = [
   "total_price",
 ] as const
 
-type ComparisonField = typeof COMPARISON_FIELDS[number]
-
-type LogEntry = Record<string, unknown>
 
 interface PosBooking {
   id: string
@@ -219,6 +216,7 @@ export default async function handler(): Promise<Response> {
             posBooking = (await posResp.json()).data as PosBooking
           }
         } catch {
+          // noop — best-effort fetch from POS
         }
       }
 

@@ -1,8 +1,8 @@
-name: Deploy to VPS
+name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
 
 env:
@@ -51,9 +51,91 @@ jobs:
           path: dist/
           retention-days: 3
 
-  deploy:
-    name: Deploy to VPS
+  deploy-staging:
+    name: Deploy to Staging
+    if: github.ref == 'refs/heads/staging'
     needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+
+      - name: Verify build artifact
+        run: |
+          ls -la dist/
+          test -f dist/index.html || { echo "Missing index.html"; exit 1; }
+
+      - name: Deploy to staging VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.STAGING_VPS_HOST }}
+          port: ${{ secrets.STAGING_VPS_PORT || 22 }}
+          username: ${{ secrets.STAGING_VPS_USER }}
+          key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          source: "dist/"
+          target: ${{ secrets.STAGING_VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
+          strip_components: 1
+          rm: false
+
+      - name: Activate staging release
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.STAGING_VPS_HOST }}
+          port: ${{ secrets.STAGING_VPS_PORT || 22 }}
+          username: ${{ secrets.STAGING_VPS_USER }}
+          key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          script: |
+            set -e
+
+            DEPLOY_DIR="${{ secrets.STAGING_VPS_DEPLOY_PATH }}"
+            RELEASE="$DEPLOY_DIR/releases/${{ needs.build.outputs.commit_hash }}"
+            CURRENT_LINK="$DEPLOY_DIR/current"
+            PREVIOUS_LINK="$DEPLOY_DIR/previous"
+
+            if [ ! -f "$RELEASE/index.html" ]; then
+              echo "ERROR: Release missing index.html, aborting."
+              exit 1
+            fi
+
+            sudo chown -R www-data:www-data "$RELEASE"
+
+            if [ -L "$CURRENT_LINK" ]; then
+              ln -sfn "$(readlink -f "$CURRENT_LINK")" "$PREVIOUS_LINK"
+            fi
+            ln -sfn "$RELEASE" "$CURRENT_LINK"
+
+            ls -dt "$DEPLOY_DIR"/releases/*/ | tail -n +6 | xargs -r sudo rm -rf
+
+            echo "Staging deployed: ${{ needs.build.outputs.commit_hash }}"
+
+      - name: Reload Nginx (staging)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.STAGING_VPS_HOST }}
+          port: ${{ secrets.STAGING_VPS_PORT || 22 }}
+          username: ${{ secrets.STAGING_VPS_USER }}
+          key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          script: |
+            sudo nginx -t && sudo systemctl reload nginx || {
+              echo "ERROR: nginx -t failed. Rolling back staging..."
+              DEPLOY_DIR="${{ secrets.STAGING_VPS_DEPLOY_PATH }}"
+              if [ -L "$DEPLOY_DIR/previous" ]; then
+                ln -sfn "$(readlink -f "$DEPLOY_DIR/previous")" "$DEPLOY_DIR/current"
+                sudo nginx -t && sudo systemctl reload nginx
+              fi
+              exit 1
+            }
+
+  deploy-production:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main'
+    needs: [build, deploy-staging]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
@@ -97,25 +179,21 @@ jobs:
             CURRENT_LINK="$DEPLOY_DIR/current"
             PREVIOUS_LINK="$DEPLOY_DIR/previous"
 
-            # Validate release exists
             if [ ! -f "$RELEASE/index.html" ]; then
               echo "ERROR: Release missing index.html, aborting."
               exit 1
             fi
 
-            # Fix ownership
             sudo chown -R www-data:www-data "$RELEASE"
 
-            # Atomic symlink swap: previous -> old current, current -> new release
             if [ -L "$CURRENT_LINK" ]; then
               ln -sfn "$(readlink -f "$CURRENT_LINK")" "$PREVIOUS_LINK"
             fi
             ln -sfn "$RELEASE" "$CURRENT_LINK"
 
-            # Clean up old releases (keep last 5)
             ls -dt "$DEPLOY_DIR"/releases/*/ | tail -n +6 | xargs -r sudo rm -rf
 
-            echo "✅ Deployed: ${{ needs.build.outputs.commit_hash }}"
+            echo "Deployed: ${{ needs.build.outputs.commit_hash }}"
 
       - name: Reload Nginx
         uses: appleboy/ssh-action@v1.2.0
@@ -125,7 +203,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            # Validate Nginx config before reload
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back..."
               DEPLOY_DIR="${{ secrets.VPS_DEPLOY_PATH }}"

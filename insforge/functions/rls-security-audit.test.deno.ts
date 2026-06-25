@@ -60,7 +60,7 @@ const SYNC_TABLES = [
   "sync_repair_jobs",
 ]
 
-const ROLES = [
+const _ROLES = [
   { name: "anon", key: ANON_KEY },
   { name: "authenticated", key: AUTH_KEY },
 ]

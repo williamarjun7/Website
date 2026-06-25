@@ -396,7 +396,7 @@ async function simulatePosToWebsitePush(
   const roomMapping = sys.pos.findBy("room_mappings", "pos_room_id", posBooking.room_id)
   const websiteRoomId = (roomMapping?.website_room_id as string) || (posBooking.room_id as string)
 
-  let payload: Record<string, unknown> = {
+  const payload: Record<string, unknown> = {
     event_type: "booking_confirmed",
     external_booking_id: posBooking.id,
     origin_system: "pos",
@@ -1066,7 +1066,7 @@ Deno.test({
     const orphanCount = errs3.length
     const score = healthScore(sys, allErrs)
 
-    const avgLat = totalDeliveries > 0 ? totalDeliveries : 0
+    const _avgLat = totalDeliveries > 0 ? totalDeliveries : 0
     const syncRate = totalDeliveries > 0 ? (processedCount / totalDeliveries) * 100 : 0
     const failRate2 = totalDeliveries > 0 ? (failedCount / totalDeliveries) * 100 : 0
     const dlRate = totalDeliveries > 0 ? (deadLetterCount / totalDeliveries) * 100 : 0

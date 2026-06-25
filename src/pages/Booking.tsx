@@ -138,7 +138,7 @@ const Booking = () => {
         };
 
         run();
-    }, [checkIn, checkOut, showAvailabilitySearch, datesValid, entryMode, activeRoom?.id]);
+    }, [checkIn, checkOut, showAvailabilitySearch, datesValid, entryMode, activeRoom]);
 
     const confirmPaymentAndAdvance = useCallback(async (prn: string) => {
         const { data } = await verifyQrPayment(prn);

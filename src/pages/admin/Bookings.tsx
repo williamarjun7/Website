@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
     Search,
@@ -44,7 +44,6 @@ const ITEMS_PER_PAGE = 10;
 
 const Bookings = () => {
     const [bookings, setBookings] = useState<AdminBooking[]>([]);
-    const [filteredBookings, setFilteredBookings] = useState<AdminBooking[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -60,24 +59,6 @@ const Bookings = () => {
         total_price: 0, advance_amount: 0, payment_status: 'pay_at_property' as string
     });
     const [createSaving, setCreateSaving] = useState(false);
-
-    const filterAndSetBookings = useCallback(() => {
-        let result = [...bookings];
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            result = result.filter(b =>
-                b.guest_name.toLowerCase().includes(term) ||
-                b.guest_email.toLowerCase().includes(term) ||
-                b.id.toLowerCase().includes(term)
-            );
-        }
-        if (statusFilter === 'paid' || statusFilter === 'pending' || statusFilter === 'failed' || statusFilter === 'pay_at_property') {
-            result = result.filter(b => b.payment_status === statusFilter);
-        } else if (statusFilter !== 'all') {
-            result = result.filter(b => b.booking_status === statusFilter);
-        }
-        setFilteredBookings(result);
-    }, [bookings, searchTerm, statusFilter]);
 
     useEffect(() => {
         let cancelled = false;
@@ -97,10 +78,27 @@ const Bookings = () => {
         return () => { cancelled = true; };
     }, []);
 
+    const filteredBookings = useMemo(() => {
+        let result = [...bookings];
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(b =>
+                b.guest_name.toLowerCase().includes(term) ||
+                b.guest_email.toLowerCase().includes(term) ||
+                b.id.toLowerCase().includes(term)
+            );
+        }
+        if (statusFilter === 'paid' || statusFilter === 'pending' || statusFilter === 'failed' || statusFilter === 'pay_at_property') {
+            result = result.filter(b => b.payment_status === statusFilter);
+        } else if (statusFilter !== 'all') {
+            result = result.filter(b => b.booking_status === statusFilter);
+        }
+        return result;
+    }, [bookings, searchTerm, statusFilter]);
+
     useEffect(() => {
-        filterAndSetBookings();
-        setCurrentPage(1);
-    }, [bookings, searchTerm, statusFilter, filterAndSetBookings]);
+        setTimeout(() => setCurrentPage(1), 0);
+    }, [searchTerm, statusFilter]);
 
     const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
     const paginatedBookings = filteredBookings.slice(

@@ -14,9 +14,6 @@ const COMPARISON_FIELDS = [
   "total_price",
 ] as const
 
-type ComparisonField = typeof COMPARISON_FIELDS[number]
-
-type LogEntry = Record<string, unknown>
 
 interface PosBooking {
   id: string

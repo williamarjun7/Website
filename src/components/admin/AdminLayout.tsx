@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ElementType } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
+import { type Resource, type Action } from '../../services/rbacService';
 import {
     LayoutDashboard,
     BedDouble,
@@ -26,14 +27,14 @@ import { usePermission } from '../../hooks/usePermission';
 interface NavItemDefinition {
     name: string;
     path: string;
-    icon: any;
+    icon: ElementType;
     resource?: string;
     action?: string;
 }
 
 interface NavGroup {
     label: string;
-    icon: any;
+    icon: ElementType;
     items: NavItemDefinition[];
 }
 
@@ -83,9 +84,8 @@ const AdminLayout = () => {
     const location = useLocation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
     const [filteredGroups, setFilteredGroups] = useState<NavGroup[]>([]);
-    const { can, profile, loading: _permLoading } = usePermission();
+    const { can, profile } = usePermission();
 
     useEffect(() => {
         const handleResize = () => {
@@ -97,16 +97,14 @@ const AdminLayout = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
-        setExpandedGroups(prev => {
-            const next = { ...prev };
-            for (const group of allGroups) {
-                const isActive = group.items.some(i => location.pathname === i.path);
-                if (isActive) next[group.label] = true;
-            }
-            return next;
-        });
-    }, [location.pathname]);
+    const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+        const initial: Record<string, boolean> = {};
+        for (const group of allGroups) {
+            const isActive = group.items.some(i => location.pathname === i.path);
+            if (isActive) initial[group.label] = true;
+        }
+        return initial;
+    });
 
     const handleLogout = async () => {
         await adminLogout();
@@ -123,7 +121,7 @@ const AdminLayout = () => {
             const visibleItems: NavItemDefinition[] = [];
             for (const item of group.items) {
                 if (item.resource && item.action) {
-                    const hasAccess = await can(item.resource as any, item.action as any);
+                    const hasAccess = await can(item.resource as Resource, item.action as Action);
                     if (hasAccess) visibleItems.push(item);
                 } else {
                     visibleItems.push(item);
@@ -137,7 +135,7 @@ const AdminLayout = () => {
     }, [can]);
 
     useEffect(() => {
-        filterGroups();
+        setTimeout(() => filterGroups(), 0);
     }, [filterGroups]);
 
     return (

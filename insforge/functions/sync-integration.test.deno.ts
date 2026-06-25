@@ -28,9 +28,6 @@ function uuid(): string {
   return crypto.randomUUID()
 }
 
-async function sleep(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms))
-}
 
 // ═══════════════════════════════════════════════════════════════════
 // 1. CREATE BOOKING ENDPOINT

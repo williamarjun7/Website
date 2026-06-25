@@ -26,6 +26,7 @@ export const getCurrentTenantId = (): string | null => {
     return currentTenantId;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const applyTenantFilter = (query: any, column = 'tenant_id') => {
     if (!currentTenantId) return query;
     return query.eq(column, currentTenantId);

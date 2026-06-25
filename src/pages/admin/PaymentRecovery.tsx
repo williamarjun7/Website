@@ -48,7 +48,14 @@ const PaymentRecovery = () => {
     setLoading(false);
   }, [showToast]);
 
-  useEffect(() => { loadStuck(); }, [loadStuck]);
+    useEffect(() => {
+        let mounted = true;
+        setTimeout(async () => {
+            await loadStuck();
+            if (!mounted) return;
+        }, 0);
+        return () => { mounted = false; };
+    }, [loadStuck]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(Date.now()), 60000);

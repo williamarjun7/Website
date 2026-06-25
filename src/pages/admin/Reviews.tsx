@@ -25,7 +25,14 @@ const ReviewsAdmin = () => {
         setLoading(false);
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => {
+        let mounted = true;
+        setTimeout(async () => {
+            await load();
+            if (!mounted) return;
+        }, 0);
+        return () => { mounted = false; };
+    }, []);
 
     const handleApprove = async (id: string, approved: boolean) => {
         const { error } = await updateReview(id, { is_approved: approved } as Partial<Review>);

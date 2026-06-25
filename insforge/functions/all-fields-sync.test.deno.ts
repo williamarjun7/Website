@@ -6,7 +6,7 @@
 // Run: deno test --no-check all-fields-sync.test.deno.ts
 // ═══════════════════════════════════════════════════════════════════
 
-import { assertEquals, assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts"
+import { assertEquals, assert } from "https://deno.land/std@0.208.0/assert/mod.ts"
 
 function uuid(): string {
   return crypto.randomUUID()

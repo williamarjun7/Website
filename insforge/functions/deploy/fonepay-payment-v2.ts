@@ -314,7 +314,7 @@ async function logEvent(db: ReturnType<typeof createClient>["database"] | null, 
 
 interface EmailData { to: string; subject: string; html: string }
 
-async function sendEmail(data: EmailData): Promise<boolean> {
+async function _sendEmail(data: EmailData): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return false }
   const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn Management <noreply@highlands-motel.com>"
@@ -335,7 +335,7 @@ async function sendEmail(data: EmailData): Promise<boolean> {
   }
 }
 
-function buildConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
+function _buildConfirmationHtml(params: { guestName: string; roomName: string; checkIn: string; checkOut: string; totalPrice: number; advanceAmount?: number; balanceAmount?: number; bookingId: string }): string {
   const ge = htmlEncode
   const advance = params.advanceAmount ?? params.totalPrice
   const balance = params.balanceAmount ?? 0
@@ -552,7 +552,7 @@ async function confirmPayment(
 
 // ─── Session JWT verification ──────────────────────────────────────────────
 
-async function verifySession(request: Request): Promise<{ authorized: boolean; user?: { id: string; email: string }; error?: string }> {
+async function _verifySession(request: Request): Promise<{ authorized: boolean; user?: { id: string; email: string }; error?: string }> {
   const authHeader = request.headers.get("authorization") || ""
   const jwt = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : ""
 

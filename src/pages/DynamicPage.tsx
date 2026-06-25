@@ -11,42 +11,46 @@ const DynamicPage = () => {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!slug) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
-    setLoading(true);
-    setNotFound(false);
 
-    const timeout = setTimeout(() => {
-      if (!cancelled) {
+    const load = async () => {
+      if (!slug) {
         setNotFound(true);
         setLoading(false);
+        return;
       }
-    }, 8000);
 
-    getPageBySlug(slug).then(({ data, error }) => {
-      clearTimeout(timeout);
-      if (cancelled) return;
-      if (error || !data) {
-        setNotFound(true);
-      } else {
-        setNotFound(false);
-        setPage(data);
-      }
-      setLoading(false);
-    }).catch(() => {
-      clearTimeout(timeout);
-      if (!cancelled) {
-        setNotFound(true);
+      setLoading(true);
+      setNotFound(false);
+
+      const timeout = setTimeout(() => {
+        if (!cancelled) {
+          setNotFound(true);
+          setLoading(false);
+        }
+      }, 8000);
+
+      try {
+        const { data, error } = await getPageBySlug(slug);
+        clearTimeout(timeout);
+        if (cancelled) return;
+        if (error || !data) {
+          setNotFound(true);
+        } else {
+          setPage(data);
+        }
         setLoading(false);
+      } catch {
+        clearTimeout(timeout);
+        if (!cancelled) {
+          setNotFound(true);
+          setLoading(false);
+        }
       }
-    });
+    };
 
-    return () => { clearTimeout(timeout); cancelled = true; };
+    load();
+    return () => { cancelled = true; };
   }, [slug]);
 
   if (loading) {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import logo from '../../assets/logo.png';
 
 interface SplashScreenProps {
@@ -10,7 +10,7 @@ const MIN_DISPLAY_MS = 3500;
 const EXIT_DURATION_MS = 700;
 
 export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
-  const mountTime = useRef(Date.now());
+  const [mountTime] = useState(() => Date.now());
   const [exiting, setExiting] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(
@@ -22,12 +22,12 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, []);
+    }, []);
 
   useEffect(() => {
     if (!ready || exiting) return;
 
-    const elapsed = Date.now() - mountTime.current;
+    const elapsed = Date.now() - mountTime;
     const remaining = Math.max(0, MIN_DISPLAY_MS - elapsed);
 
     const timer = setTimeout(() => {
@@ -39,7 +39,7 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
     }, remaining);
 
     return () => clearTimeout(timer);
-  }, [ready, exiting, onFinish]);
+  }, [ready, exiting, onFinish, mountTime]);
 
   if (hidden) return null;
 

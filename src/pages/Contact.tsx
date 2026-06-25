@@ -21,7 +21,7 @@ const Contact = () => {
             getSiteContentMap(),
             getSettingsMap(),
             getPageBySlug('contact'),
-        ]).then(([contentRes, settingsRes, _pageRes]) => {
+        ]).then(([contentRes, settingsRes]) => {
             if (contentRes.data) setContent(contentRes.data);
             if (settingsRes.data) setSettings(settingsRes.data);
         }).catch(() => {});

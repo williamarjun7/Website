@@ -5,7 +5,7 @@
 // Run: deno test --no-check reconciliation.test.deno.ts
 // ═══════════════════════════════════════════════════════════════════
 
-import { assertEquals, assert, assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts"
+import { assertEquals, assert } from "https://deno.land/std@0.208.0/assert/mod.ts"
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -13,11 +13,6 @@ function uuid(): string {
   return crypto.randomUUID()
 }
 
-function daysAgo(n: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - n)
-  return d.toISOString().split("T")[0]
-}
 
 // ── In-Memory Database for Reconciliation Logic Tests ─────────────
 

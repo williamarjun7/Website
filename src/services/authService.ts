@@ -164,7 +164,7 @@ export const getAdminProfileForCurrentUser = async () => {
 export const hasPermission = async (resource: string, action: string): Promise<boolean> => {
     try {
         const { can } = await import('./rbacService');
-        return can(resource as any, action as any);
+        return can(resource as unknown as Parameters<typeof can>[0], action as unknown as Parameters<typeof can>[1]);
     } catch {
         return false;
     }

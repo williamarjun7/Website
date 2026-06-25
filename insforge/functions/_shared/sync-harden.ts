@@ -76,17 +76,8 @@ export async function verifyHmac(
 
 type CircuitState = "closed" | "open" | "half-open"
 
-interface CircuitBreakerConfig {
-  failureThreshold: number
-  openTimeoutMs: number
-  halfOpenMaxRequests: number
-}
 
-const DEFAULT_CIRCUIT_CONFIG: CircuitBreakerConfig = {
-  failureThreshold: 3,
-  openTimeoutMs: 60_000,
-  halfOpenMaxRequests: 1,
-}
+
 
 interface CircuitEntry {
   state: CircuitState

@@ -65,15 +65,10 @@ function App() {
   const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
-    let raf1: number;
-    let raf2: number;
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => setAppReady(true));
+    let frameId = requestAnimationFrame(() => {
+      frameId = requestAnimationFrame(() => setAppReady(true));
     });
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-    };
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   return (

@@ -37,7 +37,7 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
                 setCurrentTenant(result.data);
                 localStorage.setItem('saas_tenant_id', result.data.id);
             }
-        } catch (e) {
+        } catch {
             setError('Failed to resolve tenant');
             setTenant(null);
         } finally {
@@ -68,4 +68,5 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTenant = () => useContext(TenantContext);

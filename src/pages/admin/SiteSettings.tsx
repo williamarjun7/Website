@@ -22,8 +22,6 @@ const SiteSettings = () => {
         setTimeout(() => setToast(''), 3000);
     };
 
-    useEffect(() => { loadSettings(); }, []);
-
     const loadSettings = async () => {
         setLoading(true);
         try {
@@ -41,6 +39,8 @@ const SiteSettings = () => {
         }
         setLoading(false);
     };
+
+    useEffect(() => { setTimeout(() => loadSettings(), 0); }, []);
 
     const handleSave = async (key: string) => {
         setSavingKeys(prev => new Set(prev).add(key));

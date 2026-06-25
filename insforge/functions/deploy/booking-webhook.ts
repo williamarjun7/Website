@@ -85,17 +85,7 @@ export async function verifyHmac(
 
 type CircuitState = "closed" | "open" | "half-open"
 
-interface CircuitBreakerConfig {
-  failureThreshold: number
-  openTimeoutMs: number
-  halfOpenMaxRequests: number
-}
 
-const DEFAULT_CIRCUIT_CONFIG: CircuitBreakerConfig = {
-  failureThreshold: 3,
-  openTimeoutMs: 60_000,
-  halfOpenMaxRequests: 1,
-}
 
 interface CircuitEntry {
   state: CircuitState
@@ -443,13 +433,6 @@ function toError(e: unknown): Error {
   return new Error(String(e))
 }
 
-interface PaymentFields {
-  payment_status: string
-  paid_amount: number
-  advance_amount: number | null
-  balance_amount: number | null
-  total_amount: number
-}
 
 interface WebhookBody {
   event_type: string
@@ -556,7 +539,7 @@ export default async function handler(req: Request) {
   }
 
   // ── Process event ─────────────────────────────────────────────
-  const { event_type, booking: bookingData, trace_id, parent_event_id, idempotency_key } = body
+  const { event_type, booking: bookingData, trace_id, parent_event_id: _parent_event_id, idempotency_key } = body
   const externalBookingId = body.external_booking_id || body.website_booking_id
 
   if (!event_type) {
@@ -591,7 +574,7 @@ export default async function handler(req: Request) {
 
     // Build lineage
     const traceId = trace_id || `pos-${generateTraceId()}`
-    const eventId = externalBookingId || "unknown"
+    const _eventId = externalBookingId || "unknown"
 
     switch (event_type) {
       case "booking_confirmed": {
@@ -608,7 +591,7 @@ export default async function handler(req: Request) {
           check_out,
           adults = 1,
           children = 0,
-          nightly_rate = null,
+          nightly_rate: _nightly_rate = null,
           total_amount,
           advance_amount,
           balance_amount,
@@ -656,7 +639,7 @@ export default async function handler(req: Request) {
         if (paid_amount && Number(paid_amount) > 0) paymentMeta.pos_paid_amount = paid_amount
 
         // Calculate paid_amount from payment context if not explicitly provided
-        const effectivePaidAmount = Number(paid_amount) > 0
+        const _effectivePaidAmount = Number(paid_amount) > 0
           ? Number(paid_amount)
           : payment_status === "paid"
             ? (Number(totalPrice) || 0)
