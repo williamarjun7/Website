@@ -67,27 +67,27 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
         }`}
       />
 
-      {/* Golden ring — draws itself */}
+      {/* Golden ring — subtle framing accent */}
       <svg
-        className={`absolute h-40 w-40 ${
-          reducedMotion ? 'opacity-60' : exiting ? 'splash-ring-svg-exit' : ''
+        className={`absolute h-32 w-32 ${
+          reducedMotion ? 'opacity-30' : exiting ? 'splash-ring-svg-exit' : ''
         }`}
         viewBox="0 0 160 160"
       >
         <circle
           cx="80" cy="80" r="78"
           fill="none"
-          stroke="rgba(251,191,36,0.08)"
+          stroke="rgba(251,191,36,0.03)"
           strokeWidth="1"
         />
         <circle
           cx="80" cy="80" r="78"
           fill="none"
-          stroke="rgba(251,191,36,0.5)"
+          stroke="rgba(251,191,36,0.28)"
           strokeWidth="1"
           strokeDasharray="490"
           strokeDashoffset="490"
-          className={reducedMotion ? 'opacity-60' : 'splash-ring-stroke'}
+          className={reducedMotion ? 'opacity-30' : 'splash-ring-stroke'}
         />
       </svg>
 
@@ -182,15 +182,15 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
           animation: centerGlowDim 0.6s ease-in 0.15s forwards !important;
         }
 
-        /* ── Golden ring: stroke draws itself around the logo ── */
+        /* ── Golden ring: stroke draws itself as a subtle frame ── */
         @keyframes ringStrokeDraw {
           0%   { stroke-dashoffset: 490; opacity: 0; }
-          35%  { opacity: 0.5; }
-          100% { stroke-dashoffset: 0; opacity: 1; }
+          35%  { opacity: 0.2; }
+          100% { stroke-dashoffset: 0; opacity: 0.55; }
         }
         @keyframes ringStrokeBreathe {
-          0%, 100% { opacity: 0.45; }
-          50%      { opacity: 0.7; }
+          0%, 100% { opacity: 0.2; }
+          50%      { opacity: 0.4; }
         }
         @keyframes ringSVGDim {
           0%   { opacity: 1; transform: scale(1); }
