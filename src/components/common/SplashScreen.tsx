@@ -67,55 +67,58 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
         }`}
       />
 
-      {/* Golden ring — subtle framing accent */}
-      <svg
-        className={`absolute h-32 w-32 ${
-          reducedMotion ? 'opacity-30' : exiting ? 'splash-ring-svg-exit' : ''
-        }`}
-        viewBox="0 0 160 160"
-      >
-        <circle
-          cx="80" cy="80" r="78"
-          fill="none"
-          stroke="rgba(251,191,36,0.03)"
-          strokeWidth="1"
-        />
-        <circle
-          cx="80" cy="80" r="78"
-          fill="none"
-          stroke="rgba(251,191,36,0.28)"
-          strokeWidth="1"
-          strokeDasharray="490"
-          strokeDashoffset="490"
-          className={reducedMotion ? 'opacity-30' : 'splash-ring-stroke'}
-        />
-      </svg>
+      {/* Logo + Ring group — ring perfectly centered behind logo */}
+      <div className="relative flex items-center justify-center">
+        {/* Golden ring — subtle framing accent */}
+        <svg
+          className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 ${
+            reducedMotion ? 'opacity-30' : exiting ? 'splash-ring-svg-exit' : ''
+          }`}
+          viewBox="0 0 160 160"
+        >
+          <circle
+            cx="80" cy="80" r="78"
+            fill="none"
+            stroke="rgba(251,191,36,0.03)"
+            strokeWidth="1"
+          />
+          <circle
+            cx="80" cy="80" r="78"
+            fill="none"
+            stroke="rgba(251,191,36,0.28)"
+            strokeWidth="1"
+            strokeDasharray="490"
+            strokeDashoffset="490"
+            className={reducedMotion ? 'opacity-30' : 'splash-ring-stroke'}
+          />
+        </svg>
 
-      {/* Logo group */}
-      <div
-        className={`relative z-10 ${
-          reducedMotion ? '' : exiting ? 'splash-logo-group-exit' : ''
-        }`}
-      >
+        {/* Logo group */}
         <div
-          className={`absolute -inset-3 rounded-full ${
-            reducedMotion
-              ? 'opacity-40 shadow-lg shadow-amber-900/10'
-              : 'splash-logo-aura'
+          className={`relative z-10 ${
+            reducedMotion ? '' : exiting ? 'splash-logo-group-exit' : ''
           }`}
-        />
-        <img
-          src={logo}
-          alt=""
-          className={`h-28 w-28 rounded-full object-cover ${
-            reducedMotion ? 'opacity-100' : 'splash-logo-img'
-          }`}
-        />
-        {!reducedMotion && !exiting && (
-          <div className="absolute inset-0 rounded-full overflow-hidden">
-            <div className="splash-shimmer-sweep" />
-          </div>
-        )}
+        >
+          <div
+            className={`absolute -inset-3 rounded-full ${
+              reducedMotion
+                ? 'opacity-40 shadow-lg shadow-amber-900/10'
+                : 'splash-logo-aura'
+            }`}
+          />
+          <img
+            src={logo}
+            alt=""
+            className={`h-28 w-28 rounded-full object-cover ${
+              reducedMotion ? 'opacity-100' : 'splash-logo-img'
+            }`}
+          />
+          {!reducedMotion && !exiting && (
+            <div className="absolute inset-0 rounded-full overflow-hidden">
+              <div className="splash-shimmer-sweep" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Brand text */}
