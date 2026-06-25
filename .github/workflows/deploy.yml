@@ -7,6 +7,8 @@ on:
 
 env:
   NODE_VERSION: 22
+  VITE_INSFORGE_BASE_URL: ${{ secrets.INSFORGE_BASE_URL }}
+  VITE_INSFORGE_ANON_KEY: ${{ secrets.INSFORGE_ANON_KEY }}
 
 jobs:
   build:
