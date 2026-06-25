@@ -1,13 +1,14 @@
 import { memo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Instagram, MessageCircle, Clock, Star, Heart, Wifi, Car, Coffee, UtensilsCrossed, Tv, Shield, Sun } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Instagram, Clock, Star, Heart, Wifi, Car, Coffee, UtensilsCrossed, Tv, Shield, Sun } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import defaultLogo from '../../assets/logo.png';
 import { getSiteContentMap } from '../../services/contentService';
 import { getSettingsMap } from '../../services/settingsService';
 import { getNavigation, type NavItem } from '../../services/navigationService';
 
 const ICON_MAP: Record<string, typeof Wifi> = {
-  Wifi, Car, Coffee, Heart, Tv, UtensilsCrossed, Shield, Sun, Phone, Mail, MapPin, Clock, Star, Facebook, Instagram, MessageCircle,
+  Wifi, Car, Coffee, Heart, Tv, UtensilsCrossed, Shield, Sun, Phone, Mail, MapPin, Clock, Star, Facebook, Instagram,
 };
 
 const FOOTER_ICONS: Record<string, string> = {
@@ -136,9 +137,23 @@ const Footer = memo(() => {
                         <ul className="space-y-4">
                             <li className="group">
                                 <a
-                                    href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
+                                    href={C('contact_whatsapp_link', 'https://wa.me/9779822410877')}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    className="flex items-center space-x-3 text-amber-100 hover:text-white transition-all duration-300 transform hover:translate-x-2"
+                                >
+                                    <div className="p-2 bg-green-700/50 rounded-lg group-hover:bg-green-600/50 transition-colors">
+                                        <WhatsAppIcon size={18} className="text-green-300" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium">{C('contact_whatsapp_label', 'Chat on WhatsApp')}</div>
+                                        <div className="text-xs text-amber-200">{C('contact_whatsapp_response', 'Quick Response')}</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li className="group">
+                                <a
+                                    href={`tel:${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
                                     className="flex items-center space-x-3 text-amber-100 hover:text-white transition-all duration-300 transform hover:translate-x-2"
                                 >
                                     <div className="p-2 bg-amber-700/50 rounded-lg group-hover:bg-amber-600/50 transition-colors">
@@ -146,7 +161,7 @@ const Footer = memo(() => {
                                     </div>
                                     <div>
                                         <div className="font-medium">{C('contact_phone', '+977 9763215874')}</div>
-                                        <div className="text-xs text-amber-200">{C('footer_phone_sublabel', 'Call & WhatsApp')}</div>
+                                        <div className="text-xs text-amber-200">{C('footer_phone_sublabel', 'Alternative Contact')}</div>
                                     </div>
                                 </a>
                             </li>
@@ -192,12 +207,12 @@ const Footer = memo(() => {
                             {[
                                 { href: C('footer_social_facebook', 'https://www.facebook.com/profile.php?id=61587029831121'), icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600' },
                                 { href: C('footer_social_instagram', 'https://www.instagram.com/highlandscafemotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='), icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600' },
-                                { href: C('footer_social_whatsapp', 'https://wa.me/9779763215874'), icon: MessageCircle, label: 'WhatsApp', color: 'hover:bg-green-600' },
                                 { href: C('footer_social_tiktok', 'https://www.tiktok.com/@highlandscafe1'), icon: ({ size = 20 }: { size?: number }) => (
                                     <svg viewBox="0 0 24 24" fill="currentColor" width={size} height={size}>
                                         <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                                     </svg>
                                 ), label: 'TikTok', color: 'hover:bg-gray-900' },
+                                { href: C('footer_social_whatsapp', 'https://wa.me/9779822410877'), icon: ({ size = 20 }: { size?: number }) => <WhatsAppIcon size={size} />, label: 'WhatsApp', color: 'hover:bg-green-600' },
                             ].map((social) => (
                                 <a
                                     key={social.label}

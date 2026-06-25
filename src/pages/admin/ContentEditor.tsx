@@ -62,11 +62,11 @@ const pagesConfig: PageConfig[] = [
             label: 'Contact Page',
             sections: [
                 { id: 'hero', label: 'Hero Section', fields: ['contact_heading', 'contact_subtitle'] },
-                { id: 'info', label: 'Contact Information', fields: ['contact_phone_label', 'contact_phone', 'contact_phone_note', 'contact_email_label', 'contact_email', 'contact_email_note', 'contact_address_label', 'contact_address', 'contact_checkinout_label', 'contact_checkinout_note'] },
+                { id: 'info', label: 'Contact Information', fields: ['contact_whatsapp_label', 'contact_whatsapp_link', 'contact_whatsapp_number', 'contact_whatsapp_response', 'contact_phone_label', 'contact_phone', 'contact_phone_note', 'contact_phone_backup_note', 'contact_phone_backup_short', 'contact_email_label', 'contact_email', 'contact_email_note', 'contact_address_label', 'contact_address', 'contact_checkinout_label', 'contact_checkinout_note'] },
                 { id: 'form', label: 'Contact Form', fields: ['contact_form_heading', 'contact_form_text', 'contact_form_thank_you', 'contact_form_thank_you_note'] },
                 { id: 'map', label: 'Map Section', fields: ['contact_location_heading', 'google_maps_url', 'contact_getting_here_title', 'contact_getting_here_text'] },
                 { id: 'assistance', label: 'Location Assistance', fields: ['contact_location_assistance_heading', 'contact_location_assistance_text', 'tiktok_embed_url'] },
-                { id: 'cta', label: 'CTA Section', fields: ['contact_cta_text'] },
+                { id: 'cta', label: 'CTA Section', fields: ['contact_cta_text', 'contact_whatsapp_btn'] },
             ]
         }]
     },
@@ -150,7 +150,7 @@ const pagesConfig: PageConfig[] = [
             {
                 label: 'Footer', sections: [
                     { id: 'footer', label: 'Footer Content', fields: ['footer_text', 'footer_quicklinks_heading', 'footer_getintouch_heading', 'footer_connect_heading', 'footer_operating_hours_heading', 'footer_premium_label', 'footer_phone_sublabel', 'footer_email_sublabel', 'footer_location_sublabel', 'footer_rights', 'footer_made_with'] },
-                    { id: 'social', label: 'Social Links', fields: ['footer_social_facebook', 'footer_social_instagram', 'footer_social_whatsapp', 'footer_social_tiktok'] },
+                    { id: 'social', label: 'Social Links', fields: ['footer_social_facebook', 'footer_social_instagram', 'footer_social_tiktok', 'footer_social_whatsapp'] },
                     { id: 'amenities', label: 'Amenities', fields: ['footer_amenity_1_label', 'footer_amenity_1_icon', 'footer_amenity_2_label', 'footer_amenity_2_icon', 'footer_amenity_3_label', 'footer_amenity_3_icon', 'footer_amenity_4_label', 'footer_amenity_4_icon'] },
                     { id: 'bottom', label: 'Bottom Bar', fields: ['footer_bottom_privacy', 'footer_bottom_terms'] },
                     { id: 'hours', label: 'Operating Hours Labels', fields: ['footer_hours_checkin_label', 'footer_hours_checkout_label', 'footer_hours_cafe_label', 'checkin_time', 'checkout_time', 'cafe_hours_text'] },
@@ -231,6 +231,12 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     contact_phone_label: { label: 'Phone Section Label', type: 'text', section: 'Info' },
     contact_phone: { label: 'Phone Number', type: 'text', section: 'Info' },
     contact_phone_note: { label: 'Phone Note', type: 'text', section: 'Info' },
+    contact_phone_backup_note: { label: 'Phone Backup Note', type: 'text', section: 'Info' },
+    contact_phone_backup_short: { label: 'Phone Backup Short Label', type: 'text', section: 'Info' },
+    contact_whatsapp_label: { label: 'WhatsApp Section Label', type: 'text', section: 'Info' },
+    contact_whatsapp_link: { label: 'WhatsApp Link (wa.me URL)', type: 'text', section: 'Info' },
+    contact_whatsapp_number: { label: 'WhatsApp Number Display', type: 'text', section: 'Info' },
+    contact_whatsapp_response: { label: 'WhatsApp Response Note', type: 'text', section: 'Info' },
     contact_email_label: { label: 'Email Section Label', type: 'text', section: 'Info' },
     contact_email: { label: 'Email Address', type: 'text', section: 'Info' },
     contact_email_note: { label: 'Email Note', type: 'text', section: 'Info' },
@@ -250,6 +256,7 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     contact_location_assistance_text: { label: 'Location Assistance Text', type: 'textarea', section: 'Assistance' },
     tiktok_embed_url: { label: 'TikTok Embed URL', type: 'text', section: 'Assistance' },
     contact_cta_text: { label: 'CTA Text', type: 'text', section: 'CTA' },
+    contact_whatsapp_btn: { label: 'WhatsApp CTA Button', type: 'text', section: 'CTA' },
 
     cafe_hero_title: { label: 'Hero Title', type: 'text', section: 'Hero' },
     cafe_hero_subtitle: { label: 'Hero Subtitle', type: 'text', section: 'Hero' },
@@ -378,8 +385,8 @@ const FIELD_DEFS: Record<string, FieldDef> = {
     footer_made_with: { label: 'Made With Love Text', type: 'text', section: 'Footer' },
     footer_social_facebook: { label: 'Facebook URL', type: 'text', section: 'Social' },
     footer_social_instagram: { label: 'Instagram URL', type: 'text', section: 'Social' },
-    footer_social_whatsapp: { label: 'WhatsApp URL', type: 'text', section: 'Social' },
     footer_social_tiktok: { label: 'TikTok URL', type: 'text', section: 'Social' },
+    footer_social_whatsapp: { label: 'WhatsApp URL (wa.me)', type: 'text', section: 'Social' },
     footer_amenity_1_label: { label: 'Amenity 1 Label', type: 'text', section: 'Amenities' },
     footer_amenity_1_icon: { label: 'Amenity 1 Icon (Lucide name)', type: 'text', section: 'Amenities' },
     footer_amenity_2_label: { label: 'Amenity 2 Label', type: 'text', section: 'Amenities' },

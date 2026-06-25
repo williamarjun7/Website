@@ -110,9 +110,9 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Contact - Info
 INSERT INTO site_content (key, value) VALUES
-    ('contact_phone_label', 'Phone & WhatsApp'),
+    ('contact_phone_label', 'Phone'),
     ('contact_phone', '+977 9763215874'),
-    ('contact_phone_note', 'Call or WhatsApp anytime'),
+    ('contact_phone_note', 'Call anytime'),
     ('contact_email_label', 'Email'),
     ('contact_email', 'highlandscafemotelinn@gmail.com'),
     ('contact_email_note', 'Quick response within 24 hours'),
@@ -150,7 +150,7 @@ ON CONFLICT (key) DO NOTHING;
 
 -- Contact - CTA
 INSERT INTO site_content (key, value) VALUES
-    ('contact_cta_text', 'Prefer to talk? Call or WhatsApp us anytime.')
+    ('contact_cta_text', 'Prefer to talk? Call us anytime.')
 ON CONFLICT (key) DO NOTHING;
 
 -- FAQ - Hero
@@ -163,7 +163,7 @@ ON CONFLICT (key) DO NOTHING;
 INSERT INTO site_content (key, value) VALUES
     ('faq_default_fallback', 'Still Have Questions?'),
     ('faq_cta_text', 'Our team is here to help you with any inquiries or special requests'),
-    ('faq_whatsapp_label', 'WhatsApp Us'),
+
     ('faq_email_label', 'Email Us')
 ON CONFLICT (key) DO NOTHING;
 
@@ -353,7 +353,7 @@ INSERT INTO site_content (key, value) VALUES
     ('footer_connect_heading', 'Connect & Hours'),
     ('footer_operating_hours_heading', 'Operating Hours'),
     ('footer_premium_label', 'Premium Hospitality'),
-    ('footer_phone_sublabel', 'Call & WhatsApp'),
+    ('footer_phone_sublabel', 'Call Us'),
     ('footer_email_sublabel', 'Quick Response'),
     ('footer_location_sublabel', 'Karnali Province, Nepal'),
     ('footer_rights', 'All rights reserved.'),
@@ -365,7 +365,7 @@ ON CONFLICT (key) DO NOTHING;
 INSERT INTO site_content (key, value) VALUES
     ('footer_social_facebook', 'https://www.facebook.com/profile.php?id=61587029831121'),
     ('footer_social_instagram', 'https://www.instagram.com/highlandscafemotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='),
-    ('footer_social_whatsapp', 'https://wa.me/9779763215874'),
+
     ('footer_social_tiktok', 'https://www.tiktok.com/@highlandscafe1')
 ON CONFLICT (key) DO NOTHING;
 
@@ -564,7 +564,7 @@ INSERT INTO site_content (key, value) VALUES
     ('confirmation_hotel_name', 'Highlands Motel & Cafe'),
     ('confirmation_location', 'Surkhet, Nepal'),
     ('confirmation_phone_fallback', '+977-98XXXXXXXX'),
-    ('confirmation_email_fallback', 'info@highlands-motel.com'),
+    ('confirmation_email_fallback', 'info@highlandscafemotelinn.com'),
     ('confirmation_call_btn', 'Call Hotel'),
     ('confirmation_email_btn', 'Send Email'),
     ('confirmation_important_heading', 'Important Information'),
@@ -573,4 +573,20 @@ INSERT INTO site_content (key, value) VALUES
     ('confirmation_policy_changes', '• Cancellations or changes may affect the advance payment amount.'),
     ('confirmation_print_btn', 'Print Confirmation'),
     ('confirmation_return_home_btn', 'Return Home')
+ON CONFLICT (key) DO NOTHING;
+
+-- WhatsApp Contact
+INSERT INTO site_content (key, value) VALUES
+    ('contact_whatsapp_label', 'WhatsApp (Primary)'),
+    ('contact_whatsapp_link', 'https://wa.me/9779822410877'),
+    ('contact_whatsapp_number', '+977 9822410877'),
+    ('contact_whatsapp_response', 'Instant replies on WhatsApp'),
+    ('contact_whatsapp_btn', 'Chat on WhatsApp'),
+    ('faq_whatsapp_label', 'WhatsApp Us'),
+    ('faq_backup_phone_note', 'No response on WhatsApp? Call'),
+    ('faq_backup_phone_suffix', 'for immediate assistance.'),
+    ('footer_social_whatsapp', 'https://wa.me/9779822410877'),
+    ('footer_phone_sublabel', 'Alternative Contact'),
+    ('contact_phone_backup_note', 'If WhatsApp is unreachable, call for immediate help'),
+    ('contact_phone_backup_short', 'Backup')
 ON CONFLICT (key) DO NOTHING;

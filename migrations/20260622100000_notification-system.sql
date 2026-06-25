@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS notification_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     booking_id UUID NOT NULL,
     tenant_id UUID,
-    channel TEXT NOT NULL CHECK (channel IN ('email', 'whatsapp')),
+    channel TEXT NOT NULL CHECK (channel IN ('email')),
     recipient_type TEXT NOT NULL CHECK (recipient_type IN ('customer', 'staff')),
     recipient_address TEXT NOT NULL,
     event_type TEXT NOT NULL CHECK (event_type IN (
@@ -32,7 +32,7 @@ CREATE INDEX IF NOT EXISTS idx_notification_logs_sent_at ON notification_logs(se
 CREATE TABLE IF NOT EXISTS notification_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id UUID NOT NULL,
-    channel TEXT NOT NULL CHECK (channel IN ('email', 'whatsapp')),
+    channel TEXT NOT NULL CHECK (channel IN ('email')),
     recipient_type TEXT NOT NULL CHECK (recipient_type IN ('customer', 'staff')),
     event_type TEXT NOT NULL CHECK (event_type IN (
         'booking_created', 'booking_confirmed', 'booking_updated', 'booking_cancelled'

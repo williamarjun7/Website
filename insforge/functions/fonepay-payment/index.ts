@@ -10,14 +10,13 @@ const ENV_VARS = [
   "INSFORGE_BASE_URL", "API_KEY",
   "RESEND_API_KEY", "EMAIL_FROM",
   "STAFF_NOTIFICATION_EMAIL",
-  "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_ACCESS_TOKEN",
   "MOTEL_PHONE", "MOTEL_EMAIL", "MOTEL_ADDRESS",
 ] as const
 console.log("[startup] Env var check:", ENV_VARS.map(v => `${v}=${Deno.env.get(v) ? "✓" : "✗ MISSING"}`).join(", "))
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://highlandsmotelinn.insforge.site",
-  "https://highlands-motel.com",
+  "https://highlandscafemotelinn.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]
@@ -113,7 +112,7 @@ interface EmailData { to: string; subject: string; html: string }
 async function _sendEmail(data: EmailData): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) { console.warn("RESEND_API_KEY not set — skipping email"); return false }
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn Management <noreply@highlands-motel.com>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn Management <noreply@highlandscafemotelinn.com>"
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",

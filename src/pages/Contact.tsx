@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, ExternalLink } from 'lucide-react';
+import WhatsAppIcon from '../components/common/WhatsAppIcon';
 import { z } from 'zod';
 import { getSiteContentMap } from '../services/contentService';
 import { getSettingsMap } from '../services/settingsService';
@@ -90,19 +91,35 @@ const Contact = () => {
                         <h2 className="font-heading text-2xl font-bold mb-6">{C('contact_heading', 'Get in Touch')}</h2>
                         <div className="space-y-5">
                             <div className="flex items-start gap-4">
+                                <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                    <WhatsAppIcon size={22} className="text-green-600" />
+                                </div>
+                                <div className="pt-1">
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_whatsapp_label', 'WhatsApp (Primary)')}</h3>
+                                    <a
+                                        href={C('contact_whatsapp_link', 'https://wa.me/9779822410877')}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-gray-600 hover:text-green-600 transition-colors"
+                                    >
+                                        {C('contact_whatsapp_number', '+977 9822410877')}
+                                    </a>
+                                    <p className="text-sm text-gray-400 mt-0.5">{C('contact_whatsapp_response', 'Instant replies on WhatsApp')}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4">
                                 <div className="flex-shrink-0 w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
                                     <Phone className="text-primary" size={22} />
                                 </div>
                                 <div className="pt-1">
-                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_phone_label', 'Phone & WhatsApp')}</h3>
+                                    <h3 className="font-semibold text-gray-900 mb-1">{C('contact_phone_label', 'Phone (Alternative)')}</h3>
                                     <a
-                                        href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                        href={`tel:${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
                                         className="text-gray-600 hover:text-primary transition-colors"
                                     >
                                         {C('contact_phone', '+977 9763215874')}
                                     </a>
+                                    <p className="text-sm text-gray-400 mt-0.5">{C('contact_phone_backup_note', 'If WhatsApp is unreachable, call for immediate help')}</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4">
@@ -241,7 +258,7 @@ const Contact = () => {
                         {C('contact_location_assistance_heading', 'Location Assistance')}
                     </h2>
                     <p className="text-gray-600 mb-4 max-w-3xl">
-                        {C('contact_location_assistance_text', "Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your phone and follow the navigation. If you need additional assistance, feel free to call or WhatsApp us.")}
+                        {C('contact_location_assistance_text', "Having trouble locating us? The Google Maps pin above is accurate. Simply open it on your phone and follow the navigation. If you need additional assistance, feel free to call us.")}
                     </p>
                     <div className="rounded-xl overflow-hidden shadow-lg bg-black max-w-sm mx-auto">
                         <div className="relative" style={{ paddingBottom: '177.78%' }}>
@@ -260,17 +277,27 @@ const Contact = () => {
                 {/* Final CTA */}
                 <div className="mt-12 text-center">
                     <p className="text-gray-500 text-sm mb-4">
-                        {C('contact_cta_text', 'Prefer to talk? Call or WhatsApp us anytime.')}
+                        {C('contact_cta_text', 'Prefer to talk? Message us on WhatsApp or call as a backup.')}
                     </p>
-                    <a
-                        href={`https://wa.me/${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-primary inline-flex gap-2"
-                    >
-                        <Phone size={18} />
-                        {C('contact_phone', '+977 9763215874')}
-                    </a>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a
+                            href={C('contact_whatsapp_link', 'https://wa.me/9779822410877')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                        >
+                            <WhatsAppIcon size={18} />
+                            {C('contact_whatsapp_btn', 'Chat on WhatsApp')}
+                        </a>
+                        <a
+                            href={`tel:${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
+                            className="btn-primary inline-flex gap-2"
+                        >
+                            <Phone size={18} />
+                            {C('contact_phone', '+977 9763215874')}
+                            <span className="text-xs opacity-80">({C('contact_phone_backup_short', 'Backup')})</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

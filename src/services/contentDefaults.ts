@@ -71,9 +71,15 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     contact_subtitle: "We're here to help make your stay unforgettable. Reach out to us for any questions or special requests.",
 
     // Contact - Info
-    contact_phone_label: 'Phone & WhatsApp',
+    contact_phone_label: 'Phone (Alternative)',
     contact_phone: '+977 9763215874',
-    contact_phone_note: 'Call or WhatsApp anytime',
+    contact_phone_note: 'Call anytime',
+    contact_phone_backup_note: 'If WhatsApp is unreachable, call for immediate help',
+    contact_phone_backup_short: 'Backup',
+    contact_whatsapp_label: 'WhatsApp (Primary)',
+    contact_whatsapp_link: 'https://wa.me/9779822410877',
+    contact_whatsapp_number: '+977 9822410877',
+    contact_whatsapp_response: 'Instant replies on WhatsApp',
     contact_email_label: 'Email',
     contact_email: 'highlandsmotelinn@gmail.com',
     contact_email_note: 'Quick response within 24 hours',
@@ -100,7 +106,8 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     tiktok_embed_url: 'https://www.tiktok.com/embed/v2/7636374767192263956',
 
     // Contact - CTA
-    contact_cta_text: 'Prefer to talk? Call or WhatsApp us anytime.',
+    contact_cta_text: 'Prefer to talk? Message us on WhatsApp or call as a backup.',
+    contact_whatsapp_btn: 'Chat on WhatsApp',
 
     // FAQ - Hero
     faq_hero_title: 'Frequently Asked Questions',
@@ -109,9 +116,10 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     // FAQ - CTA
     faq_default_fallback: 'Still Have Questions?',
     faq_cta_text: 'Our team is here to help you with any inquiries or special requests',
-    faq_whatsapp_label: 'WhatsApp Us',
     faq_email_label: 'Email Us',
-
+    faq_whatsapp_label: 'WhatsApp Us',
+    faq_backup_phone_note: 'No response on WhatsApp? Call',
+    faq_backup_phone_suffix: 'for immediate assistance.',
     // FAQ - Quick Links
     faq_quicklinks_heading: 'Quick Links',
     faq_quicklink_book: 'Book a Room',
@@ -275,7 +283,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     footer_connect_heading: 'Connect & Hours',
     footer_operating_hours_heading: 'Operating Hours',
     footer_premium_label: 'Premium Hospitality',
-    footer_phone_sublabel: 'Call & WhatsApp',
+    footer_phone_sublabel: 'Alternative Contact',
     footer_email_sublabel: 'Quick Response',
     footer_location_sublabel: 'Karnali Province, Nepal',
     footer_rights: 'All rights reserved.',
@@ -284,8 +292,8 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     // Footer - Social
     footer_social_facebook: 'https://www.facebook.com/profile.php?id=61587029831121',
     footer_social_instagram: 'https://www.instagram.com/highlandscafemotel?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
-    footer_social_whatsapp: 'https://wa.me/9779763215874',
     footer_social_tiktok: 'https://www.tiktok.com/@highlandscafe1',
+    footer_social_whatsapp: 'https://wa.me/9779822410877',
 
     // Footer - Amenities
     footer_amenity_1_label: 'Free WiFi',
@@ -439,7 +447,7 @@ export const CONTENT_DEFAULTS: Record<string, string> = {
     confirmation_hotel_name: 'Highlands Cafe & Motel Inn',
     confirmation_location: 'Surkhet, Nepal',
     confirmation_phone_fallback: '+977-98XXXXXXXX',
-    confirmation_email_fallback: 'info@highlands-motel.com',
+    confirmation_email_fallback: 'info@highlandscafemotelinn.com',
     confirmation_call_btn: 'Call Hotel',
     confirmation_email_btn: 'Send Email',
     confirmation_important_heading: 'Important Information',

@@ -375,7 +375,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-600 break-all">
                 <Mail size="14" className="mt-0.5 shrink-0 text-gray-400" />
-                <span>{content['contact_email'] || C('confirmation_email_fallback', 'info@highlands-motel.com')}</span>
+                <span>{content['contact_email'] || C('confirmation_email_fallback', 'info@highlandscafemotelinn.com')}</span>
               </div>
             </div>
           </div>
@@ -388,7 +388,7 @@ const BookingConfirmation: React.FC<{ bookingData?: ConfirmedBookingData }> = ({
               {C('confirmation_call_btn', 'Call Hotel')}
             </a>
             <a
-              href={`mailto:${content['contact_email'] || C('confirmation_email_fallback', 'info@highlands-motel.com')}`}
+              href={`mailto:${content['contact_email'] || C('confirmation_email_fallback', 'info@highlandscafemotelinn.com')}`}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
             >
               <Mail size="14" />

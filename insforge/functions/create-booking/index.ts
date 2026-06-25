@@ -5,7 +5,7 @@ import { sendBookingNotifications, type BookingInfo } from "../_shared/notificat
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://highlandsmotelinn.insforge.site",
-  "https://highlands-motel.com",
+  "https://highlandscafemotelinn.com",
   /^https?:\/\/localhost(:\d+)?$/,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
 ]

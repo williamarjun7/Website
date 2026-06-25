@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, memo, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Phone, Mail, MapPin } from 'lucide-react';
+import WhatsAppIcon from './WhatsAppIcon';
 import { getSiteContentMap } from '../../services/contentService';
 import { getSettingsMap } from '../../services/settingsService';
 import { getNavigation, type NavItem } from '../../services/navigationService';
@@ -164,9 +165,13 @@ const Navbar = memo(() => {
                             </Link>
 
                             <div className="mt-6 pt-6 border-t border-amber-200 space-y-3">
-                                <a href={`https://wa.me/${C('navbar_phone', '+9779763215874').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
+                                <a href={C('contact_whatsapp_link', 'https://wa.me/9779822410877')} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-3 text-gray-600 hover:text-green-600 transition-colors cursor-pointer">
+                                    <WhatsAppIcon size={18} className="text-green-600" />
+                                    <span className="font-body font-medium">{C('contact_whatsapp_label', 'Chat on WhatsApp')}</span>
+                                </a>
+                                <a href={`tel:${C('navbar_phone', '+9779763215874').replace(/[^0-9]/g, '')}`} className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Phone size={18} className="text-primary" />
-                                    <span className="font-body font-medium">{C('navbar_phone', '+977 9763215874')}</span>
+                                    <span className="font-body font-medium">{C('navbar_phone', '+977 9763215874')} <span className="text-xs text-gray-400">({C('contact_phone_backup_short', 'Backup')})</span></span>
                                 </a>
                                 <a href={`mailto:${C('navbar_email', 'highlandsmotelinn@gmail.com')}`} className="flex items-center space-x-3 text-gray-600 hover:text-primary transition-colors cursor-pointer">
                                     <Mail size={18} className="text-primary" />

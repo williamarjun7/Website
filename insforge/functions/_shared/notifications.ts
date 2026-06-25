@@ -1,5 +1,5 @@
 // ─── Shared Notification Module ──────────────────────────────────────────────
-// Email (Resend) + WhatsApp (Meta Cloud API) with logging, dedup, retry.
+// Email (Resend) with logging, dedup, retry.
 // Import in any edge function: import { sendBookingNotifications } from "../_shared/notifications.ts"
 
 import { createClient } from "npm:@insforge/sdk"
@@ -32,8 +32,6 @@ export interface BookingInfo {
 export interface NotificationResult {
   email_customer: boolean
   email_staff: boolean
-  whatsapp_customer: boolean
-  whatsapp_staff: boolean
   errors: string[]
 }
 
@@ -64,15 +62,6 @@ function getStaffEmails(): string[] {
   return raw.split(",").map(e => e.trim()).filter(e => e.length > 0)
 }
 
-function getStaffPhones(): string[] {
-  const raw = Deno.env.get("STAFF_WHATSAPP_PHONE") || ""
-  return raw.split(",").map(p => p.trim()).filter(p => p.length > 0)
-}
-
-function isWhatsAppEnabled(): boolean {
-  return !!(Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") && Deno.env.get("WHATSAPP_ACCESS_TOKEN"))
-}
-
 function isEmailEnabled(): boolean {
   return !!Deno.env.get("RESEND_API_KEY")
 }
@@ -90,7 +79,7 @@ function getMotelName(): string {
 async function sendEmailViaResend(to: string, subject: string, html: string): Promise<boolean> {
   const apiKey = Deno.env.get("RESEND_API_KEY")
   if (!apiKey) return false
-  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn <noreply@highlands-motel.com>"
+  const from = Deno.env.get("EMAIL_FROM") || "Highlands Cafe & Motel Inn <noreply@highlandscafemotelinn.com>"
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -105,43 +94,6 @@ async function sendEmailViaResend(to: string, subject: string, html: string): Pr
     return true
   } catch (e) {
     console.error("[notifications] Resend exception:", e)
-    return false
-  }
-}
-
-// ─── WhatsApp: Meta Cloud API ───────────────────────────────────────────────
-
-async function sendWhatsAppMessage(to: string, body: string): Promise<boolean> {
-  const phoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID")
-  const accessToken = Deno.env.get("WHATSAPP_ACCESS_TOKEN")
-  if (!phoneNumberId || !accessToken) return false
-
-  const apiVersion = Deno.env.get("WHATSAPP_API_VERSION") || "v22.0"
-  const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to: to.replace(/[^0-9]/g, ""),
-        type: "text",
-        text: { preview_url: false, body },
-      }),
-    })
-    if (!res.ok) {
-      const errBody = await res.text().catch(() => "")
-      console.error(`[notifications] WhatsApp error ${res.status}: ${errBody.slice(0, 300)}`)
-      return false
-    }
-    return true
-  } catch (e) {
-    console.error("[notifications] WhatsApp exception:", e)
     return false
   }
 }
@@ -308,110 +260,6 @@ function buildStaffEmailHtml(b: BookingInfo, event: BookingEvent): string {
 </body></html>`
 }
 
-// ─── WhatsApp Text Templates ────────────────────────────────────────────────
-
-function buildCustomerWhatsAppText(b: BookingInfo, event: BookingEvent): string {
-  const motel = b.motel_name || getMotelName()
-
-  const greeting = event === "booking_created" ? "Thank you for your booking!" :
-    event === "booking_confirmed" ? "Your booking is confirmed!" :
-    event === "booking_cancelled" ? "Your booking has been cancelled." :
-    "Your booking has been updated."
-
-  const actionNote = event === "booking_created" ? "Please complete payment to confirm your reservation." :
-    event === "booking_confirmed" ? "We look forward to welcoming you!" :
-    event === "booking_cancelled" ? "If this was unexpected, please contact us." :
-    "Please review the updated details below."
-
-  const nights = b.check_in && b.check_out
-    ? Math.ceil((new Date(b.check_out).getTime() - new Date(b.check_in).getTime()) / (1000 * 60 * 60 * 24))
-    : 0
-
-  const motelPhone = Deno.env.get("MOTEL_PHONE") || "+977-9763215874"
-  const motelEmail = Deno.env.get("MOTEL_EMAIL") || "highlandscafemotelinn@gmail.com"
-  const motelAddress = Deno.env.get("MOTEL_ADDRESS") || "Birendranagar-07, Khajura, Surkhet, Karnali Province, Nepal"
-
-  return [
-    `🏨 *${motel}*`,
-        ``,
-    `*${greeting}*`,
-    ``,
-    `📋 *Booking Summary*`,
-    `👤 Guest: ${b.guest_name}`,
-    `🛏️ Room: ${b.room_name}${b.room_number ? ` (#${b.room_number})` : ""}`,
-    `📅 Check-in: ${formatDate(b.check_in)} at ${formatTime(b.check_in)}`,
-    `📅 Check-out: ${formatDate(b.check_out)} at ${formatTime(b.check_out)}`,
-    nights > 0 ? `🌙 Nights: ${nights}` : "",
-    `💰 Total: ${formatCurrency(b.total_price)}`,
-    b.advance_amount && b.advance_amount < b.total_price ? `💳 Advance Paid: ${formatCurrency(b.advance_amount)}` : "",
-    b.balance_amount ? `💵 Balance: ${formatCurrency(b.balance_amount)}` : "",
-    ``,
-    `🔖 Booking ID: ${b.id.slice(0, 8)}...`,
-    ``,
-    `📍 *Contact Information*`,
-    `📞 ${motelPhone}`,
-    `📧 ${motelEmail}`,
-    `🏠 ${motelAddress}`,
-    ``,
-    `⏰ *Check-in Instructions*`,
-    `Check-in: From 2:00 PM`,
-    `Check-out: 12:00 PM`,
-    `Front Desk: 7:00 AM - 8:00 PM`,
-    `For late check-ins (after 8:00 PM), please call ahead.`,
-    ``,
-    `🪪 *Required Documents*`,
-    `Please bring one of the following for verification:`,
-    `• Citizenship Card`,
-    `• National ID Card`,
-    `• Passport`,
-    `• Driver's License`,
-    `• Any government-issued photo ID`,
-    ``,
-    `${actionNote}`,
-    ``,
-    `— ${motel}`,
-  ].filter(l => l).join("\n")
-}
-
-function buildStaffWhatsAppText(b: BookingInfo, event: BookingEvent): string {
-  const motel = b.motel_name || getMotelName()
-
-  const eventIcons: Record<string, string> = {
-    booking_created: "🆕",
-    booking_confirmed: "✅",
-    booking_updated: "🔄",
-    booking_cancelled: "❌",
-  }
-  const eventLabels: Record<string, string> = {
-    booking_created: "New Booking",
-    booking_confirmed: "Confirmed",
-    booking_updated: "Updated",
-    booking_cancelled: "Cancelled",
-  }
-
-  return [
-    `${eventIcons[event] || "📢"} *Staff Alert: ${eventLabels[event]}*`,
-    `📍 ${motel}`,
-    ``,
-    `👤 Guest: ${b.guest_name}`,
-    `📧 Email: ${b.guest_email}`,
-    `📞 Phone: ${b.guest_phone}`,
-    `🛏️ Room: ${b.room_name}${b.room_number ? ` (#${b.room_number})` : ""}`,
-    `📅 In: ${formatDate(b.check_in)} ${formatTime(b.check_in)}`,
-    `📅 Out: ${formatDate(b.check_out)} ${formatTime(b.check_out)}`,
-    b.guests ? `👥 Guests: ${b.guests}` : "",
-    `📊 Status: ${b.booking_status}`,
-    `💳 Payment: ${b.payment_status}`,
-    `💰 Total: ${formatCurrency(b.total_price)}`,
-    b.advance_amount && b.advance_amount < b.total_price ? `💵 Advance: ${formatCurrency(b.advance_amount)}` : "",
-    b.balance_amount ? `💵 Balance: ${formatCurrency(b.balance_amount)}` : "",
-    b.created_at ? `🕐 Booked: ${formatDate(b.created_at)} ${formatTime(b.created_at)}` : "",
-    b.special_requests ? `📝 Notes: ${b.special_requests}` : "",
-    ``,
-    `🔖 ID: ${b.id}`,
-  ].filter(l => l).join("\n")
-}
-
 // ─── Database Logging ───────────────────────────────────────────────────────
 
 async function logNotification(
@@ -419,7 +267,7 @@ async function logNotification(
   params: {
     booking_id: string
     tenant_id?: string
-    channel: "email" | "whatsapp"
+    channel: "email"
     recipient_type: "customer" | "staff"
     recipient_address: string
     event_type: BookingEvent
@@ -499,8 +347,6 @@ export async function retryFailedNotifications(
         if (booking.data) {
           success = await sendEmailViaResend(log.recipient_address, log.subject, log.body_preview)
         }
-      } else if (log.channel === "whatsapp") {
-        success = await sendWhatsAppMessage(log.recipient_address, log.body_preview)
       }
 
       const newStatus = success ? "sent" : "retrying"
@@ -534,8 +380,6 @@ export async function sendBookingNotifications(
   const result: NotificationResult = {
     email_customer: false,
     email_staff: false,
-    whatsapp_customer: false,
-    whatsapp_staff: false,
     errors: [],
   }
 
@@ -609,68 +453,6 @@ export async function sendBookingNotifications(
       }
 
       if (!success) result.errors.push("staff_email_failed")
-    }
-  }
-
-  // ── Customer WhatsApp ───────────────────────────────────────────────────
-
-  if (isWhatsAppEnabled() && booking.guest_phone) {
-    const dedupKey = generateDedupKey(booking.id, "whatsapp", "customer", event)
-    const isDup = db ? await isDuplicate(db, dedupKey) : false
-
-    if (!isDup) {
-      const text = buildCustomerWhatsAppText(booking, event)
-      const success = await sendWhatsAppMessage(booking.guest_phone, text)
-      result.whatsapp_customer = success
-
-      await logNotification(db, {
-        booking_id: booking.id,
-        tenant_id: booking.tenant_id,
-        channel: "whatsapp",
-        recipient_type: "customer",
-        recipient_address: booking.guest_phone,
-        event_type: event,
-        subject: "",
-        body_preview: text,
-        status: success ? "sent" : "failed",
-        last_error: success ? "" : "WhatsApp API error",
-        dedup_key: dedupKey,
-      })
-
-      if (!success) result.errors.push("customer_whatsapp_failed")
-    }
-  }
-
-  // ── Staff WhatsApp ──────────────────────────────────────────────────────
-
-  const staffPhones = getStaffPhones()
-  if (isWhatsAppEnabled() && staffPhones.length > 0) {
-    const dedupKey = generateDedupKey(booking.id, "whatsapp", "staff", event)
-    const isDup = db ? await isDuplicate(db, dedupKey) : false
-
-    if (!isDup) {
-      const text = buildStaffWhatsAppText(booking, event)
-
-      for (const phone of staffPhones) {
-        const success = await sendWhatsAppMessage(phone, text)
-        if (success) result.whatsapp_staff = true
-
-        await logNotification(db, {
-          booking_id: booking.id,
-          tenant_id: booking.tenant_id,
-          channel: "whatsapp",
-          recipient_type: "staff",
-          recipient_address: phone,
-          event_type: event,
-          subject: "",
-          body_preview: text,
-          status: success ? "sent" : "failed",
-          last_error: success ? "" : "WhatsApp API error",
-          dedup_key: `${dedupKey}:${phone}`,
-        })
-
-        if (!success) result.errors.push(`staff_whatsapp_failed:${phone}`)
-      }
     }
   }
 

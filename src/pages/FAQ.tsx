@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { ChevronDown, ChevronUp, Phone, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Coffee, HelpCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Mail, Clock, Calendar, CreditCard, MapPin, Wifi, Coffee, HelpCircle } from 'lucide-react';
+import WhatsAppIcon from '../components/common/WhatsAppIcon';
 import { getSiteImagesByPage, getSiteContentMap } from '../services/contentService';
 import { getPublishedFaqItems, type FaqItem } from '../services/faqService';
 
@@ -88,22 +89,32 @@ const FAQ = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
                         <a
-                            href={`https://wa.me/${(() => { const p = C('contact_phone', '+977 9763215874'); return p.replace(/[^0-9]/g, '') })()}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                        >
-                            <Phone size={20} />
-                            <span>{C('faq_whatsapp_label', 'WhatsApp Us')}</span>
-                        </a>
-                        <a
                             href={`mailto:${C('contact_email', 'highlandsmotelinn@gmail.com')}`}
                             className="inline-flex items-center space-x-2 px-6 py-3 bg-white text-amber-900 hover:bg-gray-50 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                         >
                             <Mail size={20} />
                             <span>{C('faq_email_label', 'Email Us')}</span>
                         </a>
+                        <a
+                            href={C('contact_whatsapp_link', 'https://wa.me/9779822410877')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center space-x-2 px-6 py-3 bg-green-600 text-white hover:bg-green-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                        >
+                            <WhatsAppIcon size={20} />
+                            <span>{C('faq_whatsapp_label', 'WhatsApp Us')}</span>
+                        </a>
                     </div>
+                    <p className="text-sm text-gray-500 mt-4">
+                        {C('faq_backup_phone_note', 'No response on WhatsApp? Call')}{' '}
+                        <a
+                            href={`tel:${C('contact_phone', '+9779763215874').replace(/[^0-9]/g, '')}`}
+                            className="text-amber-700 hover:text-amber-900 font-semibold underline"
+                        >
+                            {C('contact_phone', '+977 9763215874')}
+                        </a>
+                        {' '}{C('faq_backup_phone_suffix', 'for immediate assistance.')}
+                    </p>
                 </div>
 
                 {/* FAQ Items */}
