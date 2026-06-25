@@ -127,7 +127,7 @@ BEGIN
       WHEN NEW.booking_status = 'checked_out' THEN 'booking_checked_out'
       ELSE 'booking_updated'
     END,
-    NEW.id::text,
+    NEW.id,
     jsonb_build_object(
       'room_id', NEW.room_id,
       'guest_name', NEW.guest_name,
