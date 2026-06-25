@@ -20,6 +20,7 @@ export default function SplashScreen({ ready, onFinish, onNavbarReady, isRepeat 
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const [logoTransform, setLogoTransform] = useState('');
+  const [isLogoTransitioning, setIsLogoTransitioning] = useState(false);
   const [showSplashLogo, setShowSplashLogo] = useState(true);
   const logoRef = useRef<HTMLDivElement>(null);
   const ranExit = useRef(false);
@@ -90,9 +91,14 @@ export default function SplashScreen({ ready, onFinish, onNavbarReady, isRepeat 
         return () => clearTimeout(t);
       }
 
-      requestAnimationFrame(() => {
-        setLogoTransform(xform);
-      });
+      // Two-step: enable CSS transition first, apply transform on next frame
+      const rafIds: number[] = [];
+      rafIds.push(requestAnimationFrame(() => {
+        setIsLogoTransitioning(true);
+        rafIds.push(requestAnimationFrame(() => {
+          setLogoTransform(xform);
+        }));
+      }));
 
       const logoDuration = isRepeat ? 300 : FIRST_VISIT_EXIT_LOGO_MS;
       const t = setTimeout(() => {
@@ -100,7 +106,7 @@ export default function SplashScreen({ ready, onFinish, onNavbarReady, isRepeat 
         setShowSplashLogo(false);
         setPhase('exit-overlay');
       }, logoDuration + 50);
-      return () => clearTimeout(t);
+      return () => { rafIds.forEach(cancelAnimationFrame); clearTimeout(t); };
     }
 
     if (phase === 'exit-overlay') {
@@ -173,13 +179,13 @@ export default function SplashScreen({ ready, onFinish, onNavbarReady, isRepeat 
         </svg>
 
         {/* Logo group */}
-        <div
-          ref={logoRef}
-          className={`relative z-10 ${showSplashLogo ? '' : 'opacity-0'}`}
-          style={{
-            transform: logoTransform || undefined,
-            transition: logoTransform ? `transform ${isRepeat ? 300 : FIRST_VISIT_EXIT_LOGO_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)` : 'none',
-          }}
+          <div
+            ref={logoRef}
+            className={`relative z-10 ${showSplashLogo ? '' : 'opacity-0'}`}
+            style={{
+              transform: logoTransform || undefined,
+              transition: isLogoTransitioning ? `transform ${isRepeat ? 300 : FIRST_VISIT_EXIT_LOGO_MS}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)` : 'none',
+            }}
         >
           <div
             className={`absolute -inset-3 rounded-full ${

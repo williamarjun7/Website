@@ -68,7 +68,10 @@ function App() {
   const [splashActive, setSplashActive] = useState(true);
   const [appReady, setAppReady] = useState(false);
 
-  const isRepeat = typeof window !== 'undefined' && sessionStorage.getItem(SPLASH_KEY) === 'true';
+  const isRepeat = (() => {
+    try { return typeof window !== 'undefined' && sessionStorage.getItem(SPLASH_KEY) === 'true'; }
+    catch { return false; /* sessionStorage unavailable */ }
+  })();
 
   useEffect(() => {
     let frameId = requestAnimationFrame(() => {
@@ -82,7 +85,7 @@ function App() {
   }, []);
 
   const handleSplashFinish = useCallback(() => {
-    sessionStorage.setItem(SPLASH_KEY, 'true');
+    try { sessionStorage.setItem(SPLASH_KEY, 'true'); } catch { /* private browsing */ }
     setSplashDone(true);
   }, []);
 
