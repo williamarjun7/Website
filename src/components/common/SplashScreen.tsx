@@ -55,20 +55,20 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
 
       {/* Ambient glow — ignites from a tiny ember, expands into warm luminance */}
       <div
-        className={`absolute h-[600px] w-[600px] rounded-full bg-gradient-to-br from-amber-500/22 via-amber-400/8 to-transparent blur-[100px] ${
+        className={`absolute h-[600px] w-[600px] rounded-full bg-gradient-to-br from-amber-500/30 via-amber-400/12 to-transparent blur-[100px] ${
           reducedMotion ? 'opacity-80' : exiting ? 'splash-ambient-exit' : 'splash-ambient-glow'
         }`}
       />
 
       {/* Secondary center glow — adds depth and focal warmth */}
       <div
-        className={`absolute h-72 w-72 rounded-full bg-gradient-to-br from-amber-400/12 to-transparent blur-[60px] ${
+        className={`absolute h-72 w-72 rounded-full bg-gradient-to-br from-amber-400/18 to-transparent blur-[60px] ${
           reducedMotion ? 'opacity-40' : exiting ? 'splash-center-glow-exit' : 'splash-center-glow'
         }`}
       />
 
       {/* Logo + Ring group — ring perfectly centered behind logo */}
-      <div className="relative h-32 w-32 flex items-center justify-center">
+      <div className="relative h-36 w-36 flex items-center justify-center">
         {/* Golden ring — subtle framing accent, fills container for guaranteed center */}
         <svg
           className={`absolute inset-0 h-full w-full ${
@@ -110,7 +110,7 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
           <img
             src={logo}
             alt=""
-            className={`h-28 w-28 rounded-full object-cover ${
+            className={`h-30 w-30 rounded-full object-cover ${
               reducedMotion ? 'opacity-100' : 'splash-logo-img'
             }`}
           />
@@ -233,12 +233,12 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
         /* ── Logo aura: warm halo that grows with the light ── */
         @keyframes auraReveal {
           0%   { box-shadow: 0 0 0px rgba(251,191,36,0); opacity: 0; }
-          40%  { box-shadow: 0 0 50px rgba(251,191,36,0.1); opacity: 0.8; }
-          100% { box-shadow: 0 0 60px rgba(251,191,36,0.08); opacity: 1; }
+          40%  { box-shadow: 0 0 60px rgba(251,191,36,0.14); opacity: 0.8; }
+          100% { box-shadow: 0 0 80px rgba(251,191,36,0.12); opacity: 1; }
         }
         @keyframes auraBreathe {
-          0%, 100% { box-shadow: 0 0 40px rgba(251,191,36,0.05); opacity: 0.65; }
-          50%      { box-shadow: 0 0 65px rgba(251,191,36,0.1); opacity: 0.9; }
+          0%, 100% { box-shadow: 0 0 50px rgba(251,191,36,0.08); opacity: 0.65; }
+          50%      { box-shadow: 0 0 85px rgba(251,191,36,0.14); opacity: 0.9; }
         }
         .splash-logo-aura {
           will-change: box-shadow, opacity;
