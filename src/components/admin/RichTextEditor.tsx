@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, type ComponentType } from 'react';
 import { Bold, Italic, Heading, List, Link, Image, AlignLeft, ListOrdered } from 'lucide-react';
 import MediaPicker from './MediaPicker';
+import { sanitizeHtml } from '../../utils/sanitize';
 
 interface RichTextEditorProps {
     value: string;
@@ -67,7 +68,8 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
     const handlePaste = (e: React.ClipboardEvent) => {
         e.preventDefault();
         const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
-        document.execCommand('insertHTML', false, text);
+        const sanitized = sanitizeHtml(text);
+        document.execCommand('insertHTML', false, sanitized);
         handleInput();
     };
 

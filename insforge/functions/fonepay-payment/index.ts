@@ -598,7 +598,8 @@ export default async function handler(req: Request) {
         username,
         password,
       }
-      console.log(`[debug] Request body: ${JSON.stringify(payload, null, 2)}`)
+      const { username: _u, password: _p, ...safePayload } = payload
+      console.log(`[debug] Request body: ${JSON.stringify(safePayload, null, 2)}`)
 
       let qrData: unknown
       try {
@@ -609,9 +610,8 @@ export default async function handler(req: Request) {
           body: JSON.stringify(payload),
         })
         if (!res.ok) {
-          const errBody = await res.text().catch(() => "(unreadable)")
-          console.error(`Fonepay QR download failed [${res.status}]: ${errBody}`)
-          return _err(`Fonepay API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+          console.error(`Fonepay QR download failed [${res.status}]`)
+          return _err("Payment gateway error. Please try again.", 502)
         }
         qrData = await res.json()
       } catch (fetchErr) {
@@ -654,6 +654,27 @@ export default async function handler(req: Request) {
           payload: { prn, error: "Failed to create payment record: " + payInsertErr.message },
         })
         return _err("Failed to initiate payment, please try again", 500)
+      }
+
+      // Consistency check: verify booking amounts haven't changed since QR generation
+      const { data: bookingAfter } = await db
+        .from("bookings")
+        .select("total_price, advance_amount, payment_status")
+        .eq("id", orderId)
+        .single()
+      if (bookingAfter) {
+        const expectedAfter = bookingAfter.payment_status === "pay_at_property"
+          ? (bookingAfter.advance_amount || Math.round(Number(bookingAfter.total_price) * 60) / 100)
+          : Number(bookingAfter.total_price)
+        if (Math.abs(Number(expectedAfter) - amountNum) > 0.01) {
+          // Clean up and abort — booking changed concurrently
+          await db.from("payments").delete().eq("prn", prn)
+          await logEvent(db, {
+            booking_id: orderId, event_type: "payment_failed",
+            payload: { prn, reason: "amount_changed_concurrently" },
+          })
+          return _err("Booking details changed. Please retry payment.", 409)
+        }
       }
 
       // Refresh hold on the booking
@@ -791,6 +812,26 @@ export default async function handler(req: Request) {
         return _err("Failed to initiate payment, please try again", 500)
       }
 
+      // Consistency check: verify booking amounts haven't changed since payment generation
+      const { data: bookingAfterWeb } = await db
+        .from("bookings")
+        .select("total_price, advance_amount, payment_status")
+        .eq("id", orderId)
+        .single()
+      if (bookingAfterWeb) {
+        const expectedAfter = bookingAfterWeb.payment_status === "pay_at_property"
+          ? (bookingAfterWeb.advance_amount || Math.round(Number(bookingAfterWeb.total_price) * 60) / 100)
+          : Number(bookingAfterWeb.total_price)
+        if (Math.abs(Number(expectedAfter) - amountNumWeb) > 0.01) {
+          await db.from("payments").delete().eq("prn", prn)
+          await logEvent(db, {
+            booking_id: orderId, event_type: "payment_failed",
+            payload: { prn, reason: "amount_changed_concurrently" },
+          })
+          return _err("Booking details changed. Please retry payment.", 409)
+        }
+      }
+
       // Refresh hold
       const holdExpiresAt = new Date(Date.now() + HOLD_DURATION_MS).toISOString()
       await db.from("bookings")
@@ -836,17 +877,17 @@ export default async function handler(req: Request) {
       let fonepayResult: Record<string, unknown>
       try {
         const verifyPayload = { prn, merchantCode, dataValidation, username, password }
-        console.log(`[debug] QR verify request: ${JSON.stringify(verifyPayload)}`)
+        const { username: _u2, password: _p2, ...safeVerifyPayload } = verifyPayload
+        console.log(`[debug] QR verify request: ${JSON.stringify(safeVerifyPayload)}`)
         const res = await fetchWithTimeout(ENDPOINTS.qrStatus, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(verifyPayload),
         })
         if (!res.ok) {
-          const errBody = await res.text().catch(() => "(unreadable)")
-          console.error(`Fonepay QR status check failed [${res.status}]: ${errBody}`)
-          await db.from("payments").update({ response_msg: `qr_status_failed: ${res.status} ${errBody}` }).eq("id", existingPayment.id)
-          return _err(`Fonepay status error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+          console.error(`Fonepay QR status check failed [${res.status}]`)
+          await db.from("payments").update({ response_msg: `qr_status_failed: ${res.status}` }).eq("id", existingPayment.id)
+          return _err("Payment verification unavailable. Please try again.", 502)
         }
         fonepayResult = await res.json()
         console.log(`[debug] QR verify response: ${JSON.stringify(fonepayResult)}`)
@@ -937,10 +978,9 @@ export default async function handler(req: Request) {
           headers: { "Content-Type": "application/json", "User-Agent": "PaymentGateway/1.0" },
         })
         if (!res.ok) {
-          const errBody = await res.text().catch(() => "(unreadable)")
-          console.error(`Fonepay web verification failed [${res.status}]: ${errBody}`)
-          await db.from("payments").update({ response_msg: `web_verify_failed: ${res.status} ${errBody}` }).eq("id", existingPayment.id)
-          return _err(`Verification API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+          console.error(`Fonepay web verification failed [${res.status}]`)
+          await db.from("payments").update({ response_msg: `web_verify_failed: ${res.status}` }).eq("id", existingPayment.id)
+          return _err("Payment verification unavailable. Please try again.", 502)
         }
         const xmlText = await res.text()
         const { parse } = await import("https://deno.land/x/xml@2.1.1/mod.ts")
@@ -1051,7 +1091,8 @@ export default async function handler(req: Request) {
         username,
         password,
       }
-      console.log(`[debug] Tax refund request: ${JSON.stringify(payload)}`)
+      const { username: _u3, password: _p3, ...safeRefundPayload } = payload
+      console.log(`[debug] Tax refund request: ${JSON.stringify(safeRefundPayload)}`)
 
       let result: Record<string, unknown>
       try {
@@ -1061,10 +1102,9 @@ export default async function handler(req: Request) {
           body: JSON.stringify(payload),
         })
         if (!res.ok) {
-          const errBody = await res.text().catch(() => "(unreadable)")
-          console.error(`Fonepay tax refund failed [${res.status}]: ${errBody}`)
-          await db.from("payments").update({ response_msg: `tax_refund_failed: ${res.status} ${errBody}` }).eq("prn", prn)
-          return _err(`Tax refund API error (${res.status}): ${errBody.slice(0, 500)}`, 502)
+          console.error(`Fonepay tax refund failed [${res.status}]`)
+          await db.from("payments").update({ response_msg: `tax_refund_failed: ${res.status}` }).eq("prn", prn)
+          return _err("Tax refund unavailable. Please try again.", 502)
         }
         result = await res.json()
         console.log(`[debug] Tax refund response: ${JSON.stringify(result)}`)

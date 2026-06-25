@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Loader2, FileQuestion } from 'lucide-react';
 import { getPageBySlug, type SitePage } from '../services/pageService';
+import { sanitizeHtml } from '../utils/sanitize';
 
 const DynamicPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -109,7 +110,7 @@ const DynamicPage = () => {
       <div className="container-custom max-w-4xl">
         <div className="bg-white rounded-2xl shadow-md p-8">
           <div className="prose prose-lg max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: page.page_content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(page.page_content) }} />
           </div>
         </div>
       </div>

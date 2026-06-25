@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { FileText } from 'lucide-react';
 import { getPageBySlug } from '../services/pageService';
+import { sanitizeHtml } from '../utils/sanitize';
 import { getSiteContentMap } from '../services/contentService';
 
 const Terms = () => {
@@ -71,7 +72,7 @@ const Terms = () => {
           {notFound ? (
             <p className="text-gray-500 text-center py-8">{C('terms_not_found_text', 'Terms of service content is being updated. Please check back later.')}</p>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} />
           )}
         </div>
 

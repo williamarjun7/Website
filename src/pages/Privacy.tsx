@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Shield } from 'lucide-react';
 import { getSiteContentMap } from '../services/contentService';
 import { getPageBySlug } from '../services/pageService';
+import { sanitizeHtml } from '../utils/sanitize';
 
 const Privacy = () => {
   const [content, setContent] = useState<Record<string, string>>({});
@@ -71,7 +72,7 @@ const Privacy = () => {
           {notFound ? (
             <p className="text-gray-500 text-center py-8">{C('privacy_not_found_text', 'Privacy policy content is being updated. Please check back later.')}</p>
           ) : (
-            <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(htmlContent) }} />
           )}
         </div>
 

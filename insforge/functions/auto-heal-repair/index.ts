@@ -54,18 +54,18 @@ const AUTO_HEALABLE_TYPES: Record<string, string> = {
   date_mismatch: "check_out",
 }
 
-function generateRollbackSql(
+function generateRollbackData(
   table: string,
   bookingId: string,
   field: string,
   beforeValue: unknown,
-): string {
-  const escaped = typeof beforeValue === "string"
-    ? `'${beforeValue.replace(/'/g, "''")}'`
-    : beforeValue === null
-      ? "NULL"
-      : String(beforeValue)
-  return `UPDATE ${table} SET ${field} = ${escaped} WHERE id = '${bookingId.replace(/'/g, "''")}'`
+): Record<string, unknown> {
+  return {
+    table,
+    booking_id: bookingId,
+    field,
+    value: beforeValue,
+  }
 }
 
 function getRepairValue(
@@ -187,7 +187,7 @@ export default async function handler(req: Request): Promise<Response> {
       }
 
       // Create repair job record
-      const rollbackSql = dryRun ? null : generateRollbackSql("public.bookings", repair.booking_id, fieldName, beforeValue)
+      const rollbackData = dryRun ? null : generateRollbackData("public.bookings", repair.booking_id, fieldName, beforeValue)
 
       const { data: job, error: jobError } = await db
         .from("sync_repair_jobs")
@@ -202,7 +202,7 @@ export default async function handler(req: Request): Promise<Response> {
           dry_run: dryRun,
           repaired_by: "system",
           notes: dryRun ? "Dry run — no changes executed" : null,
-          rollback_sql: rollbackSql,
+          rollback_sql: rollbackData,
         })
         .select("id")
         .single()

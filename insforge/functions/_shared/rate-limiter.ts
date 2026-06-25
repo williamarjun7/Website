@@ -28,7 +28,7 @@ export async function checkRateLimit(
   }).single();
 
   if (error || !data) {
-    return { allowed: true };
+    return { allowed: false, retryAfter: windowSeconds };
   }
 
   return {

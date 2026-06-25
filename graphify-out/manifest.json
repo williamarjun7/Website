@@ -1,7 +1,7 @@
 {
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\eslint.config.js": {
-    "mtime": 1770442129.7131996,
-    "hash": "7419834a35921648ae6b13e5755acc72"
+    "mtime": 1782357664.9716532,
+    "hash": "1babaeb7b573848939b0200ec8778e75"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\playwright.config.ts": {
     "mtime": 1781955732.8654442,
@@ -12,264 +12,312 @@
     "hash": "c735540bb63936a123bc867d950c9f69"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\tailwind.config.js": {
-    "mtime": 1770443004.9632635,
-    "hash": "eeaae5ca765b0edc15e28c8f8f886573"
+    "mtime": 1782281464.3810084,
+    "hash": "6af4d2fa6194db40be0aa86005f7ee4a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\vite.config.ts": {
     "mtime": 1778143857.0160775,
     "hash": "5d225cfd3d52e8ebdc9f4e91fff2540b"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\e2e\\navigation.spec.ts": {
-    "mtime": 1782022086.8309224,
-    "hash": "b87beec2493e19f637defb0cca7ddcff"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\e2e\\runtime-audit.spec.ts": {
-    "mtime": 1782022549.9416866,
-    "hash": "11876871e307ad9dcb3b8a704297d829"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\e2e\\smoke.spec.ts": {
-    "mtime": 1782022063.850849,
-    "hash": "44c3b2e760254eaf12c79d9011a1dfa6"
-  },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\all-fields-sync.test.deno.ts": {
-    "mtime": 1781926920.8331275,
-    "hash": "82d2a3608b1b3c841323e8d178b634f7"
+    "mtime": 1782356964.462767,
+    "hash": "c02d8a91de4fb7b8c49f3a87505f8dd2"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\bundle.ps1": {
     "mtime": 1781882672.3444068,
     "hash": "bd30151108872ed4ef6609bb1795088d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\concurrent-double-booking.test.deno.ts": {
-    "mtime": 1781929069.9406781,
-    "hash": "830c0bf85c52bf5f8d1f21e2fdc909a8"
+    "mtime": 1782356970.3301032,
+    "hash": "b6d65767133e26d2abc97f04a804c2f9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\qa-certification.test.deno.ts": {
-    "mtime": 1781927815.4699156,
-    "hash": "d39ee960a031440bc6fad43a66e24e2d"
+    "mtime": 1782357730.3341513,
+    "hash": "b9c1784815405311bf5a628f07ca00c3"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\reconciliation.test.deno.ts": {
-    "mtime": 1781926887.6022053,
-    "hash": "350c196cbd5e8d7f145c72f3acd8d3cc"
+    "mtime": 1782356990.8673787,
+    "hash": "7d509fc4cc8f619fe239a9d4cf1ec7f0"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\rls-security-audit.test.deno.ts": {
-    "mtime": 1781927745.4636903,
-    "hash": "697d0c3bb141353972b25d9bfda60d64"
+    "mtime": 1782356991.3902137,
+    "hash": "45a19d886f41b4076e2a12e5314b80c8"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\strict-hmac.test.deno.ts": {
     "mtime": 1781927717.2079518,
     "hash": "8fad689210b2e527d4d98d5629f8d8c8"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\sync-integration.test.deno.ts": {
-    "mtime": 1781929136.2125561,
-    "hash": "12462f67634098308baf19d6880a639d"
+    "mtime": 1782356991.9031384,
+    "hash": "4893566c97d099918c0e211b78525f6b"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\sync-resilience.test.deno.ts": {
-    "mtime": 1781858519.9549003,
-    "hash": "32f9e1cff62761c8f7c17f22a04b8718"
+    "mtime": 1782356993.0631075,
+    "hash": "8ea4532659443675837574329deedb2d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\admin-recover-payment\\index.ts": {
-    "mtime": 1781937416.4621713,
-    "hash": "d92fc58cca0737bf99acf8aa26dfef5a"
+    "mtime": 1782213535.9889736,
+    "hash": "3d0422681ecb127b38574288db8434dd"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\auto-heal-repair\\index.ts": {
-    "mtime": 1781927666.2917504,
-    "hash": "d852d83b60bf3988ca713ecb90afb522"
+    "mtime": 1782356966.428258,
+    "hash": "798422cd8c5e6fb206048ca5ce60e47a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\booking-webhook\\index.ts": {
-    "mtime": 1781927626.5667,
-    "hash": "11d67be33e11fa3ebe81f6e5fa340dc7"
+    "mtime": 1782356969.5900881,
+    "hash": "bcbfb66db869cb5c16b725a2614453d7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\cleanup-nonces\\index.ts": {
-    "mtime": 1781434281.3771079,
-    "hash": "47ccced24d1f488eb134423327875324"
+    "mtime": 1782356969.9779904,
+    "hash": "f689d1fb721c86beee58ebb8508950bc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\create-booking\\index.ts": {
-    "mtime": 1781927589.4789948,
-    "hash": "b1cffc04898e2c608aa128923663f3ef"
+    "mtime": 1782213538.7295742,
+    "hash": "f436d342b1ea82708a517245444461fd"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\auto-heal-repair-v2.ts": {
-    "mtime": 1781928907.9097197,
-    "hash": "dd63862c8d91b74cec7a2b6e9cd907a0"
+    "mtime": 1782356971.1193142,
+    "hash": "af1802b2241b91f404f26772638db558"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\auto-heal-repair.ts": {
-    "mtime": 1781927822.0374932,
-    "hash": "4f55c28da9cc16785aadad327eea704e"
+    "mtime": 1782280831.8822775,
+    "hash": "64110952d8e8681e09f8650eb846abfc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\booking-webhook-v2.ts": {
-    "mtime": 1781928781.0211189,
-    "hash": "1906a05dfceace29367971f6767d0266"
+    "mtime": 1782356974.368447,
+    "hash": "29ea04bf9c4aae53aa6a4e63a49307dc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\booking-webhook.ts": {
-    "mtime": 1781859125.0692263,
-    "hash": "d35a9d4327ea8304cfb8d44b5d079695"
+    "mtime": 1782357716.827426,
+    "hash": "2cd6af904364e14bb852b02fbbb549bc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\create-booking-v2.ts": {
-    "mtime": 1781928701.2691162,
-    "hash": "ebbef043121af740ff55c465b9ffab8e"
+    "mtime": 1782280831.8836756,
+    "hash": "815a9c336755ebb1bccd0da336be3c24"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\create-booking-v3.ts": {
+    "mtime": 1782280831.8846736,
+    "hash": "182dac1a507515b65f8fd5f9ea00668d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\create-booking.ts": {
-    "mtime": 1781860570.4829416,
-    "hash": "ba6514df98c1bfd5750205880e35c35e"
+    "mtime": 1782357717.3654013,
+    "hash": "8151cdc61368877ec559be1e70f61dda"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\echo-pos.ts": {
+    "mtime": 1782280831.8856728,
+    "hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\fonepay-payment-v2.ts": {
+    "mtime": 1782356981.2817972,
+    "hash": "9d957d1d484e3066d2274983aa913ae2"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\monitor-sync-health.ts": {
+    "mtime": 1782280831.8876734,
+    "hash": "48a27de8d9a5ce0ec00f0f8eb769baae"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\payment-reconciliation-v2.ts": {
+    "mtime": 1782280831.8876734,
+    "hash": "63fc9d4d4aba167666f61ebfbd19284c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\pos-sync-api-v2.ts": {
-    "mtime": 1781928839.5645196,
-    "hash": "1be6739b7327210f4e62d2372bdd3768"
+    "mtime": 1782280831.8886735,
+    "hash": "43e56531cda79d63e4c7d418eddbf9de"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\pos-sync-api.ts": {
-    "mtime": 1781859125.0622249,
-    "hash": "ae8e3d3f797bba0312dae1df0dc63ab9"
+    "mtime": 1782280831.8896742,
+    "hash": "6fe3704d416091d7d56e62e9bd1a78c9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\reconcile-bookings-v2.ts": {
-    "mtime": 1781928893.0661724,
-    "hash": "04273190df28cd06bb4b4e01649b6114"
+    "mtime": 1782356982.3658264,
+    "hash": "cdbad0d700e219aa37afa16c4a0137f9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\reconcile-bookings.ts": {
-    "mtime": 1781926973.8743174,
-    "hash": "f7d14a3236fd751bb2e49ae607038634"
+    "mtime": 1782280831.8906727,
+    "hash": "c8590c3ff26b082345fabbcd1f67919c"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\reconcile-dead-letter.ts": {
+    "mtime": 1782280831.8906727,
+    "hash": "cacefa2d1e3c64c4e712908b54113d69"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\sync-harden.ts": {
+    "mtime": 1782357717.878237,
+    "hash": "d2c7f41339315abdfafcfdba7ed03685"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\deploy\\sync-webhook-sender.ts": {
-    "mtime": 1781883699.090866,
-    "hash": "299874cc572fdc2f291f31b5eb609f96"
+    "mtime": 1782357718.439037,
+    "hash": "188d8845f9ae7d0c1ee95d22760d19de"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\fonepay-payment\\index.ts": {
-    "mtime": 1781761994.5785654,
-    "hash": "5675e561836a0fa243a601b5fe3df3de"
+    "mtime": 1782356985.7455623,
+    "hash": "9a2c8b5063ebdc901bc40172e641799f"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\health-check\\index.ts": {
-    "mtime": 1781409377.1363466,
-    "hash": "57af128003737a26ad507cde7e7fd3be"
+    "mtime": 1782213528.6638668,
+    "hash": "9f1a6d44f94d8646b5b84917c34e4abe"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\monitor-sync-health\\index.ts": {
-    "mtime": 1781859911.1733475,
-    "hash": "a6de395af891d34057c2618f2969db19"
+    "mtime": 1782213540.5257926,
+    "hash": "d2f4fe69e461c310c2ae27f2a4c024ce"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\payment-reconciliation\\chaos.test.deno.ts": {
     "mtime": 1781529930.4570801,
     "hash": "4ceb16237255f5e76a616f7e77dcc589"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\payment-reconciliation\\index.ts": {
-    "mtime": 1781608644.5848525,
-    "hash": "b088e94c3dd6400fcac0afdefe2c0c69"
+    "mtime": 1782213536.962057,
+    "hash": "c0302b36ea8bb8655e2db0d4f6adbf85"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\pos-sync-api\\index.ts": {
-    "mtime": 1781927637.2466755,
-    "hash": "e54b277ba47a61d4e929e62d72f738f3"
+    "mtime": 1782213544.1815493,
+    "hash": "6fe3704d416091d7d56e62e9bd1a78c9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\reconcile-bookings\\index.ts": {
-    "mtime": 1781926764.8420303,
-    "hash": "138d3ec6ca1b5289b0f8d728b8e1f016"
+    "mtime": 1782356989.580002,
+    "hash": "19e56d00d677200b36c721c6acc896b4"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\reconcile-dead-letter\\index.ts": {
-    "mtime": 1781859922.4384892,
-    "hash": "82d6c92efb13fae4f3d6eb5e77d2458b"
+    "mtime": 1782213539.6375203,
+    "hash": "915cb71a018e1145b7bb86c74cd2f2e6"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\sync-webhook-sender\\index.ts": {
-    "mtime": 1781926776.856479,
-    "hash": "abe22974502a79499a6fa14bd15fff7c"
+    "mtime": 1782213541.4235542,
+    "hash": "84dd06e650f5ad7e4a7de38e244fbf5c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\tiktok-feed\\index.ts": {
     "mtime": 1781784319.7977502,
     "hash": "40848ccc4227e8f4f926dd8cf0f88a8b"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\validate-upload\\index.ts": {
-    "mtime": 1781430755.3253465,
-    "hash": "1c472b4039df44b7bf1df296781b3f18"
+    "mtime": 1782213537.856787,
+    "hash": "f51ded5930e910ea3a766eaa52617d63"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\idempotency.ts": {
     "mtime": 1781856669.782516,
     "hash": "eccb3334e5ff4993e48f499eb5cbc4c7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\ip-utils.ts": {
-    "mtime": 1781429175.345695,
-    "hash": "af4dbc33925b8933b885a6acb5ca3a0c"
+    "mtime": 1782280831.8782628,
+    "hash": "579e9a5f7ffc162a9fc8d8b3a5800e41"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\notifications.ts": {
+    "mtime": 1782280831.879277,
+    "hash": "fb979bd5f4f404aacec51580d4209ecc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\rate-limiter.ts": {
-    "mtime": 1781428251.20752,
-    "hash": "3060103d9d1c0cf8c7bbdeddc7d160a1"
+    "mtime": 1782280831.879277,
+    "hash": "9133f1f5cb9a356ccf82eb98abea4280"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\sync-harden.ts": {
-    "mtime": 1781883688.3682828,
-    "hash": "7e286c44525d42280339981c91814ddf"
+    "mtime": 1782357716.4156718,
+    "hash": "4ff79638fb9ce58c9b2e3a19dc4704be"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\insforge\\functions\\_shared\\timing-safe.ts": {
-    "mtime": 1781428260.3579633,
-    "hash": "c99328461a97af0476d995803ad6c447"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\003_cms_upgrade.sql": {
-    "mtime": 1782021434.9736423,
-    "hash": "81a7d05e4acb9f909fab8bcdc8d5e7ef"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\004_saas_multitenant.sql": {
-    "mtime": 1782026624.4906116,
-    "hash": "32717355b33b17dab46f62b677ad45cc"
+    "mtime": 1782280831.8802822,
+    "hash": "f40089be589353b996b073ae23e42be7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260618112514_security-rls-harden.sql": {
     "mtime": 1781782003.5205095,
     "hash": "40070b3286c0ff71bdebcf3751257a9d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260619000000_sync-harden.sql": {
-    "mtime": 1781856715.654472,
-    "hash": "a216c8556859242198202af682e80dd1"
+    "mtime": 1782214061.732595,
+    "hash": "b23f336e8117848157831ce3adc3d4d2"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260619085334_sync-harden.sql": {
     "mtime": 1781867145.4317205,
     "hash": "f3d1157173f256dcc55a64d30ff2896e"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260620000000_all_fields_sync_reconciliation.sql": {
-    "mtime": 1781926734.1414802,
-    "hash": "330b91dc1781dd441e298d1f455e30d0"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260620000000_all-fields-sync-reconciliation.sql": {
+    "mtime": 1782214111.7029088,
+    "hash": "7e00aa8271d901ab709f544aeb9e3d44"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621000000_zero_double_booking_strict_hmac_auto_heal.sql": {
-    "mtime": 1781927569.7659202,
-    "hash": "409e61101784c7998db606e0ba2477de"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621000000_zero-double-booking-strict-hmac-auto-heal.sql": {
+    "mtime": 1782214156.108585,
+    "hash": "11a765973623360f29dd1589cb2fcfae"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621100000_reviews_testimonials.sql": {
-    "mtime": 1781945197.1601517,
-    "hash": "3e63778cfdc7ef24eee7da0adb8aa62d"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621100000_reviews-testimonials.sql": {
+    "mtime": 1782214113.0159323,
+    "hash": "4c957ca11267b67c086b1bec4d94fae1"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621153000_seed-site-content.sql": {
+    "mtime": 1782214051.7103715,
+    "hash": "24a1ea4002e878c9c734bdce5c776120"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621160000_add-menu-pages-support.sql": {
+    "mtime": 1782040401.2471435,
+    "hash": "f1f7e15e19cdc7e17e87add698d02aa2"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621180000_standardize-room-policy-times.sql": {
+    "mtime": 1782053554.1253428,
+    "hash": "84c43b50ee33f099c780d08a34400fad"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260621190000_admin-profiles-role-permissions.sql": {
+    "mtime": 1782214215.706675,
+    "hash": "92ddc43a229532356f69320eee2fefbe"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260622100000_notification-system.sql": {
+    "mtime": 1782214331.505998,
+    "hash": "f9a39ee445067c434f8cd1f0880fda78"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260623000000_notification_enhancements.sql": {
+    "mtime": 1782211337.9426863,
+    "hash": "e8c6286a66f11d4fe73fed6c2e913d1c"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\migrations\\20260623100000_menu-featured-most-sold.sql": {
+    "mtime": 1782212047.4045267,
+    "hash": "8f24e289ce4b649f528d3dd58f0ba0bb"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\App.tsx": {
-    "mtime": 1782026936.5707736,
-    "hash": "b450ef185b9831b7456e80510fcf67bc"
+    "mtime": 1782357140.8457778,
+    "hash": "393db40396446533ad33ae95647ac0b9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\main.tsx": {
-    "mtime": 1777920517.7487874,
-    "hash": "fb5f8f476ea985b506734fc2172144dd"
+    "mtime": 1782356638.0170197,
+    "hash": "29b515966e4ce80f2f098eb22225f17e"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\vite-env.d.ts": {
     "mtime": 1770442130.1011357,
     "hash": "2a09e4d09ab2b3071111c9381c3fcd2c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\RoomCarousel.tsx": {
-    "mtime": 1770807722.5349581,
-    "hash": "abd78637d200eec2005b37ac22d51d26"
+    "mtime": 1782054007.4789376,
+    "hash": "9efeb5bf1178687e5458e2667816c6ea"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\TikTokFeed.tsx": {
-    "mtime": 1781784758.6720772,
-    "hash": "88a307d5dbb47ece6aee24464ba0dfd8"
+    "mtime": 1782039643.9393544,
+    "hash": "dbbf034425a85dcf247f10efadffd853"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\admin\\AdminLayout.tsx": {
-    "mtime": 1782026944.6628785,
-    "hash": "f78e75f0b228d30327628474087c0ba5"
+    "mtime": 1782357424.2682714,
+    "hash": "3047c2916f11898b724aa9f59b3c08bd"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\admin\\MediaPicker.tsx": {
+    "mtime": 1782034504.0605714,
+    "hash": "985d82736d76030f8f3fc86642010e24"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\admin\\RichTextEditor.tsx": {
+    "mtime": 1782357520.8155644,
+    "hash": "e4727ca198e41fb92ac21f89c5d0f2e0"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\BookingConfirmation.tsx": {
-    "mtime": 1781781157.6405919,
-    "hash": "b27cc8d447ccb724d93d6c7c2d5ebac3"
+    "mtime": 1782357556.2222035,
+    "hash": "3675b072d905fdf6743d73f83b083c28"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\ConfirmationStep.tsx": {
-    "mtime": 1781607849.0966573,
-    "hash": "7126f43a10f21e9ef5e58c1a0ae49d8a"
+    "mtime": 1782039140.017115,
+    "hash": "181360b3eb7856cb9ef1b14cd3da7416"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\DateSelectionStep.tsx": {
-    "mtime": 1781779224.335213,
-    "hash": "2106a557f4228a41d161f7d8f21e0bc2"
+    "mtime": 1782054008.0104065,
+    "hash": "f1d4b38c27f1a6c239fb27959d249087"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\GuestInfoStep.tsx": {
-    "mtime": 1781607435.036372,
-    "hash": "83f4b1137ae5671faa5bbd5a3f6cc5e5"
+    "mtime": 1782211463.5964773,
+    "hash": "76eecbdda55bb70b2dfcd8503ba2d118"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\PaymentStep.tsx": {
-    "mtime": 1781669150.934556,
-    "hash": "5da6c16fa3eaa80ff68e6b1a6a0760a9"
+    "mtime": 1782039340.9687252,
+    "hash": "72803df6c890c990713535760cfb45e3"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\booking\\ProgressSteps.tsx": {
     "mtime": 1781407858.0308316,
@@ -280,244 +328,256 @@
     "hash": "aadaeea67e4dc028bc60a85b335c938d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\ErrorBoundary.tsx": {
-    "mtime": 1778143530.3114758,
-    "hash": "e2437050126bb633fe9662bb2e22ef54"
+    "mtime": 1782356643.1169722,
+    "hash": "d6a6b3dfacc8d8bb06d5a9b4fac2d9a7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\Footer.tsx": {
-    "mtime": 1782021276.4518633,
-    "hash": "b7d6ed56a9b1ff1a16147678f71d633a"
+    "mtime": 1782218569.63799,
+    "hash": "47293c1391b31d3549790de403ca69d9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\Navbar.tsx": {
-    "mtime": 1782021288.5101163,
-    "hash": "e354e26cb430dbe16e7558fc07a17c8d"
+    "mtime": 1782218559.8581004,
+    "hash": "8f7da3c06e7cb37a1a3ce94d1c462cff"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\PermissionGuard.tsx": {
-    "mtime": 1782026904.9925728,
-    "hash": "239fade93d5e2efbac8726483aa144fc"
+    "mtime": 1782280831.8941834,
+    "hash": "1c6c2fd12fd47279590f1f3b7ad81663"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\ScrollToTop.tsx": {
     "mtime": 1777956876.7385764,
     "hash": "cb832f15b490bf91ceaa5db274832dbf"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\Skeleton.tsx": {
-    "mtime": 1781669112.5601692,
-    "hash": "60fd073e803d5e024724b9cd1e88468d"
+    "mtime": 1782280831.8951888,
+    "hash": "c99808e43ea0794f0fbdff560ad28d8c"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\components\\common\\SplashScreen.tsx": {
+    "mtime": 1782357483.1761205,
+    "hash": "78eca5902a0793658a0897486e4b8f4c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\hooks\\usePermission.tsx": {
-    "mtime": 1782026901.9121208,
-    "hash": "3954d21d76d56013b00a43e75b2b88b9"
+    "mtime": 1782357092.5291655,
+    "hash": "da6b4d643948ac8f2f92b1aacc8aa7d5"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\hooks\\usePolling.ts": {
-    "mtime": 1781407836.7989511,
-    "hash": "52104156e599bb9e6989bc6f87c56d66"
+    "mtime": 1782280831.8951888,
+    "hash": "b029d9b1d997799a1bc8bfab4b2306bc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\hooks\\useTenant.tsx": {
-    "mtime": 1782026898.8737245,
-    "hash": "f7e6be1a86e151b9e2b1654c14f94441"
+    "mtime": 1782357093.697232,
+    "hash": "e072265d53503d9a73e83843aaeacbdd"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\hooks\\useWebSocket.ts": {
     "mtime": 1781529930.4670837,
     "hash": "750b677813ec8cc1e78f791e9b7aa0e6"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\About.tsx": {
-    "mtime": 1782021405.619347,
-    "hash": "3b7ccf68b6f575300b58681952bd53d2"
+    "mtime": 1782282027.2581978,
+    "hash": "e304270fae3ecead55d8797ef711902f"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Booking.tsx": {
-    "mtime": 1781945449.2915592,
-    "hash": "7f091f7ac4a29fad8b09c979510f313b"
+    "mtime": 1782357210.5000145,
+    "hash": "62bbef6583f643f1f2dbc3a36ee75aa1"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\bookingSchema.ts": {
-    "mtime": 1780422354.702372,
-    "hash": "29f4d9b0432c108dcf2c5054fe4193bc"
+    "mtime": 1782211451.2881796,
+    "hash": "aa78585adae8e55b963e60344fe8be2e"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Cafe.tsx": {
-    "mtime": 1782021329.794775,
-    "hash": "122051b1ba14a6b03523e6f5fad042b1"
+    "mtime": 1782282027.2786689,
+    "hash": "441857233652f8c48b3e49433358cfb8"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Contact.tsx": {
-    "mtime": 1782021415.314331,
-    "hash": "8dfce9367344b955de0a6152840dc3d8"
+    "mtime": 1782357094.257155,
+    "hash": "956b23cc11896e87e9013ab63fab97bb"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\DynamicPage.tsx": {
-    "mtime": 1782021982.1366496,
-    "hash": "1cefb71efb902346bda62f0034cabc19"
+    "mtime": 1782357274.8201032,
+    "hash": "c53db91d7a7c5669d4b0f547045840ef"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\FAQ.tsx": {
-    "mtime": 1782021332.2783298,
-    "hash": "24ce0f3a1dbdc875ac560be4ef63dbf5"
+    "mtime": 1782282027.288192,
+    "hash": "d474f66242afeefc179e447ed40b3710"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Gallery.tsx": {
-    "mtime": 1781955147.8317747,
-    "hash": "86a48d27ef34a26d57f584f80c4b1113"
+    "mtime": 1782282027.2901924,
+    "hash": "7b045465346f45ba0321da7c0b718c16"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Home.tsx": {
-    "mtime": 1782021324.7016065,
-    "hash": "e06e9771293a9d4b815a4cee3d162378"
+    "mtime": 1782357094.8519013,
+    "hash": "948c59ed0a8d31c4b1263b1dfc7e28b9"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\PaymentResult.tsx": {
-    "mtime": 1781669142.9717598,
-    "hash": "07d354a007fc6bb37ee90fbe5ea25afd"
+    "mtime": 1782282027.2953644,
+    "hash": "8c2fbddc9473510e648476b12fcef5c7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Privacy.tsx": {
-    "mtime": 1782021392.4434922,
-    "hash": "44558cd4562b3f40446a605230e6c3d5"
+    "mtime": 1782282027.2983625,
+    "hash": "9bc636f95a9de8885afd23015a2ae52a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\RoomDetails.tsx": {
-    "mtime": 1782021333.5389106,
-    "hash": "5a2a5cc8118b0243cf4770744d4bc758"
+    "mtime": 1782282027.3013635,
+    "hash": "771f8bda2021e17ecc9170a9faf9b39f"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Rooms.tsx": {
-    "mtime": 1781955136.5048292,
-    "hash": "a3b952883841879dcb18302bb83f5c4a"
+    "mtime": 1782282027.3068826,
+    "hash": "3b849d9c5cd70d873b37ea52e52b4083"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\Terms.tsx": {
-    "mtime": 1782021360.7861397,
-    "hash": "071eab664a157ff5c559c2c9fe120866"
+    "mtime": 1782282027.309884,
+    "hash": "543978756eca6b3e9c9d0044fb361cf2"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\AdminDashboard.tsx": {
-    "mtime": 1781944575.841322,
-    "hash": "7844e721755b5e7ac93a1c52ae6c0250"
+    "mtime": 1782282334.3932793,
+    "hash": "1db2b894342f65fb645c42771b72bf06"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\AdminGate.tsx": {
-    "mtime": 1782026946.729407,
-    "hash": "eeaaab8cee6691d0fb2ea894c7df7edb"
+    "mtime": 1782357275.4981697,
+    "hash": "a66c064380b9b0a387f9399941fdcc16"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\AdminLogin.tsx": {
-    "mtime": 1781780007.5254424,
-    "hash": "ebc87cc501f4094d87af96f484be204b"
+    "mtime": 1782282335.586777,
+    "hash": "3bc82a6ef2578edad7cdb16336058e50"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\AdminSignup.tsx": {
-    "mtime": 1781775060.9224954,
-    "hash": "4913f19555c49805053542548b0092ed"
+    "mtime": 1782282336.7517085,
+    "hash": "8a9c9cc93dbbd3a90adb0336f1708928"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\AdminVerify.tsx": {
-    "mtime": 1781345029.7367666,
-    "hash": "30e7537f8f913b8814b0bea9163c2204"
+    "mtime": 1782282337.9382746,
+    "hash": "6c3e6a75eb5fa4cfc18828a273208ba3"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Bookings.tsx": {
-    "mtime": 1781944722.3597193,
-    "hash": "ac2ab3ff9dd87ef25540fe5ba16f403a"
+    "mtime": 1782357426.627277,
+    "hash": "7002aed52f9722dca83eb646a5e99e14"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\ContentEditor.tsx": {
-    "mtime": 1781955167.4653406,
-    "hash": "dcd8d3bdf51a3f333d4204273ad29a9a"
+    "mtime": 1782282341.4470074,
+    "hash": "03fd7231e7fdc9bd3afd0c3f1b89e25c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Faq.tsx": {
-    "mtime": 1782027041.3704884,
-    "hash": "147e66e250fda4f12b50d813f99bd261"
+    "mtime": 1782357427.3099806,
+    "hash": "906b971d16024430ba498cfae7ff8716"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Images.tsx": {
-    "mtime": 1781955137.4666114,
-    "hash": "0b96dff2c6a92a32fee00670f841e367"
+    "mtime": 1782280831.8971896,
+    "hash": "57bcda09ffedc9520782010211043097"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\MediaLibrary.tsx": {
-    "mtime": 1782027094.970584,
-    "hash": "5c562e775083b16011ab4b13fc808e48"
+    "mtime": 1782282346.8141272,
+    "hash": "f0386011818b012e771a9d9afc9d4e0d"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Menu.tsx": {
-    "mtime": 1781781168.9021664,
-    "hash": "4a15d10268f28ce281b1c5af0073245b"
+    "mtime": 1782357665.5984502,
+    "hash": "9f77b63d6bd0f4e7f160aec997b5f427"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\MenuPages.tsx": {
+    "mtime": 1782357666.1943598,
+    "hash": "596abcfe0dd44c6e5b462755922f244f"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Navigation.tsx": {
-    "mtime": 1782027025.7674205,
-    "hash": "fd03e26e2d5bd7e51319031cbacc6398"
+    "mtime": 1782357448.9501686,
+    "hash": "fe5fd314dc192421f3305dc2d7dd3bf6"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Pages.tsx": {
-    "mtime": 1782027010.095402,
-    "hash": "071c6064a582219adf8c746f6d17cc83"
+    "mtime": 1782357428.57922,
+    "hash": "5ac84895c2281034204f4a34a1e71627"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\PaymentRecovery.tsx": {
-    "mtime": 1781933603.175536,
-    "hash": "de2c5839bddab3d662323a8acc403ae6"
+    "mtime": 1782357429.6607237,
+    "hash": "a11d93e330d8f964c214fd4e9aeec175"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Reviews.tsx": {
-    "mtime": 1781945259.2714417,
-    "hash": "7bef962be08d6252136b01dee0cef3a0"
+    "mtime": 1782357430.6532974,
+    "hash": "fbfdf79e0dfe04ffdd85e28b4a493949"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Revisions.tsx": {
-    "mtime": 1782020220.9714608,
-    "hash": "5afc98d45192fe07ea541c23b681973a"
+    "mtime": 1782357431.619123,
+    "hash": "b0cce1af03d3ac373575aa1d3f6f00d2"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\Rooms.tsx": {
-    "mtime": 1781944361.277294,
-    "hash": "319ef1283e168eee3ef96c55e477c971"
+    "mtime": 1782282339.691913,
+    "hash": "26b48ed391d947b21a6b14ee5fa832e1"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\pages\\admin\\SiteSettings.tsx": {
-    "mtime": 1782027064.077873,
-    "hash": "83e9038b444ab89945aeda52ea12db43"
+    "mtime": 1782357432.0200663,
+    "hash": "458a78dba3f213ffcad0882369562622"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\adminRecoveryService.ts": {
-    "mtime": 1781933598.690104,
-    "hash": "09ac11c65c513cc5f130da650c3d9f26"
+    "mtime": 1782280831.8981948,
+    "hash": "41afa960b576c46a42a58d9b97104a2b"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\auditService.ts": {
-    "mtime": 1782026689.2100227,
-    "hash": "c8491f87a0614a5248a2693c35f5c4dd"
+    "mtime": 1782280831.8991895,
+    "hash": "c50c7fa044c443495c6c447df5034959"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\authService.ts": {
-    "mtime": 1782026863.507991,
-    "hash": "35a2cdec1af1701e9422c10cef808050"
+    "mtime": 1782357213.9615285,
+    "hash": "8ed19329cfc541bb4e388d2a90ebc27a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\bookingService.test.ts": {
     "mtime": 1781409400.4834895,
     "hash": "3c6c8c1f4c7ed090bf86788ff50c5755"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\bookingService.ts": {
-    "mtime": 1781781145.4486265,
-    "hash": "5c8385206c357e6b150e8be533ea85eb"
+    "mtime": 1782280831.9001896,
+    "hash": "85af76ce8a6911c03be052cd515e6d83"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\cacheService.ts": {
-    "mtime": 1782026684.9237242,
-    "hash": "e32ffb110a46e21ca7ef6eeb3584e5ac"
+    "mtime": 1782280831.9001896,
+    "hash": "05b029cb0e5ba1cba27cb828ea41ef1a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\concurrent-booking-load.test.ts": {
-    "mtime": 1781953822.4304457,
-    "hash": "1e717e280280f1120277d6524212b907"
+    "mtime": 1782213526.7808547,
+    "hash": "cbf5dccbb7efe2d39ce72b7ad5734ba1"
+  },
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\contentDefaults.ts": {
+    "mtime": 1782282027.3475168,
+    "hash": "944e32787f8f0f8109627e03ef23acfc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\contentService.ts": {
-    "mtime": 1781944449.6692784,
-    "hash": "2fd61724266f7ee5a1006c6b702aff45"
+    "mtime": 1782280831.9011898,
+    "hash": "e6ff85f1a296af89c1f732855b4a963a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\faqService.ts": {
-    "mtime": 1782026854.9613013,
-    "hash": "4cfa95f887034129a08bfa2683d1d826"
+    "mtime": 1782280831.9021885,
+    "hash": "d1a3713e2a1af07880aadb25bc62f17a"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\fonepayService.ts": {
-    "mtime": 1781607494.915439,
-    "hash": "9f8ea49dc5717fe83d4cbaaf5cd96123"
+    "mtime": 1782280831.9021885,
+    "hash": "66d08d028212ea992f70768ee91be80e"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\insforge.ts": {
-    "mtime": 1781779997.4147828,
+    "mtime": 1782280831.903238,
     "hash": "fdc69247860a50314900757b2edd735c"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\mediaService.ts": {
-    "mtime": 1782026803.4335334,
-    "hash": "0068084c0a5211033ffd0266ee3b50c9"
+    "mtime": 1782280831.903238,
+    "hash": "f3c6738f4fc596e40dd58370a1ffca49"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\menuService.ts": {
-    "mtime": 1781944324.2536922,
-    "hash": "47e86dae7dfe04266a0203b0fdfb3b39"
+    "mtime": 1782280831.9042382,
+    "hash": "1144ecf4373e24a3637569d60f3d41a4"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\monitoring.test.ts": {
-    "mtime": 1781409980.4247055,
-    "hash": "4dade79458aa24795b14ad59fea0efe1"
+    "mtime": 1782280831.905244,
+    "hash": "56b90c65961aa45464229aa68b2f8fea"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\monitoring.ts": {
-    "mtime": 1781409508.8627853,
-    "hash": "179edd06e672b5cdadd9a2f0d59f613d"
+    "mtime": 1782280831.905244,
+    "hash": "ec59ab64d202dde20f827fa787cc20f7"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\navigationService.ts": {
-    "mtime": 1782026850.116473,
-    "hash": "a91ebffbeb659b256b895c0516857a0a"
+    "mtime": 1782280831.9062433,
+    "hash": "94140c27965408e8faa9bb7b987a08c5"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\pageService.ts": {
-    "mtime": 1782026839.3078656,
-    "hash": "fcfc249f5f913a7e0817fd9822c1c863"
+    "mtime": 1782280831.9062433,
+    "hash": "1f8ba02b7b903c897bf9fb74aa8956b1"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\rbacService.ts": {
-    "mtime": 1782026682.1501596,
-    "hash": "7508bb56a7fc5ae1f5aa6b8a2536cbba"
+    "mtime": 1782280831.9072442,
+    "hash": "aaede61aa3ab8e094e44dbce3d4af22f"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\reviewService.ts": {
     "mtime": 1781945209.000723,
@@ -528,99 +588,43 @@
     "hash": "fd15815d742d6753293c85a8b8aa7b58"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\roomService.ts": {
-    "mtime": 1781781132.5334306,
-    "hash": "25be3a97aaa04f70f046fd7f9942ce66"
+    "mtime": 1782216405.96348,
+    "hash": "b9c384816babdb486efd7df58fca27cc"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\settingsService.ts": {
-    "mtime": 1782026845.939437,
-    "hash": "4143d11fa63f9934e0381e8449f7ba7a"
+    "mtime": 1782280831.9072442,
+    "hash": "2bb02e72b58f4bae3dcebd6cca09abf0"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\storageService.ts": {
-    "mtime": 1782026732.6088915,
-    "hash": "e4c85b2188999a2fcbd3f1a23db16556"
+    "mtime": 1782280831.9082434,
+    "hash": "93b50761cea183489c28f67dfc6806cf"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\services\\tenantService.ts": {
-    "mtime": 1782026676.324879,
-    "hash": "98cc25d4bb44345eaa325720a2a1a2df"
+    "mtime": 1782357706.374398,
+    "hash": "a5b0f2bc4531ab0404e2242cf423c0cd"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\utils\\csv.ts": {
     "mtime": 1779348425.5521567,
     "hash": "e0c5042f955260eea2a458911d5eb519"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\tests\\cms_audit_e2e.py": {
-    "mtime": 1782020499.1683445,
-    "hash": "c6a515e7331a02fee74d45fa520c9545"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\tests\\saas_cache.test.ts": {
-    "mtime": 1782027217.3454611,
-    "hash": "bed512a6895c01b1a02f46346580e259"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\tests\\saas_multitenant.test.ts": {
-    "mtime": 1782027492.8831055,
-    "hash": "78f0a48f53433250a4cf88d3557081a9"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\tests\\saas_rbac.test.ts": {
-    "mtime": 1782027466.3619905,
-    "hash": "f5332785338b214e4ea3957855d5d749"
-  },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\index.html": {
-    "mtime": 1781930463.9990096,
-    "hash": "0ee795892a839b081d12e7c6d3ea1e39"
+    "mtime": 1782356580.306356,
+    "hash": "019da22dc24757415f26eeed8e54a4a3"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\DEPLOY-GUIDE.md": {
-    "mtime": 1781927218.330377,
-    "hash": "24408a577810ceeddd36667c5c1b7dd1"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\public\\robots.txt": {
+    "mtime": 1782356581.3789318,
+    "hash": "ce8c02c0f2c5b7fb0a1b7d7743322c81"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\SECURITY-VERIFICATION.md": {
-    "mtime": 1781927840.9045346,
-    "hash": "b0121913ca088c9455ba98bb17ed5bbc"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\00-consolidated-analysis.md": {
-    "mtime": 1781845612.3953695,
-    "hash": "f3a1bce6fc13d3f4d63c4f7f6cd48e03"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\01-system-discovery.md": {
-    "mtime": 1781844922.7407174,
-    "hash": "88f7bb31fd0213ccb63b33840cc6f809"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\02-database-reverse-engineering.md": {
-    "mtime": 1781845090.1337957,
-    "hash": "8f7a4c78892941e044745af90577dcea"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\03-business-workflow-analysis.md": {
-    "mtime": 1781845220.0377538,
-    "hash": "16de09230ea0ce744966914cfbf01953"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\04-entity-mapping.md": {
-    "mtime": 1781845262.1945448,
-    "hash": "abf93a1b078ea9f0584067dc5936307c"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\05-gap-analysis.md": {
-    "mtime": 1781845308.229285,
-    "hash": "17ade32c315b7db271a3244a3090a228"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\06-architecture-decision.md": {
-    "mtime": 1781845357.0080793,
-    "hash": "169affe996d0906c2e6d9d35ec59de94"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\07-implementation-blueprint.md": {
-    "mtime": 1781845432.499377,
-    "hash": "7ce7ad353da369e63a48001833f492ff"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\index.md": {
-    "mtime": 1781845443.9158714,
-    "hash": "c9d71bbcfc87d3d4f27deffe99509527"
-  },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\docs\\int\\sync-architecture.md": {
-    "mtime": 1781846694.5090675,
-    "hash": "9f7ab232193491f5e41ea365f2344a6b"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\public\\favicon.png": {
+    "mtime": 1782281863.446004,
+    "hash": "724619d7045365aac7f015cedc1ffa93"
   },
   "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\assets\\logo.png": {
     "mtime": 1769604288.8423898,
     "hash": "b0c7963ae3b37b55262dfa5bdd9f992a"
   },
-  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\assets\\menu.png": {
-    "mtime": 1769604288.8599465,
-    "hash": "b75d35105c5924b9ea3cfe2db641b2d5"
+  "C:\\Users\\pawan\\OneDrive\\Desktop\\Arjun\\src\\assets\\menu.jpeg": {
+    "mtime": 1782210858.6764448,
+    "hash": "2cb0d8b449fba471e523a2a47a0fd90e"
   }
 }

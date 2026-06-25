@@ -1,5 +1,6 @@
 import { createClient } from "npm:@insforge/sdk"
 import { z } from "https://esm.sh/zod@3.22.4"
+import { timingSafeEqual } from "../_shared/timing-safe.ts"
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "https://highlandsmotelinn.insforge.site",
@@ -74,14 +75,14 @@ function errorResponse(message: string, status = 400, corsHeaders?: Record<strin
 
 async function verifyHmacSignature(request: Request, rawBody: string): Promise<boolean> {
   const secret = Deno.env.get("POS_WEBHOOK_SECRET")
-  if (!secret) return true
+  if (!secret) return false
   const signature = request.headers.get("x-webhook-signature")
   if (!signature) return false
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(rawBody))
   const computed = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("")
-  return computed === signature
+  return timingSafeEqual(computed, signature)
 }
 
 async function checkIdempotency(db: ReturnType<typeof createClient>["database"], idempotencyKey: string): Promise<boolean> {
