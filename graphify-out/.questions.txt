@@ -1,0 +1,16 @@
+_Questions this graph is uniquely positioned to answer:_
+
+- **Why does `handleInsforgeError()` connect `handleInsforgeError()` to `can()`, `getCurrentTenantId()`, `Skeleton.tsx`, `adminSignup() | handleSignup() | AdminSignup.tsx`, `PaymentRecovery.tsx`, `getSettingsMap()`, `ContentEditor.tsx`, `getSiteContentMap()`, `Booking.tsx`, `authService.ts`, `adminLogout()`, `Bookings.tsx`, `BookingConfirmation.tsx`, `resendVerification()`, `getPageBySlug()`, `Reviews.tsx`, `bookingService.ts`?**
+  _High betweenness centrality (0.178) - this node is a cross-community bridge._
+- **Why does `StatusBadge()` connect `BookingConfirmation.tsx` to `payment-reconciliation-v2.ts`, `index.ts`, `create-booking-v3.ts`, `fonepay-payment-v2.ts`?**
+  _High betweenness centrality (0.148) - this node is a cross-community bridge._
+- **Why does `getSiteContentMap()` connect `getSiteContentMap()` to `can()`, `Skeleton.tsx`, `PaymentStep.tsx | C() | paymentLoading()`, `getSettingsMap()`, `handleInsforgeError()`, `getEffectivePricePerNight()`, `Gallery.tsx`, `Booking.tsx`, `BookingConfirmation.tsx`, `getPageBySlug()`, `bookingService.ts`?**
+  _High betweenness centrality (0.117) - this node is a cross-community bridge._
+- **Are the 118 inferred relationships involving `handleInsforgeError()` (e.g. with `invokeAdmin()` and `logAuditEvent()`) actually correct?**
+  _`handleInsforgeError()` has 118 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 39 inferred relationships involving `can()` (e.g. with `hasPermission()` and `getAllBookings()`) actually correct?**
+  _`can()` has 39 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 36 inferred relationships involving `invalidateCmsCache()` (e.g. with `updateSiteContent()` and `addSiteImage()`) actually correct?**
+  _`invalidateCmsCache()` has 36 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 18 inferred relationships involving `getCurrentTenantId()` (e.g. with `logAuditEvent()` and `getAuditLogs()`) actually correct?**
+  _`getCurrentTenantId()` has 18 INFERRED edges - model-reasoned connections that need verification._

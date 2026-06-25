@@ -1,0 +1,10 @@
+- `Highlands Cafe & Motel Inn Logo` --references--> `Highlands Cafe & Motel Inn Brand`  [INFERRED]
+  src/assets/logo.png → index.html
+- `nBuildCustomerHtml()` --calls--> `StatusBadge()`  [INFERRED]
+  insforge/functions/deploy/create-booking-v3.ts → src/components/booking/BookingConfirmation.tsx
+- `nBuildCustomerHtml()` --calls--> `StatusBadge()`  [INFERRED]
+  insforge/functions/deploy/fonepay-payment-v2.ts → src/components/booking/BookingConfirmation.tsx
+- `nBuildCustomerHtml()` --calls--> `StatusBadge()`  [INFERRED]
+  insforge/functions/deploy/payment-reconciliation-v2.ts → src/components/booking/BookingConfirmation.tsx
+- `buildCustomerEmailHtml()` --calls--> `StatusBadge()`  [INFERRED]
+  insforge/functions/_shared/notifications.ts → src/components/booking/BookingConfirmation.tsx

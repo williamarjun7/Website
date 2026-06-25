@@ -13,7 +13,7 @@
 // Run: npx vitest run src/services/concurrent-booking-load.test.ts
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 
 // ── Configuration ───────────────────────────────────────────────────────────
 const INSFORGE_BASE_URL = process.env.VITE_INSFORGE_BASE_URL || 'https://6aiag3ra.us-east.insforge.app'
