@@ -135,7 +135,7 @@ jobs:
   production-approval:
     name: Manual Approval Gate
     if: github.ref == 'refs/heads/main'
-    needs: [build, deploy-staging]
+    needs: [build]
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -145,7 +145,7 @@ jobs:
   deploy-production:
     name: Deploy to Production
     if: github.ref == 'refs/heads/main' && needs.production-approval.result == 'success'
-    needs: [build, deploy-staging, production-approval]
+    needs: [build, production-approval]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: production
