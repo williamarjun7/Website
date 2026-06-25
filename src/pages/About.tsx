@@ -77,7 +77,7 @@ const About = () => {
       </Helmet>
 
       <section className="relative h-80 mb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800">
           {heroBg && (
             <img
               src={heroBg}

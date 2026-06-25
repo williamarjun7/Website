@@ -13,9 +13,11 @@ const Revisions = () => {
     const [loading, setLoading] = useState(true);
     const [entityTypeFilter, setEntityTypeFilter] = useState('all');
     const [entityTypes, setEntityTypes] = useState<string[]>([]);
+    const [loadError, setLoadError] = useState('');
 
     const loadRevisions = async () => {
         setLoading(true);
+        setLoadError('');
         try {
             const { data } = await getAllRevisions();
             if (data) {
@@ -25,6 +27,7 @@ const Revisions = () => {
             }
         } catch (err) {
             console.error('Failed to load revisions:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setLoading(false);
     };
@@ -38,11 +41,13 @@ const Revisions = () => {
             return;
         }
         setLoading(true);
+        setLoadError('');
         try {
             const { data } = await getRevisions(type);
             if (data) setRevisions(data);
         } catch (err) {
             console.error('Failed to load filtered revisions:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setLoading(false);
     };
@@ -72,6 +77,13 @@ const Revisions = () => {
                     </select>
                 </div>
             </div>
+
+            {loadError && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={loadRevisions} className="text-red-700 font-semibold underline hover:no-underline ml-4">Retry</button>
+                </div>
+            )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">

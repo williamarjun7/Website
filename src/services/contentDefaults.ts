@@ -1,6 +1,6 @@
 export const CONTENT_DEFAULTS: Record<string, string> = {
     // Home - Hero
-    hero_title: 'Welcome to Highlands',
+    hero_title: 'Welcome to Highlands Cafe & Motel Inn',
     hero_subtitle: 'Experience Comfort in the Heart of the Highlands',
     hero_video_url: '',
 

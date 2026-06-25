@@ -11,16 +11,19 @@ const ReviewsAdmin = () => {
     const [toast, setToast] = useState('');
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<CreateReviewData>({ guest_name: '', rating: 5, comment: '' });
+    const [loadError, setLoadError] = useState('');
 
     const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
     const load = async () => {
         setLoading(true);
+        setLoadError('');
         try {
             const { data } = await getReviews();
             if (data) setReviews(data);
         } catch (err) {
             console.error('Failed to load reviews:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setLoading(false);
     };
@@ -76,6 +79,13 @@ const ReviewsAdmin = () => {
 
             {toast && (
                 <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">{toast}</div>
+            )}
+
+            {loadError && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={load} className="text-red-700 font-semibold underline hover:no-underline ml-4">Retry</button>
+                </div>
             )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">

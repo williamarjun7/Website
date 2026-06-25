@@ -524,7 +524,7 @@ const AdminDashboard = () => {
                 ) : (
                     <div className="space-y-3">
                         {integrityItems.map((item, idx) => (
-                            <div key={idx} className="flex items-start space-x-3">
+                            <div key={item.message} className="flex items-start space-x-3">
                                 {item.severity === 'error' ? (
                                     <XCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
                                 ) : item.severity === 'warning' ? (

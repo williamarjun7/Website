@@ -103,7 +103,7 @@ const Rooms = () => {
                 <title>{C('rooms_meta_title', 'Rooms | Highlands Cafe & Motel Inn')}</title>
                 <meta name="description" content={C('rooms_meta_desc', 'Browse our comfortable rooms in Surkhet, Nepal.')} />
             </Helmet>
-            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">
+            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-700 to-amber-800">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center text-white">
                         <Bed size={48} className="mx-auto mb-4" />

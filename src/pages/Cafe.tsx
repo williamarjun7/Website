@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Coffee, Clock, Menu as MenuIcon, X } from 'lucide-react';
+import { Coffee, Clock, Menu as MenuIcon } from 'lucide-react';
 import { getFullMenu } from '../services/menuService';
 import { getSiteImagesByPage, getSiteContentMap, getMenuPages } from '../services/contentService';
-import menuImgFallback from '../assets/menu.jpeg';
 import Skeleton, { SkeletonMenuItem } from '../components/common/Skeleton';
 
 interface MenuCategory {
@@ -25,36 +25,12 @@ interface MenuItem {
 }
 
 const Cafe = () => {
+    const navigate = useNavigate();
     const [menu, setMenu] = useState<MenuCategory[]>([]);
     const [heroImg, setHeroImg] = useState('');
     const [content, setContent] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(true);
-    const [menuImages, setMenuImages] = useState<{ id: string; image_url: string; title?: string }[]>([]);
-    const [lightboxOpen, setLightboxOpen] = useState(false);
     const C = (key: string, fallback: string) => { const v = content[key]; return v && v.replace(/<[^>]*>/g, '').trim() ? v : fallback; };
-
-    const openMenuLightbox = () => {
-        setLightboxOpen(true);
-    };
-
-    const getMenuImageUrl = () => {
-        return menuImages[0]?.image_url
-            || (content['view_full_menu_image'] && !content['view_full_menu_image'].endsWith('.pdf') ? content['view_full_menu_image'] : null)
-            || menuImgFallback;
-    };
-
-    useEffect(() => {
-        if (!lightboxOpen) return;
-        const handleKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setLightboxOpen(false);
-        };
-        window.addEventListener('keydown', handleKey);
-        document.body.style.overflow = 'hidden';
-        return () => {
-            window.removeEventListener('keydown', handleKey);
-            document.body.style.overflow = '';
-        };
-    }, [lightboxOpen]);
 
     useEffect(() => {
         let cancelled = false;
@@ -62,8 +38,7 @@ const Cafe = () => {
             getFullMenu(),
             getSiteImagesByPage('cafe'),
             getSiteContentMap(),
-            getMenuPages(),
-        ]).then(([menuRes, cafeRes, contentRes, menuPagesRes]) => {
+        ]).then(([menuRes, cafeRes, contentRes]) => {
             if (!cancelled) {
                 if (menuRes.data && menuRes.data.length > 0) {
                     setMenu(menuRes.data);
@@ -72,9 +47,6 @@ const Cafe = () => {
                     setHeroImg(cafeRes.data[0].image_url);
                 }
                 if (contentRes.data) setContent(contentRes.data);
-                if (menuPagesRes.data && menuPagesRes.data.length > 0) {
-                    setMenuImages(menuPagesRes.data.map(p => ({ id: p.id, image_url: p.image_url, title: p.title })));
-                }
                 setLoading(false);
             }
         }).catch(() => {
@@ -100,15 +72,16 @@ const Cafe = () => {
                 <meta name="description" content={C('cafe_meta_desc', 'Savor authentic local cuisine at our cafe in Surkhet.')} />
             </Helmet>
 
-            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-br from-amber-800 to-amber-900">
-                {heroImg && (
-                    <img
-                        src={heroImg}
-                        alt="Highlands Cafe"
-                        className="absolute inset-0 w-full h-full object-cover"
-                    />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/40 to-black/60" />
+            <section className="relative h-80 mb-16 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800">
+                    {heroImg && (
+                        <img
+                            src={heroImg}
+                            alt="Highlands Cafe"
+                            className="w-full h-full object-cover opacity-40"
+                        />
+                    )}
+                </div>
                 <div className="absolute inset-0 flex items-center justify-center text-center">
                     <div className="container-custom text-white">
                         <Coffee size={48} className="mx-auto mb-4" />
@@ -126,7 +99,7 @@ const Cafe = () => {
                                 <span>{C('cafe_hero_btn_reserve', 'Call to Reserve')}</span>
                             </a>
                             <button
-                                onClick={openMenuLightbox}
+                                onClick={() => navigate('/cafe/full-menu')}
                                 className="inline-flex items-center space-x-2 px-8 py-4 bg-transparent border-2 border-white text-white hover:bg-white hover:text-amber-900 rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
                             >
                                 <span>{C('cafe_hero_btn_menu', 'View Menu')}</span>
@@ -294,13 +267,13 @@ const Cafe = () => {
                             )}
 
                             <div className="text-center mt-12">
-                                <button
-                                    onClick={openMenuLightbox}
-                                    className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
-                                >
-                                    <MenuIcon size={24} />
-                                    <span>{C('cafe_view_full_menu_btn', 'View Full Menu')}</span>
-                                </button>
+                            <button
+                                onClick={() => navigate('/cafe/full-menu')}
+                                className="inline-flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl font-heading font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
+                            >
+                                <MenuIcon size={24} />
+                                <span>{C('cafe_view_full_menu_btn', 'View Full Menu')}</span>
+                            </button>
                                 <p className="mt-3 text-amber-700 font-medium">
                                     {C('cafe_menu_card_text', 'Click to view our detailed menu card')}
                                 </p>
@@ -330,26 +303,7 @@ const Cafe = () => {
                 </div>
             </div>
 
-            {lightboxOpen && (
-                <div
-                    className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-                    onClick={() => setLightboxOpen(false)}
-                >
-                    <button
-                        onClick={() => setLightboxOpen(false)}
-                        className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors z-10"
-                        aria-label="Close menu"
-                    >
-                        <X size={32} />
-                    </button>
-                    <img
-                        src={getMenuImageUrl()}
-                        alt="Full Menu"
-                        className="max-w-full max-h-full object-contain rounded-lg"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
-            )}
+
         </div>
     );
 };

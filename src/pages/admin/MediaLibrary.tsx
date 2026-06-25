@@ -84,6 +84,7 @@ const MediaPage = () => {
     const [editForm, setEditForm] = useState({ name: '', alt_text: '', folder: '' });
     const [deleteTarget, setDeleteTarget] = useState<MediaFile | null>(null);
     const [toast, setToast] = useState('');
+    const [loadError, setLoadError] = useState('');
 
     const showToast = (msg: string) => {
         setToast(msg);
@@ -98,6 +99,7 @@ const MediaPage = () => {
 
     const loadFiles = async () => {
         setFilesLoading(true);
+        setLoadError('');
         try {
             const { data } = await getMediaFiles();
             if (data) {
@@ -107,6 +109,7 @@ const MediaPage = () => {
             }
         } catch (err) {
             console.error('Failed to load media:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setFilesLoading(false);
     };
@@ -126,11 +129,13 @@ const MediaPage = () => {
 
     const loadImages = async () => {
         setImagesLoading(true);
+        setLoadError('');
         try {
             const { data } = await getAllSiteImages();
             if (data) setImages(data);
         } catch (err) {
             console.error('Failed to load images:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setImagesLoading(false);
     };
@@ -516,6 +521,13 @@ const MediaPage = () => {
             {toast && (
                 <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm bg-green-50 text-green-700 border border-green-200">
                     {toast}
+                </div>
+            )}
+
+            {loadError && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={() => (activeTab === 'library' ? loadFiles() : loadImages())} className="text-red-700 font-semibold underline hover:no-underline ml-4">Retry</button>
                 </div>
             )}
 

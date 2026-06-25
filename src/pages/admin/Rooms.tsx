@@ -42,6 +42,8 @@ const Rooms = () => {
     const [imageManageRoom, setImageManageRoom] = useState<Room | null>(null);
 
     const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+    const [loadError, setLoadError] = useState('');
+    const [removeImageId, setRemoveImageId] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -69,11 +71,13 @@ const Rooms = () => {
 
     const loadRooms = async () => {
         setLoading(true);
+        setLoadError('');
         try {
             const { data } = await getAllRoomsForAdmin();
             if (data) setRooms(data);
         } catch (err) {
             console.error('Failed to load rooms:', err);
+            setLoadError('Failed to load. Please try again.');
         }
         setLoading(false);
     };
@@ -178,22 +182,26 @@ const Rooms = () => {
     };
 
     const handleRemoveExistingImage = async (imageId: string) => {
-        if (confirm('Remove this image?')) {
-            await deleteRoomImage(imageId);
-            loadRooms();
-            if (imageManageRoom) {
-                setImageManageRoom(prev => prev ? ({
-                    ...prev,
-                    room_images: prev.room_images?.filter((img: RoomImage) => img.id !== imageId)
-                }) : null);
-            }
-            if (editingRoom) {
-                setEditingRoom(prev => prev ? ({
-                    ...prev,
-                    room_images: prev.room_images?.filter((img: RoomImage) => img.id !== imageId)
-                }) : null);
-            }
+        setRemoveImageId(imageId);
+    };
+
+    const handleRemoveImageConfirm = async () => {
+        if (!removeImageId) return;
+        await deleteRoomImage(removeImageId);
+        loadRooms();
+        if (imageManageRoom) {
+            setImageManageRoom(prev => prev ? ({
+                ...prev,
+                room_images: prev.room_images?.filter((img: RoomImage) => img.id !== removeImageId)
+            }) : null);
         }
+        if (editingRoom) {
+            setEditingRoom(prev => prev ? ({
+                ...prev,
+                room_images: prev.room_images?.filter((img: RoomImage) => img.id !== removeImageId)
+            }) : null);
+        }
+        setRemoveImageId(null);
     };
 
     const handleReorderImage = async (roomId: string, imageId: string, direction: 'up' | 'down') => {
@@ -343,6 +351,13 @@ const Rooms = () => {
                     <span>Add Room</span>
                 </button>
             </div>
+
+            {loadError && (
+                <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={loadRooms} className="text-red-700 font-semibold underline hover:no-underline ml-4">Retry</button>
+                </div>
+            )}
 
             {loading && rooms.length === 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -984,6 +999,17 @@ const Rooms = () => {
                 destructive
                 onConfirm={confirmDelete}
                 onCancel={() => setDeleteTargetId(null)}
+            />
+
+            <ConfirmDialog
+                isOpen={removeImageId !== null}
+                title="Remove Image"
+                message="Are you sure you want to remove this image?"
+                confirmLabel="Remove"
+                cancelLabel="Cancel"
+                destructive
+                onConfirm={handleRemoveImageConfirm}
+                onCancel={() => setRemoveImageId(null)}
             />
         </div>
     );

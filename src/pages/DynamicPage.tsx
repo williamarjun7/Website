@@ -95,9 +95,9 @@ const DynamicPage = () => {
       </Helmet>
 
       <section className="relative h-80 mb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800">
           {page.featured_image && (
-            <img src={page.featured_image} alt={page.title} className="w-full h-full object-cover opacity-30" />
+            <img src={page.featured_image} alt={page.title} className="w-full h-full object-cover opacity-40" />
           )}
         </div>
         <div className="absolute inset-0 flex items-center justify-center">

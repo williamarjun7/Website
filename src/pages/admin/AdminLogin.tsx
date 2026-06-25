@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { Lock, AtSign, ArrowLeft, Mail } from 'lucide-react';
-import { adminLogin, resetPassword } from '../../services/authService';
+import { adminLogin, isAuthenticated, resetPassword } from '../../services/authService';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
@@ -13,6 +13,7 @@ const AdminLogin = () => {
     const [showReset, setShowReset] = useState(false);
     const [resetEmail, setResetEmail] = useState('');
     const [resetSent, setResetSent] = useState(false);
+    const [verifying, setVerifying] = useState(false);
 
     const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,7 +35,7 @@ const AdminLogin = () => {
         setLoading(true);
         setError('');
 
-    try {
+        try {
             const { data, error } = await adminLogin(email, password);
 
             if (error) {
@@ -42,17 +43,22 @@ const AdminLogin = () => {
             }
 
             if (data) {
+                setVerifying(true);
+                for (let i = 0; i < 20; i++) {
+                    if (await isAuthenticated()) break;
+                    await new Promise(r => setTimeout(r, 100));
+                }
                 navigate('/admin/dashboard', { replace: true });
             }
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Invalid email or password';
             setError(msg);
 
-            // If verification is required, give them a way to go to the verify page
             if (msg.toLowerCase().includes('verification')) {
                 sessionStorage.setItem('pending_verify_email', email);
             }
         } finally {
+            setVerifying(false);
             setLoading(false);
         }
     };
@@ -195,7 +201,7 @@ const AdminLogin = () => {
                         {loading ? (
                             <>
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                <span>Signing In...</span>
+                                <span>{verifying ? 'Verifying...' : 'Signing In...'}</span>
                             </>
                         ) : (
                             <span>Sign In</span>

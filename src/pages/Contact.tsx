@@ -70,7 +70,7 @@ const Contact = () => {
                 <title>{C('contact_meta_title', C('site_name', 'Highlands Cafe & Motel Inn') + ' | Contact')}</title>
                 <meta name="description" content={C('contact_meta_desc', 'Get in touch. Call, email, or visit us in Surkhet, Nepal.')} />
             </Helmet>
-            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-900 to-orange-900">
+            <section className="relative h-80 mb-16 overflow-hidden bg-gradient-to-r from-amber-700 to-amber-800">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center text-white">
                         <Phone size={48} className="mx-auto mb-4" />

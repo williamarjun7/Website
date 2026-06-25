@@ -50,7 +50,7 @@ const Privacy = () => {
       </Helmet>
 
       <section className="relative h-80 mb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900 flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800 flex items-center justify-center">
           <div className="text-center text-white">
             <Shield size={48} className="mx-auto mb-4" />
             <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{C('privacy_hero_heading', 'Privacy Policy')}</h1>

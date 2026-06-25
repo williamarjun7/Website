@@ -83,23 +83,23 @@ const Gallery = () => {
       </Helmet>
 
       <section className="relative h-80 mb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-900 to-orange-900">
-          {images.length > 0 && (
-            <img
-              src={images[0].image_url}
-              alt="Gallery"
-              className="w-full h-full object-cover opacity-40"
-            />
-          )}
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800">
+            {images.length > 0 && (
+                <img
+                    src={images[0].image_url}
+                    alt="Gallery"
+                    className="w-full h-full object-cover opacity-40"
+                />
+            )}
         </div>
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-white">
-            <Camera size={48} className="mx-auto mb-4" />
-            <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{C('gallery_heading', 'Gallery')}</h1>
-            <p className="text-lg text-white/80 max-w-xl mx-auto">
-              {C('gallery_subtitle', 'A visual journey through Highlands Cafe & Motel Inn')}
-            </p>
-          </div>
+            <div className="text-center text-white">
+                <Camera size={48} className="mx-auto mb-4" />
+                <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">{C('gallery_heading', 'Gallery')}</h1>
+                <p className="text-lg text-white/80 max-w-xl mx-auto">
+                    {C('gallery_subtitle', 'A visual journey through Highlands Cafe & Motel Inn')}
+                </p>
+            </div>
         </div>
       </section>
 

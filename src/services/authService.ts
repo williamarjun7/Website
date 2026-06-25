@@ -138,9 +138,11 @@ export const resetPassword = async (email: string) => {
 
 export const isAuthenticated = async (): Promise<boolean> => {
     try {
+        const { data: sessionData } = await insforge.auth.getCurrentSession();
+        if (sessionData?.session?.user) return true;
+
         const result = await insforge.auth.getCurrentUser();
         if (result.data?.user) return true;
-        if (result.error) throw result.error;
         return false;
     } catch {
         return false;

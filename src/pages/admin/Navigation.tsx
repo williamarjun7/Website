@@ -19,6 +19,7 @@ import { addRevision } from '../../services/revisionService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import Skeleton from '../../components/common/Skeleton';
 import { PermissionGuard, PermissionButton } from '../../components/common/PermissionGuard';
+import { usePermission } from '../../hooks/usePermission';
 
 interface NavFormData {
     label: string;
@@ -39,6 +40,7 @@ const emptyForm: NavFormData = {
 };
 
 const Navigation = () => {
+    const { profile } = usePermission();
     const [items, setItems] = useState<NavItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setModalOpen] = useState(false);
@@ -96,12 +98,12 @@ const Navigation = () => {
         if (editingItem) {
             const { error } = await updateNavItem(editingItem.id, payload);
             if (error) { showToast(error); return; }
-            await addRevision({ entity_type: 'site_navigation', entity_id: editingItem.id, field_name: 'content', old_value: JSON.stringify(editingItem), new_value: JSON.stringify(payload), user_name: 'admin' });
+            await addRevision({ entity_type: 'site_navigation', entity_id: editingItem.id, field_name: 'content', old_value: JSON.stringify(editingItem), new_value: JSON.stringify(payload), user_name: profile?.name || 'admin' });
         } else {
             const { data, error } = await addNavItem(payload);
             if (error) { showToast(error); return; }
             if (data) {
-                await addRevision({ entity_type: 'site_navigation', entity_id: data.id, field_name: 'created', old_value: '', new_value: JSON.stringify(data), user_name: 'admin' });
+                await addRevision({ entity_type: 'site_navigation', entity_id: data.id, field_name: 'created', old_value: '', new_value: JSON.stringify(data), user_name: profile?.name || 'admin' });
             }
         }
 
@@ -118,7 +120,7 @@ const Navigation = () => {
         const { error } = await updateNavItem(item.id, { is_visible: newVisible });
         if (!error) {
             loadItems();
-            await addRevision({ entity_type: 'site_navigation', entity_id: item.id, field_name: 'is_visible', old_value: String(item.is_visible), new_value: String(newVisible), user_name: 'admin' });
+            await addRevision({ entity_type: 'site_navigation', entity_id: item.id, field_name: 'is_visible', old_value: String(item.is_visible), new_value: String(newVisible), user_name: profile?.name || 'admin' });
         } else {
             showToast(error);
         }
@@ -128,7 +130,7 @@ const Navigation = () => {
         if (!deleteTarget) return;
         const { error } = await deleteNavItem(deleteTarget.id);
         if (error) { showToast(error); setDeleteTarget(null); return; }
-        await addRevision({ entity_type: 'site_navigation', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: 'admin' });
+        await addRevision({ entity_type: 'site_navigation', entity_id: deleteTarget.id, field_name: 'deleted', old_value: JSON.stringify(deleteTarget), new_value: '', user_name: profile?.name || 'admin' });
         setDeleteTarget(null);
         loadItems();
         showToast('Navigation item deleted');

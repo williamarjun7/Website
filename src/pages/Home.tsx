@@ -128,7 +128,7 @@ const Home = () => {
                             ))}
                         </>
                     ) : (
-                        <div className="absolute inset-0 bg-gradient-to-b from-amber-950 to-amber-900" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-amber-700 to-amber-800" />
                     )}
                 </div>
 
@@ -150,7 +150,7 @@ const Home = () => {
                         ) : (
                             <>
                                 <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4">
-                                    {C('hero_title', 'Welcome to Highlands')}
+                                    {C('hero_title', 'Welcome to Highlands Cafe & Motel Inn')}
                                 </h1>
                                 <p className="text-xl mb-8 text-white/90">
                                     {C('hero_subtitle', 'Experience Cozy Comfort in Heart of Highlands')}

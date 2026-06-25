@@ -71,6 +71,7 @@ interface ItemFormData {
 const Menu = () => {
     const [menu, setMenu] = useState<MenuCategoryData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
 
     // Modals
     const [isCategoryModalOpen, setCategoryModalOpen] = useState(false);
@@ -121,6 +122,7 @@ const Menu = () => {
             const { data } = await getAdminMenu();
             if (data) setMenu(data);
         } catch (err) {
+            setLoadError('Failed to load menu. Please try again.');
             console.error('Failed to load menu:', err);
         }
         setLoading(false);
@@ -381,6 +383,13 @@ const Menu = () => {
                 </button>
             </div>
 
+            {loadError && (
+                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-100 flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={() => { setLoadError(''); loadMenu(); }} className="text-red-700 font-medium hover:underline">Retry</button>
+                </div>
+            )}
+
             {loading ? (
                 <div className="space-y-8">
                     {[1, 2, 3].map((cat) => (
@@ -522,7 +531,7 @@ const Menu = () => {
                                                     <p className="text-sm text-gray-500 line-clamp-1 mb-1">{item.description}</p>
                                                     <div className="flex justify-between items-end mt-2">
                                                         <span className="font-bold text-primary">
-                                                            NPR {Number(item.price).toLocaleString()}
+                                                            NPR {(Number(item.price) || 0).toLocaleString()}
                                                         </span>
                                                         <div className="flex items-center space-x-1">
                                                             <button

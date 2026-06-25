@@ -45,6 +45,7 @@ const ITEMS_PER_PAGE = 10;
 const Bookings = () => {
     const [bookings, setBookings] = useState<AdminBooking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [statusLoading, setStatusLoading] = useState<string | null>(null);
@@ -60,22 +61,25 @@ const Bookings = () => {
     });
     const [createSaving, setCreateSaving] = useState(false);
 
-    useEffect(() => {
-        let cancelled = false;
+    const loadData = () => {
+        setLoading(true);
+        setLoadError('');
         Promise.all([
             getAllBookings(),
             getAllRoomsForAdmin(),
         ]).then(([bookingsRes, roomsRes]) => {
-            if (!cancelled) {
-                if (bookingsRes.data) setBookings(bookingsRes.data);
-                if (roomsRes.data) setRooms(roomsRes.data.map((r: { id: string; name: string; price_per_night: number }) => ({ id: r.id, name: r.name, price_per_night: r.price_per_night })));
-            }
-            if (!cancelled) setLoading(false);
+            if (bookingsRes.data) setBookings(bookingsRes.data);
+            if (roomsRes.data) setRooms(roomsRes.data.map((r: { id: string; name: string; price_per_night: number }) => ({ id: r.id, name: r.name, price_per_night: r.price_per_night })));
+            setLoading(false);
         }).catch((err) => {
-            if (!cancelled) setLoading(false);
+            setLoading(false);
+            setLoadError('Failed to load bookings. Please try again.');
             console.error('Failed to load bookings:', err);
         });
-        return () => { cancelled = true; };
+    };
+
+    useEffect(() => {
+        loadData();
     }, []);
 
     const filteredBookings = useMemo(() => {
@@ -127,7 +131,10 @@ const Bookings = () => {
 
     const calcNights = (ci: string, co: string) => {
         if (!ci || !co) return 0;
-        return Math.ceil((new Date(co).getTime() - new Date(ci).getTime()) / (1000 * 60 * 60 * 24));
+        const start = new Date(ci);
+        const end = new Date(co);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
+        return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     };
 
     const handleCreateFormChange = (field: string, value: string) => {
@@ -257,7 +264,7 @@ const Bookings = () => {
                                     'Check In': new Date(b.check_in).toLocaleDateString(),
                                     'Check Out': new Date(b.check_out).toLocaleDateString(),
                                     'Status': b.booking_status,
-                                    'Total (NPR)': b.total_price,
+                                    'Total (NPR)': (b.total_price ?? 0),
                                     'Advance Paid (NPR)': b.advance_amount != null ? b.advance_amount : (b.payment_status === 'pay_at_property' ? Math.round(b.total_price * 0.6) : b.total_price),
                                     'Balance at Property (NPR)': b.balance_amount != null ? b.balance_amount : 0,
                                     'Payment Status': b.payment_status,
@@ -305,6 +312,13 @@ const Bookings = () => {
                     </select>
                 </div>
             </div>
+
+            {loadError && (
+                <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-100 flex items-center justify-between">
+                    <span>{loadError}</span>
+                    <button onClick={loadData} className="text-red-700 font-medium hover:underline">Retry</button>
+                </div>
+            )}
 
             {/* Bookings Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -366,20 +380,20 @@ const Bookings = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-gray-900">
-                                            NPR {booking.total_price.toLocaleString()}
+                                            NPR {(booking.total_price ?? 0).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-amber-700">
                                             {booking.advance_amount != null
-                                                ? `NPR ${booking.advance_amount.toLocaleString()}`
+                                                ? `NPR ${(booking.advance_amount ?? 0).toLocaleString()}`
                                                 : booking.payment_status === 'pay_at_property'
-                                                    ? `NPR ${Math.round(booking.total_price * 60 / 100).toLocaleString()}`
+                                                    ? `NPR ${Math.round((booking.total_price ?? 0) * 60 / 100).toLocaleString()}`
                                                     : '—'}
                                         </td>
                                         <td className="px-6 py-4 text-right font-medium text-green-700">
                                             {booking.balance_amount != null
-                                                ? `NPR ${booking.balance_amount.toLocaleString()}`
+                                                ? `NPR ${(booking.balance_amount ?? 0).toLocaleString()}`
                                                 : booking.payment_status === 'pay_at_property'
-                                                    ? `NPR ${Math.round(booking.total_price * 40 / 100).toLocaleString()}`
+                                                    ? `NPR ${Math.round((booking.total_price ?? 0) * 40 / 100).toLocaleString()}`
                                                     : '—'}
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -530,7 +544,7 @@ const Bookings = () => {
                                 >
                                     <option value="">Select a room...</option>
                                     {rooms.map((r) => (
-                                        <option key={r.id} value={r.id}>{r.name} — NPR {r.price_per_night.toLocaleString()}/night</option>
+                                        <option key={r.id} value={r.id}>{r.name} — NPR {(r.price_per_night ?? 0).toLocaleString()}/night</option>
                                     ))}
                                 </select>
                             </div>
@@ -559,11 +573,11 @@ const Bookings = () => {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Total:</span>
-                                    <span className="font-semibold">NPR {createForm.total_price.toLocaleString()}</span>
+                                    <span className="font-semibold">NPR {(createForm.total_price ?? 0).toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Advance (60%):</span>
-                                    <span className="font-semibold text-amber-700">NPR {createForm.advance_amount.toLocaleString()}</span>
+                                    <span className="font-semibold text-amber-700">NPR {(createForm.advance_amount ?? 0).toLocaleString()}</span>
                                 </div>
                             </div>
                             <div>
@@ -659,15 +673,15 @@ const Bookings = () => {
                             <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Total Price</span>
-                                    <span className="font-bold text-gray-900">NPR {viewingBooking.total_price.toLocaleString()}</span>
+                                    <span className="font-bold text-gray-900">NPR {(viewingBooking.total_price ?? 0).toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Advance Paid</span>
                                     <span className="font-semibold text-amber-700">
                                         {viewingBooking.advance_amount != null
-                                            ? `NPR ${viewingBooking.advance_amount.toLocaleString()}`
+                                            ? `NPR ${(viewingBooking.advance_amount ?? 0).toLocaleString()}`
                                             : viewingBooking.payment_status === 'pay_at_property'
-                                                ? `NPR ${Math.round(viewingBooking.total_price * 60 / 100).toLocaleString()}`
+                                                ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 60 / 100).toLocaleString()}`
                                                 : '—'}
                                     </span>
                                 </div>
@@ -675,9 +689,9 @@ const Bookings = () => {
                                     <span className="text-gray-600">Balance Due</span>
                                     <span className="font-semibold text-green-700">
                                         {viewingBooking.balance_amount != null
-                                            ? `NPR ${viewingBooking.balance_amount.toLocaleString()}`
+                                            ? `NPR ${(viewingBooking.balance_amount ?? 0).toLocaleString()}`
                                             : viewingBooking.payment_status === 'pay_at_property'
-                                                ? `NPR ${Math.round(viewingBooking.total_price * 40 / 100).toLocaleString()}`
+                                                ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 40 / 100).toLocaleString()}`
                                                 : '—'}
                                     </span>
                                 </div>
