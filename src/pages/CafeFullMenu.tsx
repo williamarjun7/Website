@@ -76,7 +76,7 @@ const CafeFullMenu = () => {
                                     src={page.image_url}
                                     alt={page.title || `Menu page ${index + 1}`}
                                     className="w-full h-auto object-contain"
-                                    loading={index === 0 ? 'eager' : 'lazy'}
+                                    loading="lazy"
                                 />
                                 {page.title && (
                                     <div className="px-6 py-3 bg-gray-50 border-t border-gray-100">

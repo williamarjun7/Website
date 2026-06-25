@@ -399,7 +399,7 @@ const Booking = () => {
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-600">
                                                 <span className="font-medium text-primary uppercase text-xs">{activeRoom.room_type || 'Standard Room'}</span>
                                                 <span>Up to {activeRoom.max_guests} guests</span>
-                                                <span className="font-semibold text-primary">NPR {getEffectivePricePerNight(activeRoom).toLocaleString()}/night{activeRoom.discount_percent && activeRoom.discount_percent > 0 && <span className="text-[10px] text-red-500 ml-1 font-bold">({activeRoom.discount_percent}% OFF)</span>}</span>
+                                                <span className="font-semibold text-primary">NPR {getEffectivePricePerNight(activeRoom).toLocaleString()}/night{activeRoom.discount_percent != null && activeRoom.discount_percent > 0 && <span className="text-[10px] text-red-500 ml-1 font-bold">({activeRoom.discount_percent}% OFF)</span>}</span>
                                             </div>
                                         </div>
                                         <button onClick={() => setShowAvailabilitySearch(true)}

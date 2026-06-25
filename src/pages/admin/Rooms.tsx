@@ -465,7 +465,7 @@ const Rooms = () => {
                                 {room.floor_number && <span className="text-gray-400">• Floor {room.floor_number}</span>}
                                 {room.bed_type && <span className="text-gray-400">• {room.bed_type}</span>}
                                 {room.featured && <span className="text-amber-500">★ Featured</span>}
-                                {room.discount_percent && room.discount_percent > 0 && (
+                                {room.discount_percent != null && room.discount_percent > 0 && (
                                     <span className="text-green-600 font-bold">{room.discount_percent}% OFF</span>
                                 )}
                             </div>

@@ -130,7 +130,7 @@ const DateSelectionStep: React.FC<DateSelectionStepProps> = ({
                                             </div>
                                             <div className="text-sm text-gray-500">
                                                 {C('booking_npr', 'NPR')} {getEffectivePricePerNight(room).toLocaleString()}{C('booking_night_suffix', '/night')}
-                                                {room.discount_percent && room.discount_percent > 0 && (
+                                                {room.discount_percent != null && room.discount_percent > 0 && (
                                                     <span className="text-[10px] text-red-500 ml-1">({room.discount_percent}{C('booking_off_label', '% OFF')})</span>
                                                 )}
                                             </div>

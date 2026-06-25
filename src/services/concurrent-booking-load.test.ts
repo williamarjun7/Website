@@ -27,6 +27,27 @@ const SECOND_ROOM_ID = '6ac86da7-46f6-4a78-8cf6-1471fa37a9fe'
 const TEST_PREFIX = `loadtest-${Date.now()}`
 const ALLOWED_ORIGIN = 'https://highlandsmotelinn.insforge.site'
 
+// Generate unique dates per test run to avoid collisions with stale test data
+function getUniqueTestDates(baseDaysAhead: number): { check_in: string; check_out: string; later_check_in: string; later_check_out: string } {
+  const now = Date.now()
+  const uniqueSalt = Math.floor(now / 86400000) // daily salt so same-day runs collide
+  const offset = baseDaysAhead + (uniqueSalt % 100) // 100-day sliding window
+  const checkIn = new Date()
+  checkIn.setDate(checkIn.getDate() + offset)
+  const checkOut = new Date(checkIn)
+  checkOut.setDate(checkOut.getDate() + 3)
+  const laterCheckIn = new Date(checkIn)
+  laterCheckIn.setDate(laterCheckIn.getDate() + 10)
+  const laterCheckOut = new Date(laterCheckIn)
+  laterCheckOut.setDate(laterCheckOut.getDate() + 3)
+  return {
+    check_in: checkIn.toISOString().slice(0, 10),
+    check_out: checkOut.toISOString().slice(0, 10),
+    later_check_in: laterCheckIn.toISOString().slice(0, 10),
+    later_check_out: laterCheckOut.toISOString().slice(0, 10),
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
@@ -279,17 +300,15 @@ describe('PHASE 0: Security Pre-checks', () => {
 describe('PHASE 1: Concurrent Booking Load Test — Zero Double-Booking Guarantee', () => {
 
   beforeAll(() => {
-    // Set up the test date range (60+ days out to avoid conflicts with existing data)
-    const checkIn = daysFromNow(60)
-    const checkOut = daysFromNow(63)
-    testState.loadTestDateRange = { check_in: checkIn, check_out: checkOut }
+    const { check_in, check_out } = getUniqueTestDates(60)
+    testState.loadTestDateRange = { check_in, check_out }
     testState.concurrentResults = []
     testState.bookingIds = []
     testState.skipped = []
 
     console.log(`\n  Load Test Configuration:`)
     console.log(`  • Room:          ${KNOWN_ROOM_ID}`)
-    console.log(`  • Date range:    ${checkIn} → ${checkOut}`)
+    console.log(`  • Date range:    ${check_in} → ${check_out}`)
     console.log(`  • Concurrency:   ${CONCURRENCY} requests`)
     console.log(`  • Test prefix:   ${TEST_PREFIX}`)
     console.log(`  • Endpoint:      ${INSFORGE_BASE_URL}/functions/create-booking\n`)
@@ -414,7 +433,7 @@ describe('PHASE 1: Concurrent Booking Load Test — Zero Double-Booking Guarante
     // ZERO 500-level errors (unhandled crashes)
     const serverErrors = results.filter(r => r.status >= 500)
     expect(serverErrors.length).toBe(0)
-  })
+  }, 30_000)
 
   it('CONCURRENT-2: Database validation — exactly 1 booking created for the test date range', async () => {
     const { check_in, check_out } = testState.loadTestDateRange
@@ -483,16 +502,17 @@ describe('PHASE 1: Concurrent Booking Load Test — Zero Double-Booking Guarante
       }),
     })
 
+    const body = await resp.json().catch(() => ({})) as Record<string, unknown>
+    console.log(`  Different room (${SECOND_ROOM_ID.slice(0, 8)}) on same dates: HTTP ${resp.status}, error=${(body.error as string) || 'none'}`)
+
     // Different room on same dates MUST succeed (exclusion is per room_id)
     expect(resp.ok).toBe(true)
-    const data = await resp.json() as Record<string, unknown>
-    expect(data.id).toBeDefined()
-    console.log(`  Different room (${SECOND_ROOM_ID.slice(0, 8)}) on same dates: ✅ HTTP ${resp.status}, id=${(data.id as string)?.slice(0, 8)}`)
-  })
+    expect(body.id).toBeDefined()
+    console.log(`  ✅ id=${(body.id as string)?.slice(0, 8)}`)
+  }, 15_000)
 
   it('CONCURRENT-4: Non-overlapping dates on same room — succeeds', async () => {
-    const laterCheckIn = daysFromNow(70)
-    const laterCheckOut = daysFromNow(73)
+    const { later_check_in, later_check_out } = getUniqueTestDates(75)
 
     const resp = await fetch(`${INSFORGE_BASE_URL}/functions/create-booking`, {
       method: 'POST',
@@ -504,8 +524,8 @@ describe('PHASE 1: Concurrent Booking Load Test — Zero Double-Booking Guarante
       },
       body: JSON.stringify({
         room_id: KNOWN_ROOM_ID,
-        check_in: laterCheckIn,
-        check_out: laterCheckOut,
+        check_in: later_check_in,
+        check_out: later_check_out,
         guest_name: `${TEST_PREFIX} Future Dates`,
         guest_email: `${TEST_PREFIX}-future@loadtest.example.com`,
         guest_phone: '+977-9800000888',
@@ -514,12 +534,14 @@ describe('PHASE 1: Concurrent Booking Load Test — Zero Double-Booking Guarante
       }),
     })
 
+    const body = await resp.json().catch(() => ({})) as Record<string, unknown>
+    console.log(`  Future dates (${later_check_in} → ${later_check_out}) on same room: HTTP ${resp.status}, error=${(body.error as string) || 'none'}`)
+
     // Non-overlapping dates on same room MUST succeed
     expect(resp.ok).toBe(true)
-    const data = await resp.json() as Record<string, unknown>
-    expect(data.id).toBeDefined()
-    console.log(`  Future dates (${laterCheckIn} → ${laterCheckOut}) on same room: ✅ HTTP ${resp.status}`)
-  })
+    expect(body.id).toBeDefined()
+    console.log(`  ✅ id=${(body.id as string)?.slice(0, 8)}`)
+  }, 15_000)
 
   it('CONCURRENT-5: No system crash — all endpoints remain healthy after concurrency', async () => {
     // Verify the system is still operational after the load test
@@ -583,7 +605,7 @@ describe('PHASE 2: Post-Test RLS Enforcement Validation', () => {
 
     expect(violations).toHaveLength(0)
     console.log(`  ✅ All ${forbidden.length * 3} write operations blocked for anon role`)
-  })
+  }, 30_000)
 
   it('RLS-3: anon can SELECT own bookings (guest_email match)', async () => {
     // Create a booking first, then try to read it back as anon

@@ -29,6 +29,9 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_IMAGE_DIMENSION = 4096;
+const COMPRESS_MAX_DIMENSION = 1920;
+const COMPRESS_QUALITY = 0.8;
+const COMPRESS_MIN_SIZE = 50 * 1024; // skip compression for files under 50KB
 
 const BUCKET_NAME = 'site-assets';
 
@@ -72,6 +75,45 @@ export const validateImageDimensions = (file: File): Promise<FileValidationResul
     });
 };
 
+async function compressImage(file: File): Promise<File> {
+    const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
+
+    let { width, height } = img;
+    const needsResize = width > COMPRESS_MAX_DIMENSION || height > COMPRESS_MAX_DIMENSION;
+
+    if (!needsResize && file.type === 'image/jpeg' && file.size < 300 * 1024) {
+        URL.revokeObjectURL(img.src);
+        return file;
+    }
+
+    if (needsResize) {
+        const ratio = Math.min(COMPRESS_MAX_DIMENSION / width, COMPRESS_MAX_DIMENSION / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    URL.revokeObjectURL(img.src);
+
+    const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), 'image/jpeg', COMPRESS_QUALITY);
+    });
+
+    const baseName = file.name.replace(/\.[^.]+$/, '');
+    return new File([blob], `${baseName}.jpg`, { type: 'image/jpeg' });
+}
+
 const generateFileName = (file: File, folder: string): string => {
     const ext = file.name.split('.').pop();
     const timestamp = Date.now();
@@ -106,9 +148,11 @@ export const uploadFile = async (file: File, folder: string = 'general'): Promis
             return { data: null, error: dimensionCheck.error || 'Invalid image dimensions' };
         }
 
-        const fileName = generateFileName(file, folder);
+        const isCompressible = file.type.startsWith('image/') && file.type !== 'image/gif' && file.size > COMPRESS_MIN_SIZE;
+        const fileToUpload = isCompressible ? await compressImage(file) : file;
+        const fileName = generateFileName(fileToUpload, folder);
         const bucket = insforge.storage.from(BUCKET_NAME);
-        const { data, error } = await bucket.upload(fileName, file);
+        const { data, error } = await bucket.upload(fileName, fileToUpload);
         if (error) throw error;
 
         const publicUrl = data?.url || getPublicUrl(data?.key || fileName);
@@ -117,8 +161,8 @@ export const uploadFile = async (file: File, folder: string = 'general'): Promis
             data: {
                 url: publicUrl,
                 key: data?.key || fileName,
-                size: file.size,
-                mimeType: file.type,
+                size: fileToUpload.size,
+                mimeType: fileToUpload.type,
                 version: 1,
             },
             error: null,
