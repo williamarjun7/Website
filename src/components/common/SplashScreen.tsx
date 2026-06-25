@@ -68,13 +68,14 @@ export default function SplashScreen({ ready, onFinish }: SplashScreenProps) {
       />
 
       {/* Logo + Ring group — ring perfectly centered behind logo */}
-      <div className="relative flex items-center justify-center">
-        {/* Golden ring — subtle framing accent */}
+      <div className="relative h-32 w-32 flex items-center justify-center">
+        {/* Golden ring — subtle framing accent, fills container for guaranteed center */}
         <svg
-          className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 ${
+          className={`absolute inset-0 h-full w-full ${
             reducedMotion ? 'opacity-30' : exiting ? 'splash-ring-svg-exit' : ''
           }`}
           viewBox="0 0 160 160"
+          style={{ transformOrigin: 'center' }}
         >
           <circle
             cx="80" cy="80" r="78"
