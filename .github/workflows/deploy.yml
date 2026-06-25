@@ -84,12 +84,13 @@ jobs:
           rm: false
 
       - name: Activate staging release
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v2.1.0
         with:
           host: ${{ secrets.STAGING_VPS_HOST }}
           port: 22
           username: ${{ secrets.STAGING_VPS_USER }}
           key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          passphrase: ${{ secrets.STAGING_VPS_SSH_PASSPHRASE }}
           script: |
             set -e
 
@@ -115,12 +116,13 @@ jobs:
             echo "Staging deployed: ${{ needs.build.outputs.commit_hash }}"
 
       - name: Reload Nginx (staging)
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v2.1.0
         with:
           host: ${{ secrets.STAGING_VPS_HOST }}
           port: 22
           username: ${{ secrets.STAGING_VPS_USER }}
           key: ${{ secrets.STAGING_VPS_SSH_KEY }}
+          passphrase: ${{ secrets.STAGING_VPS_SSH_PASSPHRASE }}
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back staging..."
@@ -175,12 +177,13 @@ jobs:
           rm: false
 
       - name: Activate release and apply rollback safety
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v2.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             set -e
 
@@ -206,12 +209,13 @@ jobs:
             echo "Deployed: ${{ needs.build.outputs.commit_hash }}"
 
       - name: Reload Nginx
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v2.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back..."
@@ -225,12 +229,13 @@ jobs:
 
       - name: Deployment Status
         if: always()
-        uses: appleboy/ssh-action@v1.2.0
+        uses: appleboy/ssh-action@v2.1.0
         with:
           host: ${{ secrets.VPS_HOST }}
           port: 22
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             echo "Status: ${{ job.status }}"
             echo "Commit: ${{ needs.build.outputs.commit_hash }}"
