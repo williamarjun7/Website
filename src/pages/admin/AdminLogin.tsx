@@ -138,13 +138,13 @@ const AdminLogin = () => {
                 ) : (
                     <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     {error && (
-                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-100 animate-fade-in flex flex-col items-center">
+                        <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm border border-red-100 animate-fade-in">
                             <span>{error}</span>
                             {error.toLowerCase().includes('verification') && (
                                 <button
                                     type="button"
                                     onClick={() => navigate('/admin/verify', { state: { email } })}
-                                    className="mt-2 text-primary font-bold hover:underline"
+                                    className="mt-2 text-primary font-bold hover:underline block"
                                 >
                                     Verify Now →
                                 </button>
@@ -180,7 +180,7 @@ const AdminLogin = () => {
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none"
-                                    placeholder="••••••••"
+                                    placeholder="Enter your password"
                                 />
                             </div>
                         </div>

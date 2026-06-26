@@ -103,47 +103,4 @@ export const can = async (resource: Resource, action: Action): Promise<boolean> 
     }
 };
 
-export const getTenantUsers = async () => {
-    try {
-        const tenantId = getCurrentTenantId();
-        if (!tenantId) return { data: null, error: 'No tenant context' };
-        const { data, error } = await insforge.database
-            .from('admin_profiles')
-            .select('*')
-            .eq('tenant_id', tenantId)
-            .order('created_at', { ascending: false });
-        if (error) throw error;
-        return { data: data as AdminProfile[], error: null };
-    } catch (error) {
-        return handleInsforgeError(error);
-    }
-};
 
-export const createAdminProfile = async (data: Partial<AdminProfile>) => {
-    try {
-        const { data: profile, error } = await insforge.database
-            .from('admin_profiles')
-            .insert(data)
-            .select()
-            .single();
-        if (error) throw error;
-        return { data: profile as AdminProfile, error: null };
-    } catch (error) {
-        return handleInsforgeError(error);
-    }
-};
-
-export const updateAdminProfile = async (id: string, data: Partial<AdminProfile>) => {
-    try {
-        const { data: profile, error } = await insforge.database
-            .from('admin_profiles')
-            .update(data)
-            .eq('id', id)
-            .select()
-            .single();
-        if (error) throw error;
-        return { data: profile as AdminProfile, error: null };
-    } catch (error) {
-        return handleInsforgeError(error);
-    }
-};

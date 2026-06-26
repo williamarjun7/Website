@@ -24,13 +24,24 @@ import {
 } from '../../services/roomService';
 import { uploadFile } from '../../services/storageService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import AdminModal from '../../components/admin/AdminModal';
+import FormSection from '../../components/admin/FormSection';
 import Skeleton from '../../components/common/Skeleton';
+
+interface SeasonalPriceRule {
+    label: string;
+    start: string;
+    end: string;
+    price: number;
+}
 
 const Rooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [seasonalRules, setSeasonalRules] = useState<SeasonalPriceRule[]>([]);
 
     // Image upload states
     const [uploading, setUploading] = useState(false);
@@ -102,8 +113,13 @@ const Rooms = () => {
             discount_percent: room.discount_percent ? room.discount_percent.toString() : '0',
             maintenance: room.maintenance || false,
             availability_status: room.availability_status || 'available',
-            seasonal_pricing: room.seasonal_pricing ? JSON.stringify(room.seasonal_pricing, null, 2) : ''
+            seasonal_pricing: ''
         });
+        setSeasonalRules(
+            Array.isArray(room.seasonal_pricing)
+                ? (room.seasonal_pricing as SeasonalPriceRule[])
+                : []
+        );
         setPendingImages([]);
         setIsModalOpen(true);
     };
@@ -242,8 +258,21 @@ const Rooms = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setSubmitting(true);
         setUploadError('');
+
+        for (const rule of seasonalRules) {
+            if (!rule.label || !rule.start || !rule.end || rule.price <= 0) {
+                setUploadError('Seasonal pricing rules need label, start/end dates, and a price > 0');
+                setSubmitting(false);
+                return;
+            }
+            if (rule.end <= rule.start) {
+                setUploadError(`Seasonal rule "${rule.label}": end date must be after start date`);
+                setSubmitting(false);
+                return;
+            }
+        }
 
         const floorNum = formData.room_number
             ? Number(formData.room_number.charAt(0))
@@ -251,16 +280,7 @@ const Rooms = () => {
                 ? Number(formData.floor_number)
                 : undefined;
 
-        let seasonalPricing: Record<string, unknown> | undefined;
-        if (formData.seasonal_pricing.trim()) {
-            try {
-                seasonalPricing = JSON.parse(formData.seasonal_pricing);
-            } catch {
-                setUploadError('Invalid Seasonal Pricing JSON');
-                setLoading(false);
-                return;
-            }
-        }
+        const seasonalPricing = seasonalRules.length > 0 ? seasonalRules as unknown as Record<string, unknown> : undefined;
 
         const roomData = {
             ...formData,
@@ -303,11 +323,12 @@ const Rooms = () => {
             setEditingRoom(null);
             setPendingImages([]);
             setFormData({ ...defaultFormData });
+            setSeasonalRules([]);
             loadRooms();
         } catch (err: unknown) {
             setUploadError(err instanceof Error ? err.message : 'Failed to save room');
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
     
@@ -344,6 +365,7 @@ const Rooms = () => {
                         setEditingRoom(null);
                         setPendingImages([]);
                         setUploadError('');
+                        setSeasonalRules([]);
                         setFormData({ ...defaultFormData });
                         setIsModalOpen(true);
                     }}
@@ -390,15 +412,15 @@ const Rooms = () => {
                     <ImageIcon className="mx-auto text-gray-400 mb-3" size={48} />
                     <h3 className="text-lg font-semibold text-gray-700 mb-1">No rooms yet</h3>
                     <p className="text-gray-500 mb-4">Get started by adding your first room.</p>
-                    <button onClick={() => setIsModalOpen(true)} className="btn-primary">
+                    <button onClick={() => { setEditingRoom(null); setPendingImages([]); setUploadError(''); setSeasonalRules([]); setFormData({ ...defaultFormData }); setIsModalOpen(true); }} className="btn-primary">
                         Add Your First Room
                     </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {rooms.map((room) => (
-                        <div key={room.id} className="card relative group">
-                            <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <div key={room.id} className="card relative group" tabIndex={0} onFocus={() => {}}>
+                            <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10">
                                 <button
                                     onClick={() => {
                                         setImageManageRoom(room);
@@ -490,391 +512,401 @@ const Rooms = () => {
             )}
 
             {/* Create/Edit Room Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6 sticky top-0 bg-white z-10 pb-2 border-b">
-                            <h2 className="text-xl font-bold font-heading text-gray-900 flex items-center">
-                                {editingRoom ? <Edit2 className="mr-2 text-primary" size={20} /> : <Plus className="mr-2 text-primary" size={24} />}
-                                {editingRoom ? `Edit ${editingRoom.name}` : 'Create New Room'}
-                            </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="bg-gray-100 p-2 rounded-full text-gray-400 hover:text-gray-600 transition-colors">
-                                <X size={20} />
-                            </button>
+            <AdminModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={editingRoom ? `Edit ${editingRoom.name}` : 'Create New Room'}
+                icon={editingRoom ? <Edit2 size={20} /> : <Plus size={20} />}
+                size="lg"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(false)}
+                            className="btn-secondary w-full sm:w-auto px-6 py-2.5"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            form="room-form"
+                            disabled={submitting}
+                            className="btn-primary w-full sm:w-auto px-8 py-2.5 min-w-[140px]"
+                        >
+                            {submitting ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <Loader2 size={16} className="animate-spin" />
+                                    <span>Saving...</span>
+                                </span>
+                            ) : (
+                                editingRoom ? 'Update Room' : 'Create Room'
+                            )}
+                        </button>
+                    </div>
+                }
+            >
+                <form id="room-form" onSubmit={handleSubmit} className="space-y-5">
+                    <FormSection title="Room Identity">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Name <span className="text-red-400">*</span></label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    className="input w-full text-sm font-medium"
+                                    placeholder="e.g. Mountain View Suite"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Number <span className="text-red-400">*</span></label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.room_number}
+                                    onChange={(e) => setFormData({ ...formData, room_number: e.target.value })}
+                                    className="input w-full text-sm font-medium"
+                                    placeholder="e.g. 302"
+                                />
+                            </div>
                         </div>
+                    </FormSection>
 
-                        <form onSubmit={handleSubmit} className="space-y-7">
-                            {/* Room Name & Number (full width header) */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Room Identity
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div className="sm:col-span-2">
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Name <span className="text-red-400">*</span></label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="input w-full text-sm font-medium"
-                                            placeholder="e.g. Mountain View Suite"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Number <span className="text-red-400">*</span></label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.room_number}
-                                            onChange={(e) => setFormData({ ...formData, room_number: e.target.value })}
-                                            className="input w-full text-sm font-medium"
-                                            placeholder="e.g. 302"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Pricing & Capacity */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Pricing & Capacity
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Price / Night (NPR) <span className="text-red-400">*</span></label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">NPR</span>
-                                            <input
-                                                type="number"
-                                                required
-                                                value={formData.price_per_night}
-                                                onChange={(e) => setFormData({ ...formData, price_per_night: e.target.value })}
-                                                className="input w-full pl-12 text-sm font-bold text-primary"
-                                                placeholder="2500"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Capacity</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-                                            <input
-                                                type="number"
-                                                required
-                                                min="1"
-                                                value={formData.max_guests}
-                                                onChange={(e) => setFormData({ ...formData, max_guests: e.target.value })}
-                                                className="input w-full pl-10 text-sm font-medium"
-                                                placeholder="2"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Type</label>
-                                        <select
-                                            value={formData.room_type}
-                                            onChange={(e) => setFormData({ ...formData, room_type: e.target.value })}
-                                            className="input w-full text-sm"
-                                        >
-                                            <option value="">Select type...</option>
-                                            <option value="Single Room">Single Room</option>
-                                            <option value="Double Room">Double Room</option>
-                                            <option value="Deluxe Room">Deluxe Room</option>
-                                            <option value="Suite">Suite</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Room Features */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Room Features
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Bed Type</label>
-                                        <select
-                                            value={formData.bed_type}
-                                            onChange={(e) => setFormData({ ...formData, bed_type: e.target.value })}
-                                            className="input w-full text-sm"
-                                        >
-                                            <option value="">Select bed type...</option>
-                                            <option value="Single Bed">Single Bed</option>
-                                            <option value="Double Bed">Double Bed</option>
-                                            <option value="Queen Bed">Queen Bed</option>
-                                            <option value="King Bed">King Bed</option>
-                                            <option value="Twin Bed">Twin Bed</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <label className="flex items-center space-x-3 bg-white px-4 py-3 rounded-xl border border-gray-100 cursor-pointer hover:border-primary/30 transition-colors">
-                                        <input
-                                            type="checkbox"
-                                            id="has_ac"
-                                            checked={formData.has_ac}
-                                            onChange={(e) => setFormData({ ...formData, has_ac: e.target.checked })}
-                                            className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded-lg cursor-pointer"
-                                        />
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M12 2v20M16 4l-4 4-4-4M16 20l-4-4-4 4"/></svg>
-                                        <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">
-                                            Air Conditioning (AC)
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            {/* Description & Amenities */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Description & Amenities
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Description</label>
-                                        <textarea
-                                            rows={3}
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            className="input w-full resize-none text-sm"
-                                            placeholder="Tell guests about what makes this room special..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Amenities <span className="text-gray-400 font-normal text-xs">(comma separated)</span></label>
-                                        <textarea
-                                            rows={2}
-                                            value={formData.amenities}
-                                            onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
-                                            className="input w-full resize-none text-sm"
-                                            placeholder="WiFi, AC, TV, Hot Water, Mini Bar..."
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Status & Flags */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Room Status & Flags
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-3">
-                                        <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-300 transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.featured}
-                                                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                                                className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
-                                            />
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-amber-400"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                            <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Featured Room</span>
-                                        </label>
-                                        <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-300 transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.maintenance}
-                                                onChange={(e) => setFormData({ ...formData, maintenance: e.target.checked })}
-                                                className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
-                                            />
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                            <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Under Maintenance</span>
-                                        </label>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-600">Availability Status</label>
-                                            <select
-                                                value={formData.availability_status}
-                                                onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}
-                                                className="input w-full text-sm border-gray-200"
-                                            >
-                                                <option value="available">Available</option>
-                                                <option value="occupied">Occupied</option>
-                                                <option value="maintenance">Maintenance</option>
-                                                <option value="reserved">Reserved</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium mb-1.5 text-gray-600">Discount (%)</label>
-                                            <div className="relative">
-                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">% OFF</span>
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    max="100"
-                                                    value={formData.discount_percent}
-                                                    onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
-                                                    className="input w-full pr-14 text-sm font-medium text-right"
-                                                    placeholder="0"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4">
-                                        <details className="group">
-                                            <summary className="text-sm font-semibold text-gray-500 cursor-pointer hover:text-primary transition-colors list-none flex items-center space-x-2">
-                                                <svg className="w-4 h-4 group-open:rotate-90 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><polyline points="9 18 15 12 9 6"/></svg>
-                                                <span>Seasonal Pricing (JSON)</span>
-                                            </summary>
-                                            <div className="mt-3">
-                                                <label className="block text-xs text-gray-400 mb-1.5">Override base price for specific date ranges</label>
-                                                <textarea
-                                                    rows={4}
-                                                    value={formData.seasonal_pricing}
-                                                    onChange={(e) => setFormData({ ...formData, seasonal_pricing: e.target.value })}
-                                                    className="input w-full font-mono text-xs resize-none"
-                                                    placeholder='[{"label":"Peak Season","start":"2026-04-01","end":"2026-04-15","price":3500}]'
-                                                />
-                                            </div>
-                                        </details>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Policies */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Policies
-                                </h3>
-                                <div>
-                                    <label className="block text-sm font-semibold mb-1.5 text-gray-700">Specific Policies / Notes</label>
-                                    <textarea
-                                        rows={3}
-                                        value={formData.policies}
-                                        onChange={(e) => setFormData({ ...formData, policies: e.target.value })}
-                                        className="input w-full resize-none text-sm"
-                                        placeholder="No smoking, Check-in details for this specific room..."
+                    <FormSection title="Pricing & Capacity">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Price / Night (NPR) <span className="text-red-400">*</span></label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">NPR</span>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={formData.price_per_night}
+                                        onChange={(e) => setFormData({ ...formData, price_per_night: e.target.value })}
+                                        className="input w-full pl-12 text-sm font-bold text-primary"
+                                        placeholder="2500"
                                     />
                                 </div>
                             </div>
-
-                            {/* Photos */}
-                            <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-5 border border-gray-100">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center">
-                                    <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></span>
-                                    Room Photos
-                                </h3>
-                                {uploadError && (
-                                    <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm mb-4 border border-red-100 flex items-center space-x-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                                        <span>{uploadError}</span>
-                                    </div>
-                                )}
-                                <div className="flex flex-wrap gap-2 mb-4">
-                                    {editingRoom?.room_images?.map((img: RoomImage) => (
-                                        <div key={img.id} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-white shadow-md group/img transition-all duration-200 hover:shadow-lg">
-                                            <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveExistingImage(img.id)}
-                                                className="absolute inset-0 bg-red-500/80 opacity-0 group-hover/img:opacity-100 transition-all duration-200 flex items-center justify-center text-white backdrop-blur-[1px]"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    {pendingImages.map((img, index) => (
-                                        <div key={index} className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group/img transition-all duration-200 hover:shadow-lg">
-                                            <div className="absolute top-1 left-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold z-10 shadow-sm">+</div>
-                                            <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                                            <button
-                                                type="button"
-                                                onClick={() => removePendingImage(index)}
-                                                className="absolute inset-0 bg-gray-900/80 opacity-0 group-hover/img:opacity-100 transition-all duration-200 flex items-center justify-center text-white backdrop-blur-[1px]"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() => !uploading && fileInputRef.current?.click()}
-                                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !uploading && fileInputRef.current?.click()}
-                                    className={`relative overflow-hidden border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 ${
-                                        uploading
-                                            ? 'bg-primary/[0.03] border-primary/40'
-                                            : 'border-gray-200 hover:border-primary hover:bg-primary/5'
-                                    }`}
-                                >
-                                    {uploading ? (
-                                        <div className="flex flex-col items-center">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
-                                            <div className="relative flex flex-col items-center">
-                                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
-                                                    <Upload size={20} className="text-primary" />
-                                                </div>
-                                                <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
-                                                    <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
-                                                </div>
-                                                <span className="text-xs font-medium text-gray-500 mt-2">
-                                                    {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading photos...'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-1">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                                                <Upload size={20} className="text-primary" />
-                                            </div>
-                                            <span className="text-sm font-bold text-gray-600">Click to upload photos</span>
-                                            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">JPG, PNG • Max 5MB each</span>
-                                        </div>
-                                    )}
-                                </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Max Guests</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="1"
+                                    value={formData.max_guests}
+                                    onChange={(e) => setFormData({ ...formData, max_guests: e.target.value })}
+                                    className="input w-full text-sm font-medium"
+                                    placeholder="2"
+                                />
                             </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room Type</label>
+                                <select
+                                    value={formData.room_type}
+                                    onChange={(e) => setFormData({ ...formData, room_type: e.target.value })}
+                                    className="input w-full text-sm"
+                                >
+                                    <option value="">Select type...</option>
+                                    <option value="Single Room">Single Room</option>
+                                    <option value="Double Room">Double Room</option>
+                                    <option value="Deluxe Room">Deluxe Room</option>
+                                    <option value="Suite">Suite</option>
+                                </select>
+                            </div>
+                        </div>
+                    </FormSection>
 
-                            {/* Footer Actions */}
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t pt-6">
+                    <FormSection title="Room Features">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Bed Type</label>
+                                <select
+                                    value={formData.bed_type}
+                                    onChange={(e) => setFormData({ ...formData, bed_type: e.target.value })}
+                                    className="input w-full text-sm"
+                                >
+                                    <option value="">Select bed type...</option>
+                                    <option value="Single Bed">Single Bed</option>
+                                    <option value="Double Bed">Double Bed</option>
+                                    <option value="Queen Bed">Queen Bed</option>
+                                    <option value="King Bed">King Bed</option>
+                                    <option value="Twin Bed">Twin Bed</option>
+                                </select>
+                            </div>
+                            <label className="flex items-center space-x-3 bg-white px-4 py-3 rounded-xl border border-gray-100 cursor-pointer hover:border-primary/30 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    id="has_ac"
+                                    checked={formData.has_ac}
+                                    onChange={(e) => setFormData({ ...formData, has_ac: e.target.checked })}
+                                    className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded-lg cursor-pointer"
+                                />
+                                <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">
+                                    Air Conditioning (AC)
+                                </span>
+                            </label>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Description & Amenities">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Description</label>
+                                <textarea
+                                    rows={3}
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="input w-full resize-none text-sm"
+                                    placeholder="Tell guests about what makes this room special..."
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1.5 text-gray-700">Amenities <span className="text-gray-400 font-normal text-xs">(comma separated)</span></label>
+                                <textarea
+                                    rows={2}
+                                    value={formData.amenities}
+                                    onChange={(e) => setFormData({ ...formData, amenities: e.target.value })}
+                                    className="input w-full resize-none text-sm"
+                                    placeholder="WiFi, AC, TV, Hot Water, Mini Bar..."
+                                />
+                            </div>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Room Status & Visibility">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                                <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-300 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.featured}
+                                        onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                                        className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                    <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Featured Room</span>
+                                </label>
+                                <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-amber-300 transition-colors">
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.maintenance}
+                                        onChange={(e) => setFormData({ ...formData, maintenance: e.target.checked })}
+                                        className="w-5 h-5 text-amber-500 focus:ring-amber-500 border-gray-300 rounded-lg cursor-pointer"
+                                    />
+                                    <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Under Maintenance</span>
+                                </label>
                                 <label className="flex items-center space-x-3 bg-white px-4 py-2.5 rounded-xl border border-gray-100 cursor-pointer hover:border-green-300 transition-colors">
                                     <input
                                         type="checkbox"
-                                        id="isActive"
                                         checked={formData.is_active}
                                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                                         className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg cursor-pointer"
                                     />
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="text-green-500"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                     <span className="text-sm font-semibold text-gray-600 cursor-pointer select-none">Publicly Visible</span>
                                 </label>
-                                <div className="flex space-x-3 w-full sm:w-auto">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 sm:flex-none btn-secondary px-6 py-2.5"
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-600">Availability Status</label>
+                                    <select
+                                        value={formData.availability_status}
+                                        onChange={(e) => setFormData({ ...formData, availability_status: e.target.value })}
+                                        className="input w-full text-sm border-gray-200"
                                     >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="flex-1 sm:flex-none btn-primary px-8 py-2.5 min-w-[140px]"
-                                    >
-                                        {loading ? (
-                                            <span className="flex items-center justify-center space-x-2">
-                                                <Loader2 size={16} className="animate-spin" />
-                                                <span>Saving...</span>
-                                            </span>
-                                        ) : (
-                                            editingRoom ? 'Update Room' : 'Create Room'
-                                        )}
-                                    </button>
+                                        <option value="available">Available</option>
+                                        <option value="occupied">Occupied</option>
+                                        <option value="maintenance">Maintenance</option>
+                                        <option value="reserved">Reserved</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1.5 text-gray-600">Discount (%)</label>
+                                    <div className="relative">
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-medium">% OFF</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={formData.discount_percent}
+                                            onChange={(e) => setFormData({ ...formData, discount_percent: e.target.value })}
+                                            className="input w-full pr-14 text-sm font-medium text-right"
+                                            placeholder="0"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </FormSection>
+
+                    <FormSection
+                        title="Seasonal Pricing"
+                        description="Override base price for specific date ranges"
+                        action={
+                            <button
+                                type="button"
+                                onClick={() => setSeasonalRules(prev => [...prev, { label: '', start: '', end: '', price: 0 }])}
+                                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/5"
+                            >
+                                <Plus size={14} />
+                                <span>Add Rule</span>
+                            </button>
+                        }
+                    >
+                        {seasonalRules.length === 0 ? (
+                            <p className="text-xs text-gray-400 text-center py-6 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                No seasonal pricing rules added yet
+                            </p>
+                        ) : (
+                            <div className="space-y-2">
+                                {seasonalRules.map((rule, index) => (
+                                    <div key={index} className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg p-3">
+                                        <input
+                                            type="text"
+                                            value={rule.label}
+                                            onChange={(e) => {
+                                                const next = [...seasonalRules];
+                                                next[index] = { ...next[index], label: e.target.value };
+                                                setSeasonalRules(next);
+                                            }}
+                                            className="input text-xs w-28 shrink-0"
+                                            placeholder="Label"
+                                        />
+                                        <input
+                                            type="date"
+                                            value={rule.start}
+                                            onChange={(e) => {
+                                                const next = [...seasonalRules];
+                                                next[index] = { ...next[index], start: e.target.value };
+                                                setSeasonalRules(next);
+                                            }}
+                                            className="input text-xs w-36 shrink-0"
+                                        />
+                                        <span className="text-gray-300 text-xs shrink-0">→</span>
+                                        <input
+                                            type="date"
+                                            value={rule.end}
+                                            onChange={(e) => {
+                                                const next = [...seasonalRules];
+                                                next[index] = { ...next[index], end: e.target.value };
+                                                setSeasonalRules(next);
+                                            }}
+                                            className="input text-xs w-36 shrink-0"
+                                        />
+                                        <div className="relative flex-1 min-w-[80px]">
+                                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">NPR</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={rule.price || ''}
+                                                onChange={(e) => {
+                                                    const next = [...seasonalRules];
+                                                    next[index] = { ...next[index], price: Number(e.target.value) };
+                                                    setSeasonalRules(next);
+                                                }}
+                                                className="input text-xs w-full pl-9"
+                                                placeholder="Price"
+                                            />
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSeasonalRules(prev => prev.filter((_, i) => i !== index))}
+                                            className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                                            title="Remove rule"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </FormSection>
+
+                    <FormSection title="Policies">
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Specific Policies / Notes</label>
+                            <textarea
+                                rows={3}
+                                value={formData.policies}
+                                onChange={(e) => setFormData({ ...formData, policies: e.target.value })}
+                                className="input w-full resize-none text-sm"
+                                placeholder="No smoking, Check-in details for this specific room..."
+                            />
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Room Photos">
+                        {uploadError && (
+                            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm mb-4 border border-red-100 flex items-center space-x-2">
+                                <span>{uploadError}</span>
+                            </div>
+                        )}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {editingRoom?.room_images?.map((img: RoomImage) => (
+                                <div key={img.id} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-white shadow-md group/img transition-all duration-200 hover:shadow-lg">
+                                    <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveExistingImage(img.id)}
+                                        className="absolute inset-0 bg-red-500/80 opacity-0 group-hover/img:opacity-100 transition-all duration-200 flex items-center justify-center text-white backdrop-blur-[1px]"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                            {pendingImages.map((img, index) => (
+                                <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group/img transition-all duration-200 hover:shadow-lg">
+                                    <div className="absolute top-1 left-1 bg-primary text-white text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold z-10 shadow-sm">+</div>
+                                    <img src={img.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removePendingImage(index)}
+                                        className="absolute inset-0 bg-gray-900/80 opacity-0 group-hover/img:opacity-100 transition-all duration-200 flex items-center justify-center text-white backdrop-blur-[1px]"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <div
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => !uploading && fileInputRef.current?.click()}
+                            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !uploading && fileInputRef.current?.click()}
+                            className={`relative overflow-hidden border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 ${
+                                uploading
+                                    ? 'bg-primary/[0.03] border-primary/40'
+                                    : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                            }`}
+                        >
+                            {uploading ? (
+                                <div className="flex flex-col items-center">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                    <div className="relative flex flex-col items-center">
+                                        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
+                                            <Upload size={20} className="text-primary" />
+                                        </div>
+                                        <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
+                                            <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-500 mt-2">
+                                            {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading photos...'}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                        <Upload size={20} className="text-primary" />
+                                    </div>
+                                    <span className="text-sm font-bold text-gray-600">Click to upload photos</span>
+                                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">JPG, PNG • Max 5MB each</span>
+                                </div>
+                            )}
+                        </div>
+                    </FormSection>
+                </form>
+            </AdminModal>
 
             {/* Hidden file input */}
             <input
@@ -887,119 +919,109 @@ const Rooms = () => {
             />
 
             {/* Image Management & Reordering Modal */}
-            {imageManageRoom && (
-                <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-md">
-                    <div className="bg-white rounded-2xl w-full max-w-xl p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold font-heading text-gray-900 leading-tight">
-                                    Manage Photos
-                                </h2>
-                                <p className="text-xs text-gray-500">Reorder or remove images for {imageManageRoom.name}</p>
-                            </div>
-                            <button onClick={() => setImageManageRoom(null)} className="text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full transition-colors">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {uploadError && (
-                            <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm mb-4 border border-red-100">
-                                {uploadError}
-                            </div>
-                        )}
-
-                        <div className="bg-gray-50 rounded-2xl p-4 mb-6 min-h-[200px] border border-gray-100">
-                            {imageManageRoom.room_images && imageManageRoom.room_images.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                                    {imageManageRoom.room_images.map((img: RoomImage, index) => (
-                                        <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border-2 border-white shadow-md group/img">
-                                            <img src={img.url} alt="" className="w-full h-full object-cover" />
-
-                                            {/* Overlay Controls */}
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                                                <button
-                                                    onClick={() => handleReorderImage(imageManageRoom.id, img.id, 'up')}
-                                                    disabled={index === 0}
-                                                    className={`p-1.5 bg-white rounded-full text-gray-700 hover:text-primary disabled:opacity-30 disabled:hover:text-gray-700 transition-colors shadow-lg`}
-                                                >
-                                                    <ChevronUp size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleReorderImage(imageManageRoom.id, img.id, 'down')}
-                                                    disabled={index === imageManageRoom.room_images!.length - 1}
-                                                    className="p-1.5 bg-white rounded-full text-gray-700 hover:text-primary disabled:opacity-30 disabled:hover:text-gray-700 transition-colors shadow-lg"
-                                                >
-                                                    <ChevronDown size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleRemoveExistingImage(img.id)}
-                                                    className="p-1.5 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-
-                                            {/* Sort Badge */}
-                                            <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
-                                                {index + 1}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-gray-400 py-10">
-                                    <ImageIcon className="mb-3 opacity-20" size={64} />
-                                    <p className="text-sm font-medium">No images uploaded for this room yet.</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="space-y-4">
-                            <label className={`block border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200 cursor-wait' : 'border-gray-300 hover:border-primary hover:bg-primary/5 hover:shadow-inner'
-                                }`}>
-                                {uploading ? (
-                                    <div className="flex flex-col items-center">
-                                        <Loader2 size={32} className="animate-spin text-primary mb-3" />
-                                        <span className="font-bold text-gray-600">Uploading photos...</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                                            <Upload size={24} className="text-primary" />
-                                        </div>
-                                        <span className="text-sm font-bold text-gray-700">Add New Photos</span>
-                                        <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">Multiple Select Supported</span>
-                                    </div>
-                                )}
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    className="hidden"
-                                    onChange={async (e) => {
-                                        const files = e.target.files;
-                                        if (!files) return;
-                                        for (const file of Array.from(files)) {
-                                            await handleAddImageToExistingRoom(imageManageRoom.id, file);
-                                        }
-                                        const { data } = await getAllRoomsForAdmin();
-                                        if (data) {
-                                            setRooms(data);
-                                            const updated = data.find((r: Room) => r.id === imageManageRoom.id);
-                                            if (updated) setImageManageRoom(updated);
-                                        }
-                                        e.target.value = '';
-                                    }}
-                                />
-                            </label>
-
-                            <button onClick={() => setImageManageRoom(null)} className="btn-primary w-full py-3 text-lg font-bold">
-                                Save Photo Order & Close
-                            </button>
-                        </div>
+            <AdminModal
+                isOpen={imageManageRoom !== null}
+                onClose={() => setImageManageRoom(null)}
+                title="Manage Photos"
+                icon={<ImageIcon size={20} />}
+                subtitle={imageManageRoom ? `Reorder or remove images for ${imageManageRoom.name}` : ''}
+                size="lg"
+                footer={
+                    <button
+                        type="button"
+                        onClick={() => setImageManageRoom(null)}
+                        className="btn-primary w-full py-2.5"
+                    >
+                        Save Photo Order & Close
+                    </button>
+                }
+            >
+                {uploadError && (
+                    <div className="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-sm mb-4 border border-red-100">
+                        {uploadError}
                     </div>
+                )}
+
+                <div className="bg-gray-50 rounded-2xl p-4 mb-5 min-h-[160px] border border-gray-100">
+                    {imageManageRoom?.room_images && imageManageRoom.room_images.length > 0 ? (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                            {imageManageRoom.room_images.map((img: RoomImage, index) => (
+                                <div key={img.id} className="relative aspect-square rounded-xl overflow-hidden border-2 border-white shadow-md group/img">
+                                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                                        <button
+                                            onClick={() => handleReorderImage(imageManageRoom.id, img.id, 'up')}
+                                            disabled={index === 0}
+                                            className="p-1.5 bg-white rounded-full text-gray-700 hover:text-primary disabled:opacity-30 disabled:hover:text-gray-700 transition-colors shadow-lg"
+                                        >
+                                            <ChevronUp size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleReorderImage(imageManageRoom.id, img.id, 'down')}
+                                            disabled={index === imageManageRoom.room_images!.length - 1}
+                                            className="p-1.5 bg-white rounded-full text-gray-700 hover:text-primary disabled:opacity-30 disabled:hover:text-gray-700 transition-colors shadow-lg"
+                                        >
+                                            <ChevronDown size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => handleRemoveExistingImage(img.id)}
+                                            className="p-1.5 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                    <div className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                                        {index + 1}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-gray-400 py-10">
+                            <ImageIcon className="mb-3 opacity-20" size={64} />
+                            <p className="text-sm font-medium">No images uploaded for this room yet.</p>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                <label className={`block border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200 cursor-wait' : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                    }`}>
+                    {uploading ? (
+                        <div className="flex flex-col items-center">
+                            <Loader2 size={32} className="animate-spin text-primary mb-3" />
+                            <span className="font-bold text-gray-600">Uploading photos...</span>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center">
+                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
+                                <Upload size={24} className="text-primary" />
+                            </div>
+                            <span className="text-sm font-bold text-gray-700">Add New Photos</span>
+                            <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest font-bold">Multiple Select Supported</span>
+                        </div>
+                    )}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={async (e) => {
+                            const files = e.target.files;
+                            if (!files) return;
+                            for (const file of Array.from(files)) {
+                                await handleAddImageToExistingRoom(imageManageRoom!.id, file);
+                            }
+                            const { data } = await getAllRoomsForAdmin();
+                            if (data) {
+                                setRooms(data);
+                                const updated = data.find((r: Room) => r.id === imageManageRoom!.id);
+                                if (updated) setImageManageRoom(updated);
+                            }
+                            e.target.value = '';
+                        }}
+                    />
+                </label>
+            </AdminModal>
 
             {/* Delete Confirmation Dialog */}
             <ConfirmDialog

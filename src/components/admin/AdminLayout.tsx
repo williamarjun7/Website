@@ -97,6 +97,13 @@ const AdminLayout = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        if (isMobile) {
+            const timer = setTimeout(() => setSidebarOpen(false), 0);
+            return () => clearTimeout(timer);
+        }
+    }, [location.pathname, isMobile]);
+
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
         const initial: Record<string, boolean> = {};
         for (const group of allGroups) {
@@ -251,7 +258,7 @@ const AdminLayout = () => {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0">
                 {/* Top Header (Mobile only) */}
                 <div className="md:hidden h-16 bg-white shadow-sm flex items-center px-4">
                     <button
@@ -264,7 +271,7 @@ const AdminLayout = () => {
                 </div>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-y-auto p-4 md:p-8">
+                <main className="flex-1 overflow-auto p-4 md:p-8">
                     <Outlet />
                 </main>
             </div>

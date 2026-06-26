@@ -27,6 +27,9 @@ graphify-out/.graphify_*
 graphify-out/cache/
 /src/assets/nul
 
+# Test artifacts
+.testsprite/
+
 # Session artifacts
 response.txt
 skills-lock.json

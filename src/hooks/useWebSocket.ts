@@ -1,99 +1,36 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useState } from 'react';
 
-const MAX_RECONNECT_ATTEMPTS = 3;
-const RECONNECT_DELAY_MS = 2000;
+type WsStatus = 'disconnected' | 'connecting' | 'connected';
 
-type WebSocketStatus = 'connecting' | 'connected' | 'disconnected';
-
-export const useWebSocket = (onPaymentReceived: (prn: string) => void) => {
-    const [wsStatus, setWsStatus] = useState<WebSocketStatus>('disconnected');
+export const useWebSocket = (onMessage: (data: string) => void) => {
     const wsRef = useRef<WebSocket | null>(null);
-    const wsReconnectCount = useRef(0);
-    const wsReconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const wsCallbackRef = useRef(onPaymentReceived);
-    useEffect(() => { wsCallbackRef.current = onPaymentReceived; });
+    const [wsStatus, setWsStatus] = useState<WsStatus>('disconnected');
+
+    const connect = useCallback((url: string, prn: string) => {
+        if (wsRef.current) wsRef.current.close();
+        try {
+            setWsStatus('connecting');
+            const ws = new WebSocket(`${url}?prn=${prn}`);
+            ws.onopen = () => setWsStatus('connected');
+            ws.onmessage = (event) => {
+                onMessage(event.data);
+                ws.close();
+            };
+            ws.onclose = () => setWsStatus('disconnected');
+            ws.onerror = () => setWsStatus('disconnected');
+            wsRef.current = ws;
+        } catch {
+            setWsStatus('disconnected');
+        }
+    }, [onMessage]);
 
     const cleanup = useCallback(() => {
         if (wsRef.current) {
             wsRef.current.close();
             wsRef.current = null;
         }
-        if (wsReconnectTimer.current) {
-            clearTimeout(wsReconnectTimer.current);
-            wsReconnectTimer.current = null;
-        }
+        setWsStatus('disconnected');
     }, []);
-
-    useEffect(() => {
-        return cleanup;
-    }, [cleanup]);
-
-    const connect = useCallback((url: string, expectedPrn: string) => {
-        cleanup();
-        wsReconnectCount.current = 0;
-        setWsStatus('connecting');
-
-        const doConnect = (wsUrl: string) => {
-            try {
-                const ws = new WebSocket(wsUrl);
-                wsRef.current = ws;
-
-                ws.onopen = () => {
-                    setWsStatus('connected');
-                };
-
-                ws.onmessage = (event) => {
-                    try {
-                        const msg = JSON.parse(event.data);
-
-                        // Extract PRN from message if present — verify it matches expected PRN
-                        const msgPrn = msg.prn || msg.PRN || msg.orderId || msg.merchantPRN || null;
-                        if (msgPrn && String(msgPrn) !== expectedPrn) {
-                            return;
-                        }
-
-                        const ts = msg.transactionStatus;
-                        const paymentDone =
-                            msg.status === 'success' ||
-                            msg.paymentStatus === 'success' ||
-                            msg.response_code === 'successful' ||
-                            ts?.paymentSuccess === true ||
-                            ts?.qrVerified === true ||
-                            ts?.success === true;
-
-                        if (paymentDone) {
-                            wsCallbackRef.current(expectedPrn);
-                        }
-                    } catch {
-                        if (typeof event.data === 'string' && (event.data.includes('success') || event.data.includes('SUCCESS'))) {
-                            wsCallbackRef.current(expectedPrn);
-                        }
-                    }
-                };
-
-                ws.onerror = () => {
-                    setWsStatus('disconnected');
-                };
-
-                ws.onclose = () => {
-                    setWsStatus('disconnected');
-                    wsRef.current = null;
-                    if (wsReconnectCount.current < MAX_RECONNECT_ATTEMPTS) {
-                        wsReconnectCount.current += 1;
-                        wsReconnectTimer.current = setTimeout(() => doConnect(wsUrl), RECONNECT_DELAY_MS);
-                    }
-                };
-            } catch {
-                setWsStatus('disconnected');
-                if (wsReconnectCount.current < MAX_RECONNECT_ATTEMPTS) {
-                    wsReconnectCount.current += 1;
-                    wsReconnectTimer.current = setTimeout(() => doConnect(wsUrl), RECONNECT_DELAY_MS);
-                }
-            }
-        };
-
-        doConnect(url);
-    }, [cleanup]);
 
     return { wsStatus, connect, cleanup };
 };

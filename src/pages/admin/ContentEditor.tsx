@@ -466,16 +466,18 @@ const ContentEditor = () => {
         setLoading(true);
         getAllSiteContent().then(async ({ data }) => {
             const map: Record<string, string> = {};
+            const existingKeysSet = new Set<string>();
             if (data) {
                 for (const item of data) {
                     map[item.key] = item.value;
+                    existingKeysSet.add(item.key);
                 }
             }
             const existingKeys = data?.length || 0;
             const needsSeed = existingKeys < 5 && ALL_KEYS.length > 0;
             if (needsSeed) {
                 for (const key of ALL_KEYS) {
-                    if (!map[key] && CONTENT_DEFAULTS[key]) {
+                    if (!existingKeysSet.has(key) && CONTENT_DEFAULTS[key]) {
                         try {
                             await updateSiteContent(key, CONTENT_DEFAULTS[key]);
                             map[key] = CONTENT_DEFAULTS[key];
@@ -486,20 +488,25 @@ const ContentEditor = () => {
                 }
             } else {
                 for (const key of ALL_KEYS) {
-                    if (!map[key]) map[key] = '';
+                    if (!existingKeysSet.has(key)) map[key] = '';
                 }
             }
             setContents(map);
             setLoading(false);
-        }).catch((err) => {
+        }).catch((_err) => {
             setLoading(false);
-            console.error('Failed to load content:', err);
+            setToastMessage('Failed to load content');
+            setTimeout(() => setToastMessage(''), 3000);
         });
     };
 
     useEffect(() => {
         loadContent();
     }, []);
+
+    useEffect(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [activePage]);
 
     const seedDefaults = async () => {
         setSeeding(true);
@@ -582,7 +589,7 @@ const ContentEditor = () => {
                             </button>
                         </div>
                         {value && (
-                            <img src={value} alt={def.label} className="max-h-32 rounded-lg object-cover border border-gray-200" />
+                            <img src={value} alt={def.label} className="max-h-32 max-w-full h-auto rounded-lg object-cover border border-gray-200" />
                         )}
                     </div>
                 );
@@ -672,9 +679,9 @@ const ContentEditor = () => {
                         <RefreshCw size={18} className={seeding ? 'animate-spin' : ''} />
                         <span>{seeding ? 'Restoring...' : 'Restore Defaults'}</span>
                     </button>
-                    <button onClick={loadContent} className="btn-secondary flex items-center space-x-2">
-                        <RefreshCw size={18} />
-                        <span>Refresh All</span>
+                    <button onClick={loadContent} disabled={loading} className="btn-secondary flex items-center space-x-2 disabled:opacity-50">
+                        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+                        <span>{loading ? 'Loading...' : 'Refresh All'}</span>
                     </button>
                 </div>
             </div>

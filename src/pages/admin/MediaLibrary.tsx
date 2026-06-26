@@ -7,11 +7,11 @@ import {
     Image as ImageIcon,
     ExternalLink,
     Upload,
-    X,
     Folder,
     Eye,
     EyeOff
 } from 'lucide-react';
+import AdminModal from '../../components/admin/AdminModal';
 import {
     getMediaFiles,
     getMediaByFolder,
@@ -84,6 +84,7 @@ const MediaPage = () => {
     const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
     const [editForm, setEditForm] = useState({ name: '', alt_text: '', folder: '' });
     const [deleteTarget, setDeleteTarget] = useState<MediaFile | null>(null);
+    const [deleteImageTarget, setDeleteImageTarget] = useState<SiteImageData | null>(null);
     const [toast, setToast] = useState('');
     const [loadError, setLoadError] = useState('');
 
@@ -229,12 +230,16 @@ const MediaPage = () => {
         if (!error) loadImages();
     };
 
-    const handleDeleteImage = async (id: string) => {
-        if (confirm('Delete this image?')) {
-            const { error } = await deleteSiteImage(id);
-            if (error) { alert('Failed to delete image: ' + error); return; }
-            loadImages();
-        }
+    const handleDeleteImage = async (img: SiteImageData) => {
+        setDeleteImageTarget(img);
+    };
+
+    const confirmDeleteImage = async () => {
+        if (!deleteImageTarget) return;
+        const { error } = await deleteSiteImage(deleteImageTarget.id);
+        if (error) { showToast('Failed to delete image: ' + error); setDeleteImageTarget(null); return; }
+        setDeleteImageTarget(null);
+        loadImages();
     };
 
     // ── Media Library handlers ──
@@ -281,273 +286,251 @@ const MediaPage = () => {
 
     // ── Upload Modal (shared) ──
     const renderUploadModal = () => (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-xl font-heading">
-                        {activeTab === 'images' ? 'Add New Image' : 'Upload Media'}
-                    </h3>
-                    <button onClick={() => setUploadModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                        <X size={20} />
+        <AdminModal
+            isOpen={isUploadModalOpen}
+            onClose={() => setUploadModalOpen(false)}
+            title={activeTab === 'images' ? 'Add New Image' : 'Upload Media'}
+            icon={<Upload size={20} />}
+            size="md"
+            footer={
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                    <button type="button" onClick={() => setUploadModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                    <button
+                        type="button"
+                        onClick={activeTab === 'images' ? handleImageSave : handleMediaUploadConfirm}
+                        disabled={uploading || !uploadedUrl}
+                        className={`btn-primary w-full sm:w-auto flex-1 sm:flex-none ${(!uploadedUrl || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                        {activeTab === 'images' ? 'Save Image' : 'Add to Library'}
                     </button>
                 </div>
-
-                <div className="space-y-5">
-                    {uploadError && (
-                        <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">
-                            {uploadError}
-                        </div>
-                    )}
-
-                    {uploadedUrl ? (
-                        <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
-                            {uploadedUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                                <video src={uploadedUrl} controls className="w-full h-full object-cover" />
-                            ) : (
-                                <img src={uploadedUrl} alt="Uploaded" loading="lazy" className="w-full h-full object-cover" />
-                            )}
-                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <button
-                                    type="button"
-                                    onClick={() => setUploadedUrl('')}
-                                    className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
-                                >
-                                    <Trash2 size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div
-                            onClick={() => !uploading && fileInputRef.current?.click()}
-                            onDragOver={handleDragOver}
-                            onDragEnter={handleDragEnter}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
-                                uploading
-                                    ? 'bg-primary/[0.03] border-primary/40'
-                                    : isDragging
-                                        ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg'
-                                        : 'border-gray-300 hover:border-primary hover:bg-primary/5'
-                            }`}
-                        >
-                            {uploading ? (
-                                <div className="flex flex-col items-center">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
-                                    <div className="relative flex flex-col items-center">
-                                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
-                                            <Upload size={24} className="text-primary" />
-                                        </div>
-                                        <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                            <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
-                                        </div>
-                                        <span className="text-sm font-medium text-gray-600 mt-3">
-                                            {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 25)}${uploadingFileName.length > 25 ? '...' : ''}` : 'Uploading to cloud...'}
-                                        </span>
-                                        <span className="text-xs text-gray-400 mt-0.5">Compressing & uploading...</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className={`flex flex-col items-center text-gray-500 transition-all duration-300 ${isDragging ? 'scale-105' : ''}`}>
-                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isDragging ? 'bg-primary/20 text-primary scale-110' : 'bg-gray-100 text-gray-400'}`}>
-                                        <Upload size={24} className={isDragging ? 'animate-upload-bounce' : ''} />
-                                    </div>
-                                    <span className={`text-sm font-bold transition-colors ${isDragging ? 'text-primary' : 'text-gray-700'}`}>
-                                        {isDragging ? 'Drop file here' : 'Click or drag file here'}
-                                    </span>
-                                    <span className="text-xs text-gray-400 mt-1">Images & Videos up to 10MB</span>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*,video/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-
-                    {activeTab === 'images' && uploadedUrl && (
-                        <>
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Page</label>
-                                <select
-                                    value={imageFormData.page}
-                                    onChange={(e) => setImageFormData({ ...imageFormData, page: e.target.value })}
-                                    className="input w-full"
-                                >
-                                    {PAGES.map(p => (
-                                        <option key={p} value={p}>{PAGE_LABELS[p] || p}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={imageFormData.title}
-                                    onChange={(e) => setImageFormData({ ...imageFormData, title: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. Beautiful mountain view from balcony"
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    <div className="flex space-x-4 pt-2">
-                        <button
-                            type="button"
-                            onClick={() => setUploadModalOpen(false)}
-                            className="btn-secondary flex-1"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={activeTab === 'images' ? handleImageSave : handleMediaUploadConfirm}
-                            disabled={uploading || !uploadedUrl}
-                            className={`btn-primary flex-1 ${(!uploadedUrl || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            {activeTab === 'images' ? 'Save Image' : 'Add to Library'}
-                        </button>
+            }
+        >
+            <div className="space-y-5">
+                {uploadError && (
+                    <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">
+                        {uploadError}
                     </div>
-                </div>
+                )}
+
+                {uploadedUrl ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
+                        {uploadedUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                            <video src={uploadedUrl} controls className="w-full h-full object-cover" />
+                        ) : (
+                            <img src={uploadedUrl} alt="Uploaded" loading="lazy" className="w-full h-full object-cover" />
+                        )}
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <button
+                                type="button"
+                                onClick={() => setUploadedUrl('')}
+                                className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
+                            >
+                                <Trash2 size={20} />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div
+                        onClick={() => !uploading && fileInputRef.current?.click()}
+                        onDragOver={handleDragOver}
+                        onDragEnter={handleDragEnter}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
+                            uploading
+                                ? 'bg-primary/[0.03] border-primary/40'
+                                : isDragging
+                                    ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg'
+                                    : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                        }`}
+                    >
+                        {uploading ? (
+                            <div className="flex flex-col items-center">
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                <div className="relative flex flex-col items-center">
+                                    <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
+                                        <Upload size={24} className="text-primary" />
+                                    </div>
+                                    <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                        <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-600 mt-3">
+                                        {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 25)}${uploadingFileName.length > 25 ? '...' : ''}` : 'Uploading to cloud...'}
+                                    </span>
+                                    <span className="text-xs text-gray-400 mt-0.5">Compressing & uploading...</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className={`flex flex-col items-center text-gray-500 transition-all duration-300 ${isDragging ? 'scale-105' : ''}`}>
+                                <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isDragging ? 'bg-primary/20 text-primary scale-110' : 'bg-gray-100 text-gray-400'}`}>
+                                    <Upload size={24} className={isDragging ? 'animate-upload-bounce' : ''} />
+                                </div>
+                                <span className={`text-sm font-bold transition-colors ${isDragging ? 'text-primary' : 'text-gray-700'}`}>
+                                    {isDragging ? 'Drop file here' : 'Click or drag file here'}
+                                </span>
+                                <span className="text-xs text-gray-400 mt-1">Images & Videos up to 10MB</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                />
+
+                {activeTab === 'images' && uploadedUrl && (
+                    <>
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5 text-gray-700">Page</label>
+                            <select
+                                value={imageFormData.page}
+                                onChange={(e) => setImageFormData({ ...imageFormData, page: e.target.value })}
+                                className="input w-full"
+                            >
+                                {PAGES.map(p => (
+                                    <option key={p} value={p}>{PAGE_LABELS[p] || p}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption (Optional)</label>
+                            <input
+                                type="text"
+                                value={imageFormData.title}
+                                onChange={(e) => setImageFormData({ ...imageFormData, title: e.target.value })}
+                                className="input w-full"
+                                placeholder="e.g. Beautiful mountain view from balcony"
+                            />
+                        </div>
+                    </>
+                )}
             </div>
-        </div>
+        </AdminModal>
     );
 
     // ── Edit Image Modal ──
     const renderEditImageModal = () => (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-xl font-heading">Edit Image</h3>
-                    <button onClick={() => setEditingImage(null)} className="text-gray-400 hover:text-gray-600">
-                        <X size={20} />
-                    </button>
+        <AdminModal
+            isOpen={!!editingImage}
+            onClose={() => setEditingImage(null)}
+            title="Edit Image"
+            icon={<Edit2 size={20} />}
+            size="md"
+            footer={
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                    <button type="button" onClick={() => setEditingImage(null)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                    <button type="button" onClick={handleEditImageSave} disabled={savingEdit} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">Save Changes</button>
+                </div>
+            }
+        >
+            <div className="space-y-5">
+                <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
+                    <img src={editingImage!.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                 </div>
 
-                <div className="space-y-5">
-                    <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
-                        <img src={editingImage!.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1.5 text-gray-700">Page</label>
-                        <select
-                            value={editFormData.page}
-                            onChange={(e) => setEditFormData({ ...editFormData, page: e.target.value })}
-                            className="input w-full"
-                        >
-                            {PAGES.map(p => (
-                                <option key={p} value={p}>{PAGE_LABELS[p] || p}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption</label>
-                        <input
-                            type="text"
-                            value={editFormData.title}
-                            onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                            className="input w-full"
-                            placeholder="Image title"
-                        />
-                    </div>
-
-                    <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={editFormData.is_active}
-                            onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
-                            className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
-                        />
-                        <span className="text-sm font-semibold text-gray-700">Visible on website</span>
-                    </label>
-
-                    <div className="flex space-x-4 pt-2">
-                        <button type="button" onClick={() => setEditingImage(null)} className="btn-secondary flex-1">
-                            Cancel
-                        </button>
-                        <button type="button" onClick={handleEditImageSave} className="btn-primary flex-1">
-                            Save Changes
-                        </button>
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Page</label>
+                    <select
+                        value={editFormData.page}
+                        onChange={(e) => setEditFormData({ ...editFormData, page: e.target.value })}
+                        className="input w-full"
+                    >
+                        {PAGES.map(p => (
+                            <option key={p} value={p}>{PAGE_LABELS[p] || p}</option>
+                        ))}
+                    </select>
                 </div>
+
+                <div>
+                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Title / Caption</label>
+                    <input
+                        type="text"
+                        value={editFormData.title}
+                        onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                        className="input w-full"
+                        placeholder="Image title"
+                    />
+                </div>
+
+                <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={editFormData.is_active}
+                        onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                        className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
+                    />
+                    <span className="text-sm font-semibold text-gray-700">Visible on website</span>
+                </label>
             </div>
-        </div>
+        </AdminModal>
     );
 
     // ── Edit File (Media Library) Modal ──
     const renderEditFileModal = () => (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-xl font-heading">Edit Metadata</h3>
-                    <button onClick={() => setEditingFile(null)} className="text-gray-400 hover:text-gray-600">
-                        <X size={20} />
-                    </button>
+        <AdminModal
+            isOpen={!!editingFile}
+            onClose={() => setEditingFile(null)}
+            title="Edit Metadata"
+            icon={<Edit2 size={20} />}
+            size="md"
+            footer={
+                <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                    <button type="button" onClick={() => setEditingFile(null)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                    <button type="button" onClick={handleEditFileSave} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">Save Changes</button>
+                </div>
+            }
+        >
+            <div className="space-y-4">
+                <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
+                    {editingFile!.type === 'video' || editingFile!.url.match(/\.(mp4|webm|ogg)$/i) ? (
+                        <video src={editingFile!.url} controls className="w-full h-full object-cover" />
+                    ) : (
+                        <img src={editingFile!.url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    )}
                 </div>
 
-                <div className="space-y-4">
-                    <div className="aspect-video rounded-xl overflow-hidden border border-gray-200">
-                        {editingFile!.type === 'video' || editingFile!.url.match(/\.(mp4|webm|ogg)$/i) ? (
-                            <video src={editingFile!.url} controls className="w-full h-full object-cover" />
-                        ) : (
-                            <img src={editingFile!.url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                        )}
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1.5 text-gray-700">File Name</label>
+                    <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                        className="input w-full"
+                    />
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1.5 text-gray-700">File Name</label>
-                        <input
-                            type="text"
-                            value={editForm.name}
-                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                            className="input w-full"
-                        />
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Alt Text</label>
+                    <input
+                        type="text"
+                        value={editForm.alt_text}
+                        onChange={(e) => setEditForm({ ...editForm, alt_text: e.target.value })}
+                        className="input w-full"
+                        placeholder="Descriptive text for accessibility"
+                    />
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1.5 text-gray-700">Alt Text</label>
-                        <input
-                            type="text"
-                            value={editForm.alt_text}
-                            onChange={(e) => setEditForm({ ...editForm, alt_text: e.target.value })}
-                            className="input w-full"
-                            placeholder="Descriptive text for accessibility"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium mb-1.5 text-gray-700">Folder</label>
-                        <input
-                            type="text"
-                            value={editForm.folder}
-                            onChange={(e) => setEditForm({ ...editForm, folder: e.target.value })}
-                            className="input w-full"
-                            placeholder="e.g. gallery, hero"
-                            list="edit-folders"
-                        />
-                        <datalist id="edit-folders">
-                            {folders.map(f => <option key={f} value={f} />)}
-                        </datalist>
-                    </div>
-
-                    <div className="flex space-x-4 pt-2">
-                        <button type="button" onClick={() => setEditingFile(null)} className="btn-secondary flex-1">
-                            Cancel
-                        </button>
-                        <button type="button" onClick={handleEditFileSave} className="btn-primary flex-1">
-                            Save Changes
-                        </button>
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Folder</label>
+                    <input
+                        type="text"
+                        value={editForm.folder}
+                        onChange={(e) => setEditForm({ ...editForm, folder: e.target.value })}
+                        className="input w-full"
+                        placeholder="e.g. gallery, hero"
+                        list="edit-folders"
+                    />
+                    <datalist id="edit-folders">
+                        {folders.map(f => <option key={f} value={f} />)}
+                    </datalist>
                 </div>
             </div>
-        </div>
+        </AdminModal>
     );
 
     const tabClass = (tab: Tab) =>
@@ -740,7 +723,7 @@ const MediaPage = () => {
                                                     >
                                                         <ExternalLink size={16} />
                                                     </a>
-                                                    <button onClick={() => handleDeleteImage(img.id)} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg">
+                                                    <button onClick={() => handleDeleteImage(img)} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg">
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
@@ -779,6 +762,16 @@ const MediaPage = () => {
                 confirmLabel="Delete"
                 onConfirm={handleDeleteConfirm}
                 onCancel={() => setDeleteTarget(null)}
+                destructive
+            />
+
+            <ConfirmDialog
+                isOpen={!!deleteImageTarget}
+                title="Delete Image"
+                message={`Are you sure you want to delete "${deleteImageTarget?.title || 'this image'}"? This action cannot be undone.`}
+                confirmLabel="Delete"
+                onConfirm={confirmDeleteImage}
+                onCancel={() => setDeleteImageTarget(null)}
                 destructive
             />
         </div>

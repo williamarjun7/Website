@@ -5,7 +5,6 @@ import {
     Trash2,
     Edit2,
     Send,
-    X,
     FileText
 } from 'lucide-react';
 import {
@@ -18,6 +17,7 @@ import {
 } from '../../services/pageService';
 import { addRevision } from '../../services/revisionService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import AdminModal from '../../components/admin/AdminModal';
 import Skeleton from '../../components/common/Skeleton';
 import { PermissionGuard, PermissionButton } from '../../components/common/PermissionGuard';
 import { usePermission } from '../../hooks/usePermission';
@@ -269,130 +269,128 @@ const Pages = () => {
             </div>
 
             {/* Add/Edit Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl font-heading">
-                                {editingPage ? 'Edit Page' : 'Create New Page'}
-                            </h3>
-                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Title</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={form.title}
-                                    onChange={(e) => {
-                                        const title = e.target.value;
-                                        setForm({
-                                            ...form,
-                                            title,
-                                            slug: editingPage ? form.slug : slugify(title)
-                                        });
-                                    }}
-                                    className="input w-full"
-                                    placeholder="Page title"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Slug</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={form.slug}
-                                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
-                                    className="input w-full font-mono text-sm"
-                                    placeholder="page-slug"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">SEO Title</label>
-                                    <input
-                                        type="text"
-                                        value={form.seo_title}
-                                        onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
-                                        className="input w-full"
-                                        placeholder="Meta title"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Author</label>
-                                    <input
-                                        type="text"
-                                        value={form.author}
-                                        onChange={(e) => setForm({ ...form, author: e.target.value })}
-                                        className="input w-full"
-                                        placeholder="Author name"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">SEO Description</label>
-                                <textarea
-                                    rows={2}
-                                    value={form.seo_description}
-                                    onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
-                                    className="input w-full resize-none"
-                                    placeholder="Meta description"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Featured Image URL</label>
-                                <input
-                                    type="text"
-                                    value={form.featured_image}
-                                    onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
-                                    className="input w-full font-mono text-sm"
-                                    placeholder="https://..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Content</label>
-                                <textarea
-                                    rows={6}
-                                    value={form.page_content}
-                                    onChange={(e) => setForm({ ...form, page_content: e.target.value })}
-                                    className="input w-full resize-none font-mono text-sm"
-                                    placeholder="Page content (HTML supported)"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Status</label>
-                                <select
-                                    value={form.status}
-                                    onChange={(e) => setForm({ ...form, status: e.target.value as SitePage['status'] })}
-                                    className="input w-full"
-                                >
-                                    <option value="draft">Draft</option>
-                                    <option value="review">Review</option>
-                                    <option value="published">Published</option>
-                                    <option value="archived">Archived</option>
-                                </select>
-                            </div>
-
-                            <div className="flex space-x-4 pt-2">
-                                <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" disabled={saving} className="btn-primary flex-1">
-                                    {saving ? 'Saving...' : (editingPage ? 'Update Page' : 'Create Page')}
-                                </button>
-                            </div>
-                        </form>
+            <AdminModal
+                isOpen={isModalOpen}
+                onClose={() => setModalOpen(false)}
+                title={editingPage ? 'Edit Page' : 'Create New Page'}
+                size="lg"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" form="page-form" disabled={saving} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+                            {saving ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Saving...</span>
+                                </span>
+                            ) : (editingPage ? 'Update Page' : 'Create Page')}
+                        </button>
                     </div>
-                </div>
-            )}
+                }
+            >
+                <form id="page-form" onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.title}
+                            onChange={(e) => {
+                                const title = e.target.value;
+                                setForm({
+                                    ...form,
+                                    title,
+                                    slug: editingPage ? form.slug : slugify(title)
+                                });
+                            }}
+                            className="input w-full"
+                            placeholder="Page title"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Slug</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.slug}
+                            onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                            className="input w-full font-mono text-sm"
+                            placeholder="page-slug"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">SEO Title</label>
+                            <input
+                                type="text"
+                                value={form.seo_title}
+                                onChange={(e) => setForm({ ...form, seo_title: e.target.value })}
+                                className="input w-full"
+                                placeholder="Meta title"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Author</label>
+                            <input
+                                type="text"
+                                value={form.author}
+                                onChange={(e) => setForm({ ...form, author: e.target.value })}
+                                className="input w-full"
+                                placeholder="Author name"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">SEO Description</label>
+                        <textarea
+                            rows={2}
+                            value={form.seo_description}
+                            onChange={(e) => setForm({ ...form, seo_description: e.target.value })}
+                            className="input w-full resize-none"
+                            placeholder="Meta description"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Featured Image URL</label>
+                        <input
+                            type="text"
+                            value={form.featured_image}
+                            onChange={(e) => setForm({ ...form, featured_image: e.target.value })}
+                            className="input w-full font-mono text-sm"
+                            placeholder="https://..."
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Content</label>
+                        <textarea
+                            rows={6}
+                            value={form.page_content}
+                            onChange={(e) => setForm({ ...form, page_content: e.target.value })}
+                            className="input w-full resize-none font-mono text-sm"
+                            placeholder="Page content (HTML supported)"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Status</label>
+                        <select
+                            value={form.status}
+                            onChange={(e) => setForm({ ...form, status: e.target.value as SitePage['status'] })}
+                            className="input w-full"
+                        >
+                            <option value="draft">Draft</option>
+                            <option value="review">Review</option>
+                            <option value="published">Published</option>
+                            <option value="archived">Archived</option>
+                        </select>
+                    </div>
+                </form>
+            </AdminModal>
 
             <ConfirmDialog
                 isOpen={!!deleteTarget}

@@ -99,10 +99,12 @@ const AdminVerify = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
                         <input
                             type="text"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
                             required
                             value={code}
                             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            className="w-full text-center text-3xl tracking-[1em] font-bold py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none"
+                            className="w-full max-w-[280px] mx-auto text-center text-2xl sm:text-3xl tracking-[0.5em] sm:tracking-[1em] font-bold py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors outline-none"
                             placeholder="000000"
                         />
                     </div>
@@ -113,10 +115,10 @@ const AdminVerify = () => {
                         className="w-full btn-primary py-3 flex items-center justify-center space-x-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                         {loading ? (
-                            <>
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="flex items-center justify-center space-x-2">
+                                <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 <span>Verifying...</span>
-                            </>
+                            </span>
                         ) : (
                             <span>Verify Code</span>
                         )}
@@ -136,7 +138,7 @@ const AdminVerify = () => {
                 </form>
 
                 {/* Footer */}
-                <div className="bg-gray-50 px-8 py-4 text-center border-t border-gray-100 flex justify-between items-center">
+                <div className="bg-gray-50 px-6 sm:px-8 py-4 text-center border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-2">
                     <button
                         onClick={() => navigate('/admin/signup')}
                         className="text-gray-500 hover:text-gray-700 text-sm flex items-center space-x-1"

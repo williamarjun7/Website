@@ -14,7 +14,6 @@ import {
     Banknote,
     Plus,
     Eye,
-    X,
     User,
     Mail,
     Phone
@@ -22,6 +21,8 @@ import {
 import { getAllBookings, updateBookingStatus, createBooking, type Booking, type CreateBookingData } from '../../services/bookingService';
 import { getAllRoomsForAdmin } from '../../services/roomService';
 import { exportToCsv } from '../../utils/csv';
+import AdminModal from '../../components/admin/AdminModal';
+import FormSection from '../../components/admin/FormSection';
 import { SkeletonTableRow } from '../../components/common/Skeleton';
 
 interface AdminBooking {
@@ -111,9 +112,21 @@ const Bookings = () => {
         return result;
     }, [bookings, searchTerm, statusFilter]);
 
-    useEffect(() => {
-        setTimeout(() => setCurrentPage(1), 0);
-    }, [searchTerm, statusFilter]);
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        setCurrentPage(1);
+    };
+
+    const handleStatusChange = (value: string) => {
+        setStatusFilter(value);
+        setCurrentPage(1);
+    };
+
+    const clearFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('all');
+        setCurrentPage(1);
+    };
 
     const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
     const paginatedBookings = filteredBookings.slice(
@@ -164,6 +177,11 @@ const Bookings = () => {
     const handleCreateBooking = async () => {
         if (!createForm.guest_name || !createForm.room_id || !createForm.check_in || !createForm.check_out) {
             setToastMessage('Please fill all required fields');
+            setTimeout(() => setToastMessage(''), 5000);
+            return;
+        }
+        if (createForm.check_out <= createForm.check_in) {
+            setToastMessage('Check-out must be after check-in');
             setTimeout(() => setToastMessage(''), 5000);
             return;
         }
@@ -299,7 +317,7 @@ const Bookings = () => {
                         type="text"
                         placeholder="Search bookings..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-10 input w-full"
                     />
                 </div>
@@ -307,7 +325,7 @@ const Bookings = () => {
                     <Filter className="text-gray-400" size={20} />
                     <select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
+                        onChange={(e) => handleStatusChange(e.target.value)}
                         className="input min-w-[150px]"
                     >
                         <option value="all">All Status</option>
@@ -315,7 +333,7 @@ const Bookings = () => {
                         <option value="checked_in">Checked In</option>
                         <option value="checked_out">Checked Out</option>
                         <option value="cancelled">Cancelled</option>
-                        <option disabled>── Payment ──</option>
+                        <option disabled className="text-gray-300">──────────────</option>
                         <option value="paid">Paid</option>
                         <option value="pending">Pending</option>
                         <option value="failed">Failed</option>
@@ -353,10 +371,18 @@ const Bookings = () => {
                                     Array.from({ length: 8 }).map((_, i) => (
                                         <SkeletonTableRow key={i} cols={9} />
                                     ))
-                                ) : filteredBookings.length === 0 ? (
+                    ) : filteredBookings.length === 0 ? (
                                     <tr>
                                         <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
-                                        No bookings found matching your filters.
+                                        <p>No bookings found matching your filters.</p>
+                                        {(searchTerm || statusFilter !== 'all') && (
+                                            <button
+                                                onClick={clearFilters}
+                                                className="mt-2 text-primary font-medium hover:underline text-sm"
+                                            >
+                                                Clear all filters
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ) : (
@@ -497,19 +523,38 @@ const Bookings = () => {
             )}
 
             {/* Create Booking Modal */}
-            {showCreateModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold font-heading flex items-center">
-                                <Plus className="mr-2 text-primary" size={20} />
-                                New Booking
-                            </h2>
-                            <button onClick={() => setShowCreateModal(false)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                                <X size={18} />
-                            </button>
-                        </div>
-
+            <AdminModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                title="New Booking"
+                icon={<Plus size={20} />}
+                size="md"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setShowCreateModal(false)}
+                            className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleCreateBooking}
+                            disabled={createSaving}
+                            className="btn-primary w-full sm:w-auto flex-1 sm:flex-none"
+                        >
+                            {createSaving ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Creating...</span>
+                                </span>
+                            ) : 'Create Booking'}
+                        </button>
+                    </div>
+                }
+            >
+                <div className="space-y-5">
+                    <FormSection title="Guest Information">
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold mb-1.5 text-gray-700">Guest Name <span className="text-red-400">*</span></label>
@@ -522,7 +567,7 @@ const Bookings = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1.5 text-gray-700">Email</label>
                                     <div className="relative">
@@ -546,6 +591,11 @@ const Bookings = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Booking Details">
+                        <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold mb-1.5 text-gray-700">Room <span className="text-red-400">*</span></label>
                                 <select
@@ -559,7 +609,7 @@ const Bookings = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold mb-1.5 text-gray-700">Check-in <span className="text-red-400">*</span></label>
                                     <input
@@ -577,6 +627,11 @@ const Bookings = () => {
                                     />
                                 </div>
                             </div>
+                        </div>
+                    </FormSection>
+
+                    <FormSection title="Payment">
+                        <div className="space-y-4">
                             <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">Nights:</span>
@@ -603,121 +658,100 @@ const Bookings = () => {
                                     <option value="pending">Pending Payment</option>
                                 </select>
                             </div>
-                            <div className="flex space-x-4 pt-4 border-t">
-                                <button onClick={() => setShowCreateModal(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button
-                                    onClick={handleCreateBooking}
-                                    disabled={createSaving}
-                                    className="btn-primary flex-1"
-                                >
-                                    {createSaving ? 'Creating...' : 'Create Booking'}
-                                </button>
-                            </div>
                         </div>
-                    </div>
+                    </FormSection>
                 </div>
-            )}
+            </AdminModal>
 
             {/* View Booking Detail Modal */}
-            {viewingBooking && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold font-heading flex items-center">
-                                <Eye className="mr-2 text-primary" size={20} />
-                                Booking Details
-                            </h2>
-                            <button onClick={() => setViewingBooking(null)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-                                <X size={18} />
-                            </button>
+            <AdminModal
+                isOpen={viewingBooking !== null}
+                onClose={() => setViewingBooking(null)}
+                title="Booking Details"
+                icon={<Eye size={20} />}
+                size="sm"
+                footer={
+                    <button
+                        onClick={() => setViewingBooking(null)}
+                        className="btn-primary w-full"
+                    >
+                        Close
+                    </button>
+                }
+            >
+                {viewingBooking && (
+                    <div className="space-y-4">
+                        <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+                            <div className="flex items-center space-x-3">
+                                <User size={18} className="text-gray-400" />
+                                <div>
+                                    <p className="font-semibold text-gray-900">{viewingBooking.guest_name}</p>
+                                    <p className="text-sm text-gray-500">{viewingBooking.guest_email}</p>
+                                    <p className="text-sm text-gray-500">{viewingBooking.guest_phone}</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                                <div className="flex items-center space-x-3">
-                                    <User size={18} className="text-gray-400" />
-                                    <div>
-                                        <p className="font-semibold text-gray-900">{viewingBooking.guest_name}</p>
-                                        <p className="text-sm text-gray-500">{viewingBooking.guest_email}</p>
-                                        <p className="text-sm text-gray-500">{viewingBooking.guest_phone}</p>
-                                    </div>
-                                </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Room</p>
+                                <p className="font-semibold text-gray-900">{viewingBooking.rooms?.name || 'Unknown'}</p>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Room</p>
-                                    <p className="font-semibold text-gray-900">{viewingBooking.rooms?.name || 'Unknown'}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Booking ID</p>
-                                    <p className="font-semibold text-gray-900 text-xs break-all">{viewingBooking.id}</p>
-                                </div>
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Booking ID</p>
+                                <p className="font-semibold text-gray-900 text-xs break-all">{viewingBooking.id}</p>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Check-in</p>
-                                    <p className="font-semibold text-gray-900">{new Date(viewingBooking.check_in).toLocaleDateString()}</p>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Check-out</p>
-                                    <p className="font-semibold text-gray-900">{new Date(viewingBooking.check_out).toLocaleDateString()}</p>
-                                </div>
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Check-in</p>
+                                <p className="font-semibold text-gray-900">{new Date(viewingBooking.check_in).toLocaleDateString()}</p>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Status</p>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(viewingBooking.booking_status)}`}>
-                                        {viewingBooking.booking_status.replace('_', ' ')}
-                                    </span>
-                                </div>
-                                <div className="bg-gray-50 rounded-xl p-3">
-                                    <p className="text-xs text-gray-500 mb-1">Payment</p>
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(viewingBooking.payment_status)}`}>
-                                        {getPaymentLabel(viewingBooking.payment_status)}
-                                    </span>
-                                </div>
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Check-out</p>
+                                <p className="font-semibold text-gray-900">{new Date(viewingBooking.check_out).toLocaleDateString()}</p>
                             </div>
-
-                            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Total Price</span>
-                                    <span className="font-bold text-gray-900">NPR {(viewingBooking.total_price ?? 0).toLocaleString()}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Advance Paid</span>
-                                    <span className="font-semibold text-amber-700">
-                                        {viewingBooking.advance_amount != null
-                                            ? `NPR ${(viewingBooking.advance_amount ?? 0).toLocaleString()}`
-                                            : viewingBooking.payment_status === 'pay_at_property'
-                                                ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 60 / 100).toLocaleString()}`
-                                                : '—'}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Balance Due</span>
-                                    <span className="font-semibold text-green-700">
-                                        {viewingBooking.balance_amount != null
-                                            ? `NPR ${(viewingBooking.balance_amount ?? 0).toLocaleString()}`
-                                            : viewingBooking.payment_status === 'pay_at_property'
-                                                ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 40 / 100).toLocaleString()}`
-                                                : '—'}
-                                    </span>
-                                </div>
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Status</p>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(viewingBooking.booking_status)}`}>
+                                    {viewingBooking.booking_status.replace('_', ' ')}
+                                </span>
                             </div>
+                            <div className="bg-gray-50 rounded-xl p-3">
+                                <p className="text-xs text-gray-500 mb-1">Payment</p>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(viewingBooking.payment_status)}`}>
+                                    {getPaymentLabel(viewingBooking.payment_status)}
+                                </span>
+                            </div>
+                        </div>
 
-                            <button
-                                onClick={() => setViewingBooking(null)}
-                                className="btn-primary w-full"
-                            >
-                                Close
-                            </button>
+                        <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Total Price</span>
+                                <span className="font-bold text-gray-900">NPR {(viewingBooking.total_price ?? 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Advance Paid</span>
+                                <span className="font-semibold text-amber-700">
+                                    {viewingBooking.advance_amount != null
+                                        ? `NPR ${(viewingBooking.advance_amount ?? 0).toLocaleString()}`
+                                        : viewingBooking.payment_status === 'pay_at_property'
+                                            ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 60 / 100).toLocaleString()}`
+                                            : '—'}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Balance Due</span>
+                                <span className="font-semibold text-green-700">
+                                    {viewingBooking.balance_amount != null
+                                        ? `NPR ${(viewingBooking.balance_amount ?? 0).toLocaleString()}`
+                                        : viewingBooking.payment_status === 'pay_at_property'
+                                            ? `NPR ${Math.round((viewingBooking.total_price ?? 0) * 40 / 100).toLocaleString()}`
+                                            : '—'}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </AdminModal>
         </div>
     );
 };

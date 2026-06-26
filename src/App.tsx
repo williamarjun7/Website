@@ -5,7 +5,6 @@ import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import ScrollToTop from './components/common/ScrollToTop';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import { TenantProvider } from './hooks/useTenant';
 import { PermissionProvider } from './hooks/usePermission';
 
 // Public Pages (lazy loaded)
@@ -80,7 +79,6 @@ function App() {
         transition: 'opacity 0.9s cubic-bezier(0.25, 0.1, 0.25, 1), transform 0.9s cubic-bezier(0.25, 0.1, 0.25, 1), filter 0.9s cubic-bezier(0.25, 0.1, 0.25, 1)',
       }}>
       <ErrorBoundary>
-      <TenantProvider>
         <PermissionProvider>
           <Router>
             <ScrollToTop />
@@ -128,7 +126,6 @@ function App() {
             </Routes>
           </Router>
         </PermissionProvider>
-      </TenantProvider>
     </ErrorBoundary>
     </div>
     </>

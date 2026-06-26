@@ -39,6 +39,8 @@ import {
 } from '../../services/contentService';
 import { uploadFile } from '../../services/storageService';
 import Skeleton from '../../components/common/Skeleton';
+import AdminModal from '../../components/admin/AdminModal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 interface MenuCategoryData {
     id: string;
@@ -99,8 +101,15 @@ const Menu = () => {
     // Upload state
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState<'success' | 'error'>('error');
     const [uploadingFileName, setUploadingFileName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Delete confirm states
+    const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
+    const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+    const [deleteMenuPageId, setDeleteMenuPageId] = useState<string | null>(null);
 
     // Menu Pages state
     const [menuPages, setMenuPages] = useState<MenuPageData[]>([]);
@@ -143,22 +152,32 @@ const Menu = () => {
             setEditingCategory(null);
             setCategoryForm({ name: '', sort_order: 0 });
             loadMenu();
+            setToastType('success');
+            setToastMessage(editingCategory ? 'Category updated!' : 'Category created!');
+            setTimeout(() => setToastMessage(''), 5000);
         } catch (err) {
-            console.error('Failed to save category:', err);
+            const msg = err instanceof Error ? err.message : 'Failed to save category';
+            setToastType('error');
+            setToastMessage(msg);
+            setTimeout(() => setToastMessage(''), 5000);
         } finally {
             setSavingCategory(false);
         }
     };
 
     const handleDeleteCategory = async (id: string) => {
-        if (confirm('Delete this category? All items in it will be deleted.')) {
-            try {
-                await deleteCategory(id);
-                loadMenu();
-            } catch (err) {
-                console.error('Failed to delete category:', err);
-            }
+        setDeleteCategoryId(id);
+    };
+
+    const confirmDeleteCategory = async () => {
+        if (!deleteCategoryId) return;
+        try {
+            await deleteCategory(deleteCategoryId);
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to delete category:', err);
         }
+        setDeleteCategoryId(null);
     };
 
     // Item Actions
@@ -192,22 +211,32 @@ const Menu = () => {
                 is_most_sold: false
             });
             loadMenu();
+            setToastType('success');
+            setToastMessage(editingItem ? 'Menu item updated!' : 'Menu item created!');
+            setTimeout(() => setToastMessage(''), 5000);
         } catch (err) {
-            console.error('Failed to save menu item:', err);
+            const msg = err instanceof Error ? err.message : 'Failed to save menu item';
+            setToastType('error');
+            setToastMessage(msg);
+            setTimeout(() => setToastMessage(''), 5000);
         } finally {
             setSavingItem(false);
         }
     };
 
     const handleDeleteItem = async (id: string) => {
-        if (confirm('Delete this item?')) {
-            try {
-                await deleteMenuItem(id);
-                loadMenu();
-            } catch (err) {
-                console.error('Failed to delete item:', err);
-            }
+        setDeleteItemId(id);
+    };
+
+    const confirmDeleteItem = async () => {
+        if (!deleteItemId) return;
+        try {
+            await deleteMenuItem(deleteItemId);
+            loadMenu();
+        } catch (err) {
+            console.error('Failed to delete item:', err);
         }
+        setDeleteItemId(null);
     };
 
     const handleToggleAvailability = async (id: string, currentStatus: boolean) => {
@@ -333,12 +362,18 @@ const Menu = () => {
     };
 
     const handleMenuPageDelete = async (id: string) => {
-        if (!confirm('Delete this menu page image?')) return;
-        const { error } = await deleteSiteImage(id);
+        setDeleteMenuPageId(id);
+    };
+
+    const confirmDeleteMenuPage = async () => {
+        if (!deleteMenuPageId) return;
+        const { error } = await deleteSiteImage(deleteMenuPageId);
         if (error) {
             console.error('Failed to delete: ' + error);
+            setDeleteMenuPageId(null);
             return;
         }
+        setDeleteMenuPageId(null);
         loadMenuPages();
     };
 
@@ -368,6 +403,13 @@ const Menu = () => {
     return (
         <div className="space-y-8">
             <Helmet><title>Menu | Highlands Cafe & Motel Inn</title></Helmet>
+            {toastMessage && (
+                <div className={`fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm border ${
+                    toastType === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
+                }`}>
+                    {toastMessage}
+                </div>
+            )}
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold font-heading text-gray-900">Cafe Menu</h1>
@@ -476,6 +518,7 @@ const Menu = () => {
                                                 is_featured: false,
                                                 is_most_sold: false
                                             });
+                                            setUploadError('');
                                             setItemModalOpen(true);
                                         }}
                                         className="flex items-center space-x-1 text-sm text-primary font-medium hover:text-primary/80"
@@ -569,6 +612,7 @@ const Menu = () => {
                                                                         is_featured: item.is_featured ?? false,
                                                                         is_most_sold: item.is_most_sold ?? false
                                                                     });
+                                                                    setUploadError('');
                                                                     setItemModalOpen(true);
                                                                 }}
                                                                 className="p-1 text-gray-400 hover:text-primary"
@@ -596,219 +640,210 @@ const Menu = () => {
             )}
 
             {/* Category Modal */}
-            {isCategoryModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl">
-                        <h3 className="font-bold text-lg mb-4 font-heading border-b pb-2">
-                            {editingCategory ? 'Edit Category' : 'New Category'}
-                        </h3>
-                        <form onSubmit={handleCategorySubmit}>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Name</label>
+            <AdminModal
+                isOpen={isCategoryModalOpen}
+                onClose={() => setCategoryModalOpen(false)}
+                title={editingCategory ? 'Edit Category' : 'New Category'}
+                size="sm"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setCategoryModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" form="category-form" disabled={savingCategory} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+                            {savingCategory ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Saving...</span>
+                                </span>
+                            ) : (editingCategory ? 'Update' : 'Save')}
+                        </button>
+                    </div>
+                }
+            >
+                <form id="category-form" onSubmit={handleCategorySubmit}>
+                    <div className="mb-4">
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            required
+                            value={categoryForm.name}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                            className="input w-full"
+                            placeholder="e.g. Breakfast"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Sort Order</label>
+                        <input
+                            type="number"
+                            required
+                            value={categoryForm.sort_order}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, sort_order: Number(e.target.value) })}
+                            className="input w-full"
+                        />
+                    </div>
+                </form>
+            </AdminModal>
+            {/* Item Modal */}
+            <AdminModal
+                isOpen={isItemModalOpen}
+                onClose={() => setItemModalOpen(false)}
+                title={editingItem ? 'Edit Item' : 'New Item'}
+                size="md"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setItemModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" form="item-form" disabled={uploading || savingItem} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+                            {savingItem ? 'Saving...' : (editingItem ? 'Update Item' : 'Create Item')}
+                        </button>
+                    </div>
+                }
+            >
+                <form id="item-form" onSubmit={handleItemSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Name</label>
+                        <input
+                            type="text"
+                            required
+                            value={itemForm.name}
+                            onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
+                            className="input w-full"
+                            placeholder="e.g. Nepali Thali"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Description</label>
+                        <textarea
+                            rows={2}
+                            value={itemForm.description}
+                            onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
+                            className="input w-full resize-none"
+                            placeholder="Brief description of the dish..."
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Category</label>
+                        <select
+                            required
+                            value={itemForm.category}
+                            onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
+                            className="input w-full"
+                        >
+                            <option value="" disabled>Select category</option>
+                            {menu.map(cat => (
+                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Price (NPR)</label>
+                            <input
+                                type="number"
+                                required
+                                value={itemForm.price}
+                                onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
+                                className="input w-full"
+                                placeholder="450"
+                            />
+                        </div>
+                        <div className="flex items-center sm:pt-6">
+                            <label className="flex items-center space-x-2 cursor-pointer group">
                                 <input
-                                    type="text"
-                                    required
-                                    value={categoryForm.name}
-                                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. Breakfast"
+                                    type="checkbox"
+                                    checked={itemForm.available}
+                                    onChange={(e) => setItemForm({ ...itemForm, available: e.target.checked })}
+                                    className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
                                 />
+                                <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">Available</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Image Upload Area */}
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Item Image</label>
+
+                        {uploadError && (
+                            <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm mb-2 border border-red-100">
+                                {uploadError}
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium mb-1">Sort Order</label>
-                                <input
-                                    type="number"
-                                    required
-                                    value={categoryForm.sort_order}
-                                    onChange={(e) => setCategoryForm({ ...categoryForm, sort_order: Number(e.target.value) })}
-                                    className="input w-full"
-                                />
-                            </div>
-                            <div className="flex space-x-3">
+                        )}
+
+                        {itemForm.image ? (
+                            <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 mb-2 group animate-fade-in-up">
+                                <img src={itemForm.image} alt="Preview" className="w-full h-full object-cover" />
                                 <button
                                     type="button"
-                                    onClick={() => setCategoryModalOpen(false)}
-                                    className="btn-secondary flex-1"
+                                    onClick={() => setItemForm(prev => ({ ...prev, image: '' }))}
+                                    className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
                                 >
-                                    Cancel
-                                </button>
-                                <button type="submit" disabled={savingCategory} className="btn-primary flex-1">
-                                    {savingCategory ? 'Saving...' : (editingCategory ? 'Update' : 'Save')}
+                                    <X size={16} />
                                 </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Item Modal */}
-            {isItemModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-                        <h3 className="font-bold text-lg mb-4 font-heading border-b pb-2">
-                            {editingItem ? 'Edit Item' : 'New Item'}
-                        </h3>
-                        <form onSubmit={handleItemSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={itemForm.name}
-                                    onChange={(e) => setItemForm({ ...itemForm, name: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. Nepali Thali"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
-                                <textarea
-                                    rows={2}
-                                    value={itemForm.description}
-                                    onChange={(e) => setItemForm({ ...itemForm, description: e.target.value })}
-                                    className="input w-full resize-none"
-                                    placeholder="Brief description of the dish..."
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Category</label>
-                                <select
-                                    required
-                                    value={itemForm.category}
-                                    onChange={(e) => setItemForm({ ...itemForm, category: e.target.value })}
-                                    className="input w-full"
-                                >
-                                    <option value="" disabled>Select category</option>
-                                    {menu.map(cat => (
-                                        <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-gray-700">Price (NPR)</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={itemForm.price}
-                                        onChange={(e) => setItemForm({ ...itemForm, price: e.target.value })}
-                                        className="input w-full"
-                                        placeholder="450"
-                                    />
-                                </div>
-                                <div className="flex items-center pt-6">
-                                    <label className="flex items-center space-x-2 cursor-pointer group">
-                                        <input
-                                            type="checkbox"
-                                            checked={itemForm.available}
-                                            onChange={(e) => setItemForm({ ...itemForm, available: e.target.checked })}
-                                            className="w-5 h-5 text-primary border-gray-300 rounded focus:ring-primary"
-                                        />
-                                        <span className="text-sm font-medium text-gray-700 group-hover:text-primary transition-colors">Available</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            {/* Image Upload Area */}
-                            <div>
-                                <label className="block text-sm font-medium mb-2 text-gray-700">Item Image</label>
-
-                                {uploadError && (
-                                    <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm mb-2 border border-red-100">
-                                        {uploadError}
-                                    </div>
-                                )}
-
-                                {itemForm.image ? (
-                                    <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 mb-2 group animate-fade-in-up">
-                                        <img src={itemForm.image} alt="Preview" className="w-full h-full object-cover" />
-                                        <button
-                                            type="button"
-                                            onClick={() => setItemForm(prev => ({ ...prev, image: '' }))}
-                                            className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors opacity-0 group-hover:opacity-100"
-                                        >
-                                            <X size={16} />
-                                        </button>
+                        ) : (
+                            <div
+                                onClick={() => !uploading && fileInputRef.current?.click()}
+                                className={`relative overflow-hidden border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-300 ${
+                                    uploading
+                                        ? 'bg-primary/[0.03] border-primary/40'
+                                        : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                                }`}
+                            >
+                                {uploading ? (
+                                    <div className="flex flex-col items-center">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                        <div className="relative flex flex-col items-center">
+                                            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
+                                                <Upload size={20} className="text-primary" />
+                                            </div>
+                                            <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                            </div>
+                                            <span className="text-xs font-medium text-gray-600 mt-2">
+                                                {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading...'}
+                                            </span>
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div
-                                        onClick={() => !uploading && fileInputRef.current?.click()}
-                                        className={`relative overflow-hidden border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-300 ${
-                                            uploading
-                                                ? 'bg-primary/[0.03] border-primary/40'
-                                                : 'border-gray-300 hover:border-primary hover:bg-primary/5'
-                                        }`}
-                                    >
-                                        {uploading ? (
-                                            <div className="flex flex-col items-center">
-                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
-                                                <div className="relative flex flex-col items-center">
-                                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
-                                                        <Upload size={20} className="text-primary" />
-                                                    </div>
-                                                    <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
-                                                        <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
-                                                    </div>
-                                                    <span className="text-xs font-medium text-gray-600 mt-2">
-                                                        {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading...'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center text-gray-500">
-                                                <Upload size={28} className="mb-2" />
-                                                <span className="text-sm font-medium">Click to upload image</span>
-                                                <span className="text-xs text-gray-400 mt-1">PNG, JPG, WebP • Max 2MB</span>
-                                            </div>
-                                        )}
+                                    <div className="flex flex-col items-center text-gray-500">
+                                        <Upload size={28} className="mb-2" />
+                                        <span className="text-sm font-medium">Click to upload image</span>
+                                        <span className="text-xs text-gray-400 mt-1">PNG, JPG, WebP • Max 2MB</span>
                                     </div>
                                 )}
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                />
                             </div>
-
-                            <div className="flex items-center space-x-6 pt-2">
-                                <label className="flex items-center space-x-2 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={itemForm.is_featured}
-                                        onChange={(e) => setItemForm({ ...itemForm, is_featured: e.target.checked })}
-                                        className="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500"
-                                    />
-                                    <span className="text-sm font-medium text-gray-700 group-hover:text-amber-600 transition-colors">Featured</span>
-                                </label>
-                                <label className="flex items-center space-x-2 cursor-pointer group">
-                                    <input
-                                        type="checkbox"
-                                        checked={itemForm.is_most_sold}
-                                        onChange={(e) => setItemForm({ ...itemForm, is_most_sold: e.target.checked })}
-                                        className="w-5 h-5 text-green-500 border-gray-300 rounded focus:ring-green-500"
-                                    />
-                                    <span className="text-sm font-medium text-gray-700 group-hover:text-green-600 transition-colors">Most Sold</span>
-                                </label>
-                            </div>
-
-                            <div className="flex space-x-3 pt-4 border-t">
-                                <button
-                                    type="button"
-                                    onClick={() => setItemModalOpen(false)}
-                                    className="btn-secondary flex-1"
-                                >
-                                    Cancel
-                                </button>
-                                <button type="submit" disabled={uploading || savingItem} className="btn-primary flex-1">
-                                    {savingItem ? 'Saving...' : (editingItem ? 'Update Item' : 'Create Item')}
-                                </button>
-                            </div>
-                        </form>
+                        )}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            className="hidden"
+                        />
                     </div>
-                </div>
-            )}
+
+                    <div className="flex items-center space-x-6">
+                        <label className="flex items-center space-x-2 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={itemForm.is_featured}
+                                onChange={(e) => setItemForm({ ...itemForm, is_featured: e.target.checked })}
+                                className="w-5 h-5 text-amber-500 border-gray-300 rounded focus:ring-amber-500"
+                            />
+                            <span className="text-sm font-medium text-gray-700 group-hover:text-amber-600 transition-colors">Featured</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={itemForm.is_most_sold}
+                                onChange={(e) => setItemForm({ ...itemForm, is_most_sold: e.target.checked })}
+                                className="w-5 h-5 text-green-500 border-gray-300 rounded focus:ring-green-500"
+                            />
+                            <span className="text-sm font-medium text-gray-700 group-hover:text-green-600 transition-colors">Most Sold</span>
+                        </label>
+                    </div>
+                </form>
+            </AdminModal>
 
             {/* ── Menu Pages / Full Menu Images ── */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-12">
@@ -913,99 +948,119 @@ const Menu = () => {
             </div>
 
             {/* Menu Pages Add Modal */}
-            {menuPageModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl font-heading">Add Menu Card Image</h3>
-                            <button type="button" onClick={() => setMenuPageModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
+            <AdminModal
+                isOpen={menuPageModalOpen}
+                onClose={() => setMenuPageModalOpen(false)}
+                title="Add Menu Card Image"
+                icon={<ImageIcon size={20} />}
+                size="sm"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setMenuPageModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button
+                            type="button"
+                            onClick={handleMenuPageAdd}
+                            disabled={mpUploading || !mpImageUrl}
+                            className={`btn-primary w-full sm:w-auto flex-1 sm:flex-none ${(!mpImageUrl || mpUploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            Add Image
+                        </button>
+                    </div>
+                }
+            >
+                <div className="space-y-5">
+                    {mpUploadError && (
+                        <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">
+                            {mpUploadError}
                         </div>
+                    )}
 
-                        <div className="space-y-5">
-                            {mpUploadError && (
-                                <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm border border-red-100">
-                                    {mpUploadError}
-                                </div>
-                            )}
-
-                            {mpImageUrl ? (
-                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
-                                    <img src={mpImageUrl} alt="Menu page preview" loading="lazy" className="w-full h-full object-cover" />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => setMpImageUrl('')}
-                                            className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div
-                                    onClick={() => !mpUploading && mpFileInputRef.current?.click()}
-                                    className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
-                                        mpUploading
-                                            ? 'bg-primary/[0.03] border-primary/40'
-                                            : 'border-gray-300 hover:border-primary hover:bg-primary/5'
-                                    }`}
-                                >
-                                    {mpUploading ? (
-                                        <div className="flex flex-col items-center">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
-                                            <div className="relative flex flex-col items-center">
-                                                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
-                                                    <Upload size={24} className="text-primary" />
-                                                </div>
-                                                <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                                    <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
-                                                </div>
-                                                <span className="text-sm font-medium text-gray-600 mt-3">
-                                                    {mpUploadingFileName ? `Uploading ${mpUploadingFileName.substring(0, 25)}${mpUploadingFileName.length > 25 ? '...' : ''}` : 'Uploading...'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center text-gray-500">
-                                            <Upload size={36} className="mb-2 text-gray-400" />
-                                            <span className="text-sm font-bold text-gray-700">Click to upload menu card image</span>
-                                            <span className="text-xs text-gray-400 mt-2">PNG, JPG, WebP up to 10MB</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <input
-                                ref={mpFileInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleMenuPageUpload}
-                                className="hidden"
-                            />
-
-                            <div className="flex space-x-4">
+                    {mpImageUrl ? (
+                        <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
+                            <img src={mpImageUrl} alt="Menu page preview" loading="lazy" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <button
                                     type="button"
-                                    onClick={() => setMenuPageModalOpen(false)}
-                                    className="btn-secondary flex-1"
+                                    onClick={() => setMpImageUrl('')}
+                                    className="bg-white text-red-500 p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
                                 >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={handleMenuPageAdd}
-                                    disabled={mpUploading || !mpImageUrl}
-                                    className={`btn-primary flex-1 ${(!mpImageUrl || mpUploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    Add Image
+                                    <Trash2 size={20} />
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div
+                            onClick={() => !mpUploading && mpFileInputRef.current?.click()}
+                            className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
+                                mpUploading
+                                    ? 'bg-primary/[0.03] border-primary/40'
+                                    : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                            }`}
+                        >
+                            {mpUploading ? (
+                                <div className="flex flex-col items-center">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                    <div className="relative flex flex-col items-center">
+                                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
+                                            <Upload size={24} className="text-primary" />
+                                        </div>
+                                        <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-600 mt-3">
+                                            {mpUploadingFileName ? `Uploading ${mpUploadingFileName.substring(0, 25)}${mpUploadingFileName.length > 25 ? '...' : ''}` : 'Uploading...'}
+                                        </span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center text-gray-500">
+                                    <Upload size={36} className="mb-2 text-gray-400" />
+                                    <span className="text-sm font-bold text-gray-700">Click to upload menu card image</span>
+                                    <span className="text-xs text-gray-400 mt-2">PNG, JPG, WebP up to 10MB</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <input
+                        ref={mpFileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMenuPageUpload}
+                        className="hidden"
+                    />
                 </div>
-            )}
+            </AdminModal>
+
+            <ConfirmDialog
+                isOpen={deleteCategoryId !== null}
+                title="Delete Category"
+                message="Are you sure you want to delete this category? All items in it will also be deleted. This action cannot be undone."
+                confirmLabel="Delete"
+                onConfirm={confirmDeleteCategory}
+                onCancel={() => setDeleteCategoryId(null)}
+                destructive
+            />
+
+            <ConfirmDialog
+                isOpen={deleteItemId !== null}
+                title="Delete Item"
+                message="Are you sure you want to delete this menu item? This action cannot be undone."
+                confirmLabel="Delete"
+                onConfirm={confirmDeleteItem}
+                onCancel={() => setDeleteItemId(null)}
+                destructive
+            />
+
+            <ConfirmDialog
+                isOpen={deleteMenuPageId !== null}
+                title="Delete Menu Page Image"
+                message="Are you sure you want to delete this menu page image? This action cannot be undone."
+                confirmLabel="Delete"
+                onConfirm={confirmDeleteMenuPage}
+                onCancel={() => setDeleteMenuPageId(null)}
+                destructive
+            />
         </div>
     );
 };

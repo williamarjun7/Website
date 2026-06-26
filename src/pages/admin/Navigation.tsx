@@ -5,8 +5,7 @@ import {
     Trash2,
     Edit2,
     Eye,
-    EyeOff,
-    X
+    EyeOff
 } from 'lucide-react';
 import {
     getNavigation,
@@ -17,6 +16,7 @@ import {
 } from '../../services/navigationService';
 import { addRevision } from '../../services/revisionService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import AdminModal from '../../components/admin/AdminModal';
 import Skeleton from '../../components/common/Skeleton';
 import { PermissionGuard, PermissionButton } from '../../components/common/PermissionGuard';
 import { usePermission } from '../../hooks/usePermission';
@@ -136,7 +136,7 @@ const Navigation = () => {
         showToast('Navigation item deleted');
     };
 
-    const parentOptions = items.filter(i => !i.parent_id);
+    const parentOptions = items.filter(i => !i.parent_id && i.id !== editingItem?.id);
 
     return (
         <div className="space-y-6">
@@ -245,101 +245,99 @@ const Navigation = () => {
             </div>
 
             {/* Add/Edit Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl font-heading">
-                                {editingItem ? 'Edit Navigation Item' : 'Add Navigation Item'}
-                            </h3>
-                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Label</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={form.label}
-                                    onChange={(e) => setForm({ ...form, label: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. Home"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">URL</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={form.url}
-                                    onChange={(e) => setForm({ ...form, url: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. /about"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Parent Item</label>
-                                <select
-                                    value={form.parent_id}
-                                    onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
-                                    className="input w-full"
-                                >
-                                    <option value="">— No Parent (Top Level) —</option>
-                                    {parentOptions.map(p => (
-                                        <option key={p.id} value={p.id}>{p.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Sort Order</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={form.sort_order}
-                                        onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-                                        className="input w-full"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Target</label>
-                                    <select
-                                        value={form.target}
-                                        onChange={(e) => setForm({ ...form, target: e.target.value })}
-                                        className="input w-full"
-                                    >
-                                        <option value="_self">Same Tab (_self)</option>
-                                        <option value="_blank">New Tab (_blank)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={form.is_visible}
-                                    onChange={(e) => setForm({ ...form, is_visible: e.target.checked })}
-                                    className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
-                                />
-                                <span className="text-sm font-semibold text-gray-700">Visible on website</span>
-                            </label>
-
-                            <div className="flex space-x-4 pt-2">
-                                <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" disabled={saving} className="btn-primary flex-1">
-                                    {saving ? 'Saving...' : (editingItem ? 'Update' : 'Save')}
-                                </button>
-                            </div>
-                        </form>
+            <AdminModal
+                isOpen={isModalOpen}
+                onClose={() => setModalOpen(false)}
+                title={editingItem ? 'Edit Navigation Item' : 'Add Navigation Item'}
+                size="md"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" form="nav-form" disabled={saving} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+                            {saving ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Saving...</span>
+                                </span>
+                            ) : (editingItem ? 'Update' : 'Save')}
+                        </button>
                     </div>
-                </div>
-            )}
+                }
+            >
+                <form id="nav-form" onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Label</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.label}
+                            onChange={(e) => setForm({ ...form, label: e.target.value })}
+                            className="input w-full"
+                            placeholder="e.g. Home"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">URL</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.url}
+                            onChange={(e) => setForm({ ...form, url: e.target.value })}
+                            className="input w-full"
+                            placeholder="e.g. /about"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Parent Item</label>
+                        <select
+                            value={form.parent_id}
+                            onChange={(e) => setForm({ ...form, parent_id: e.target.value })}
+                            className="input w-full"
+                        >
+                            <option value="">— No Parent (Top Level) —</option>
+                            {parentOptions.map(p => (
+                                <option key={p.id} value={p.id}>{p.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Sort Order</label>
+                            <input
+                                type="number"
+                                required
+                                value={form.sort_order}
+                                onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
+                                className="input w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Target</label>
+                            <select
+                                value={form.target}
+                                onChange={(e) => setForm({ ...form, target: e.target.value })}
+                                className="input w-full"
+                            >
+                                <option value="_self">Same Tab (_self)</option>
+                                <option value="_blank">New Tab (_blank)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={form.is_visible}
+                            onChange={(e) => setForm({ ...form, is_visible: e.target.checked })}
+                            className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
+                        />
+                        <span className="text-sm font-semibold text-gray-700">Visible on website</span>
+                    </label>
+                </form>
+            </AdminModal>
 
             <ConfirmDialog
                 isOpen={!!deleteTarget}

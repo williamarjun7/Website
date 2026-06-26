@@ -88,6 +88,9 @@ const SiteSettings = () => {
         }
     );
 
+    const getOriginal = (key: string) => settings.find(s => s.key === key)?.value || '';
+    const dirtyKeys = Object.keys(editValues).filter(k => editValues[k] !== getOriginal(k));
+
     return (
         <div className="space-y-6">
             <Helmet><title>Site Settings | Highlands Cafe & Motel Inn</title></Helmet>
@@ -97,9 +100,38 @@ const SiteSettings = () => {
                 </div>
             )}
 
-            <div>
-                <h1 className="text-2xl font-bold font-heading text-gray-900">Site Settings</h1>
-                <p className="text-gray-500">Manage global site configuration values</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold font-heading text-gray-900">Site Settings</h1>
+                    <p className="text-gray-500">Manage global site configuration values</p>
+                </div>
+                {dirtyKeys.length > 0 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-3">
+                        <div className="flex items-center space-x-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+                            <span className="w-2 h-2 rounded-full bg-amber-400" />
+                            <span>{dirtyKeys.length} unsaved change{dirtyKeys.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                for (const key of dirtyKeys) {
+                                    const value = editValues[key] || '';
+                                    const oldSetting = settings.find(s => s.key === key);
+                                    const oldValue = oldSetting?.value || '';
+                                    const { error } = await updateSetting(key, value);
+                                    if (!error && oldValue !== value) {
+                                        await addRevision({ entity_type: 'site_settings', entity_id: key, field_name: 'value', old_value: oldValue, new_value: value, user_name: 'admin' });
+                                    }
+                                }
+                                showToast(`Saved all ${dirtyKeys.length} change${dirtyKeys.length !== 1 ? 's' : ''}`);
+                                loadSettings();
+                            }}
+                            className="btn-primary text-sm flex items-center space-x-1.5"
+                        >
+                            <Save size={16} />
+                            <span>Save All</span>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {loadError && (
@@ -134,20 +166,27 @@ const SiteSettings = () => {
                         const label = settingLabels[setting.key] || setting.key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                         const saving = savingKeys.has(setting.key);
                         return (
-                            <div key={setting.key} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-gray-200 transition-colors">
+                            <div key={setting.key} className={`bg-white rounded-xl shadow-sm border p-6 transition-colors ${
+                                editValues[setting.key] !== getOriginal(setting.key)
+                                    ? 'border-amber-200 hover:border-amber-300'
+                                    : 'border-gray-100 hover:border-gray-200'
+                            }`}>
                                 <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    {editValues[setting.key] !== getOriginal(setting.key) && (
+                                        <span className="inline-block w-2 h-2 rounded-full bg-amber-400 mr-2 align-middle" />
+                                    )}
                                     {label}
                                     <span className="text-xs font-normal text-gray-400 ml-2 font-mono">({setting.key})</span>
                                 </label>
-                                <div className="flex items-center space-x-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                                     <input
                                         type="text"
                                         value={editValues[setting.key] || ''}
                                         onChange={(e) => setEditValues(prev => ({ ...prev, [setting.key]: e.target.value }))}
-                                        className="input flex-1"
+                                        className="input w-full sm:flex-1"
                                         placeholder={label}
                                     />
-                                    <PermissionButton resource="setting" action="update" onClick={() => handleSave(setting.key)} disabled={saving} className={`btn-primary whitespace-nowrap ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    <PermissionButton resource="setting" action="update" onClick={() => handleSave(setting.key)} disabled={saving} className={`btn-primary whitespace-nowrap self-start sm:self-auto ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                         {saving ? (
                                             <span className="flex items-center space-x-1">
                                                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

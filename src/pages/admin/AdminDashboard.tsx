@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -97,161 +97,167 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
     const [stats, setStats] = useState<CmsStats | null>(null);
     const [revisions, setRevisions] = useState<ContentRevision[]>([]);
     const [healthItems, setHealthItems] = useState<HealthItem[]>([]);
     const [integrityItems, setIntegrityItems] = useState<IntegrityItem[]>([]);
+    const refreshRef = useRef<() => void>(() => {});
 
     useEffect(() => {
+        const loadDashboardData = async () => {
+            try {
+                if (stats !== null) setRefreshing(true);
+                else setLoading(true);
+                setError(null);
+
+                setLoading(true);
+                const [pagesRes, navRes, mediaRes, faqRes, settingsRes, revisionsRes] = await Promise.all([
+                    getPages(),
+                    getNavigation(),
+                    getMediaFiles(),
+                    getFaqItems(),
+                    getAllSettings(),
+                    getAllRevisions(),
+                ]);
+
+                const pages: SitePage[] = pagesRes.data || [];
+                const navItems: NavItem[] = navRes.data || [];
+                const media: MediaFile[] = mediaRes.data || [];
+                const faqs: FaqItem[] = faqRes.data || [];
+                const settings: SiteSetting[] = settingsRes.data || [];
+                const allRevisions: ContentRevision[] = revisionsRes.data || [];
+
+                const pageStats = {
+                    total: pages.length,
+                    published: pages.filter((p) => p.status === 'published').length,
+                    draft: pages.filter((p) => p.status === 'draft').length,
+                    archived: pages.filter((p) => p.status === 'archived').length,
+                };
+
+                const faqCategories = new Set<string>();
+                for (const f of faqs) {
+                    if (f.category) faqCategories.add(f.category);
+                }
+
+                setStats({
+                    pages: pageStats,
+                    navigation: {
+                        total: navItems.length,
+                        visible: navItems.filter((n) => n.is_visible).length,
+                    },
+                    media: {
+                        total: media.length,
+                        noAlt: media.filter((m) => !m.alt_text).length,
+                        totalSizeBytes: media.reduce((sum, m) => sum + (m.size || 0), 0),
+                    },
+                    faq: {
+                        total: faqs.length,
+                        published: faqs.filter((f) => f.published).length,
+                        categories: faqCategories.size,
+                    },
+                    settings: { total: settings.length },
+                });
+
+                setRevisions(allRevisions.slice(0, 10));
+
+                const allEntityIds = new Set<string>();
+                for (const p of pages) allEntityIds.add(p.id);
+                for (const f of faqs) allEntityIds.add(f.id);
+                for (const n of navItems) allEntityIds.add(n.id);
+                for (const m of media) allEntityIds.add(m.id);
+                for (const s of settings) allEntityIds.add(s.key);
+
+                const orphanedRevisions = allRevisions.filter(
+                    (r) => r.entity_id && !allEntityIds.has(r.entity_id)
+                );
+
+                setHealthItems([
+                    {
+                        label: 'Published Pages',
+                        good: pageStats.total === 0 || pageStats.published / pageStats.total >= 0.5,
+                        detail: `${pageStats.published} / ${pageStats.total} pages published`,
+                    },
+                    {
+                        label: 'Published FAQs',
+                        good: faqs.length === 0 || faqs.filter((f) => f.published).length / faqs.length >= 0.5,
+                        detail: `${faqs.filter((f) => f.published).length} / ${faqs.length} FAQs published`,
+                    },
+                    {
+                        label: 'Navigation Visibility',
+                        good: navItems.length === 0 || navItems.filter((n) => n.is_visible).length / navItems.length >= 0.5,
+                        detail: `${navItems.filter((n) => n.is_visible).length} / ${navItems.length} nav items visible`,
+                    },
+                    {
+                        label: 'Media Accessibility',
+                        good: media.length === 0 || media.filter((m) => !m.alt_text).length === 0,
+                        detail: media.filter((m) => !m.alt_text).length > 0
+                            ? `${media.filter((m) => !m.alt_text).length} items missing alt text`
+                            : 'All media has alt text',
+                    },
+                    {
+                        label: 'Orphaned Revisions',
+                        good: orphanedRevisions.length === 0,
+                        detail: orphanedRevisions.length > 0
+                            ? `${orphanedRevisions.length} revisions reference deleted entities`
+                            : 'No orphaned revisions',
+                    },
+                ]);
+
+                const integrityList: IntegrityItem[] = [];
+
+                const emptyPages = pages.filter(
+                    (p) => p.status !== 'archived' && (!p.page_content || p.page_content.trim() === '')
+                );
+                if (emptyPages.length > 0) {
+                    integrityList.push({
+                        severity: 'warning',
+                        message: `${emptyPages.length} published/draft page(s) have empty content`,
+                        count: emptyPages.length,
+                        entityLabel: 'Pages',
+                    });
+                }
+
+                if (orphanedRevisions.length > 0) {
+                    integrityList.push({
+                        severity: 'warning',
+                        message: `${orphanedRevisions.length} revision(s) reference non-existent entities`,
+                        count: orphanedRevisions.length,
+                        entityLabel: 'Revisions',
+                    });
+                }
+
+                if (pageStats.archived > 0) {
+                    integrityList.push({
+                        severity: 'info',
+                        message: `${pageStats.archived} page(s) are archived`,
+                        count: pageStats.archived,
+                        entityLabel: 'Pages',
+                    });
+                }
+
+                if (integrityList.length === 0) {
+                    integrityList.push({
+                        severity: 'info',
+                        message: 'All CMS integrity checks passed',
+                        count: 0,
+                        entityLabel: 'System',
+                    });
+                }
+
+                setIntegrityItems(integrityList);
+            } catch (err) {
+                console.error('Error loading CMS dashboard:', err);
+                setError('Failed to load CMS dashboard data. Please try again.');
+            } finally {
+                setLoading(false);
+                setRefreshing(false);
+            }
+        };
+        refreshRef.current = loadDashboardData;
         loadDashboardData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const loadDashboardData = async () => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            const [pagesRes, navRes, mediaRes, faqRes, settingsRes, revisionsRes] = await Promise.all([
-                getPages(),
-                getNavigation(),
-                getMediaFiles(),
-                getFaqItems(),
-                getAllSettings(),
-                getAllRevisions(),
-            ]);
-
-            const pages: SitePage[] = pagesRes.data || [];
-            const navItems: NavItem[] = navRes.data || [];
-            const media: MediaFile[] = mediaRes.data || [];
-            const faqs: FaqItem[] = faqRes.data || [];
-            const settings: SiteSetting[] = settingsRes.data || [];
-            const allRevisions: ContentRevision[] = revisionsRes.data || [];
-
-            const pageStats = {
-                total: pages.length,
-                published: pages.filter((p) => p.status === 'published').length,
-                draft: pages.filter((p) => p.status === 'draft').length,
-                archived: pages.filter((p) => p.status === 'archived').length,
-            };
-
-            const faqCategories = new Set<string>();
-            for (const f of faqs) {
-                if (f.category) faqCategories.add(f.category);
-            }
-
-            setStats({
-                pages: pageStats,
-                navigation: {
-                    total: navItems.length,
-                    visible: navItems.filter((n) => n.is_visible).length,
-                },
-                media: {
-                    total: media.length,
-                    noAlt: media.filter((m) => !m.alt_text).length,
-                    totalSizeBytes: media.reduce((sum, m) => sum + (m.size || 0), 0),
-                },
-                faq: {
-                    total: faqs.length,
-                    published: faqs.filter((f) => f.published).length,
-                    categories: faqCategories.size,
-                },
-                settings: { total: settings.length },
-            });
-
-            setRevisions(allRevisions.slice(0, 10));
-
-            const allEntityIds = new Set<string>();
-            for (const p of pages) allEntityIds.add(p.id);
-            for (const f of faqs) allEntityIds.add(f.id);
-            for (const n of navItems) allEntityIds.add(n.id);
-            for (const m of media) allEntityIds.add(m.id);
-            for (const s of settings) allEntityIds.add(s.key);
-
-            const orphanedRevisions = allRevisions.filter(
-                (r) => r.entity_id && !allEntityIds.has(r.entity_id)
-            );
-
-            setHealthItems([
-                {
-                    label: 'Published Pages',
-                    good: pageStats.total === 0 || pageStats.published / pageStats.total >= 0.5,
-                    detail: `${pageStats.published} / ${pageStats.total} pages published`,
-                },
-                {
-                    label: 'Published FAQs',
-                    good: faqs.length === 0 || faqs.filter((f) => f.published).length / faqs.length >= 0.5,
-                    detail: `${faqs.filter((f) => f.published).length} / ${faqs.length} FAQs published`,
-                },
-                {
-                    label: 'Navigation Visibility',
-                    good: navItems.length === 0 || navItems.filter((n) => n.is_visible).length / navItems.length >= 0.5,
-                    detail: `${navItems.filter((n) => n.is_visible).length} / ${navItems.length} nav items visible`,
-                },
-                {
-                    label: 'Media Accessibility',
-                    good: media.length === 0 || media.filter((m) => !m.alt_text).length === 0,
-                    detail: media.filter((m) => !m.alt_text).length > 0
-                        ? `${media.filter((m) => !m.alt_text).length} items missing alt text`
-                        : 'All media has alt text',
-                },
-                {
-                    label: 'Orphaned Revisions',
-                    good: orphanedRevisions.length === 0,
-                    detail: orphanedRevisions.length > 0
-                        ? `${orphanedRevisions.length} revisions reference deleted entities`
-                        : 'No orphaned revisions',
-                },
-            ]);
-
-            const integrityList: IntegrityItem[] = [];
-
-            const emptyPages = pages.filter(
-                (p) => p.status !== 'archived' && (!p.page_content || p.page_content.trim() === '')
-            );
-            if (emptyPages.length > 0) {
-                integrityList.push({
-                    severity: 'warning',
-                    message: `${emptyPages.length} published/draft page(s) have empty content`,
-                    count: emptyPages.length,
-                    entityLabel: 'Pages',
-                });
-            }
-
-            if (orphanedRevisions.length > 0) {
-                integrityList.push({
-                    severity: 'warning',
-                    message: `${orphanedRevisions.length} revision(s) reference non-existent entities`,
-                    count: orphanedRevisions.length,
-                    entityLabel: 'Revisions',
-                });
-            }
-
-            if (pageStats.archived > 0) {
-                integrityList.push({
-                    severity: 'info',
-                    message: `${pageStats.archived} page(s) are archived`,
-                    count: pageStats.archived,
-                    entityLabel: 'Pages',
-                });
-            }
-
-            if (integrityList.length === 0) {
-                integrityList.push({
-                    severity: 'info',
-                    message: 'All CMS integrity checks passed',
-                    count: 0,
-                    entityLabel: 'System',
-                });
-            }
-
-            setIntegrityItems(integrityList);
-        } catch (err) {
-            console.error('Error loading CMS dashboard:', err);
-            setError('Failed to load CMS dashboard data. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const quickActions: {
         label: string;
@@ -290,7 +296,7 @@ const AdminDashboard = () => {
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-pulse">
+            <div className="space-y-8">
                 <div>
                     <Skeleton className="h-8 w-64" />
                     <Skeleton className="h-4 w-80 mt-2" />
@@ -341,7 +347,7 @@ const AdminDashboard = () => {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to Load Dashboard</h2>
                 <p className="text-gray-500 mb-6">{error}</p>
                 <button
-                    onClick={loadDashboardData}
+                    onClick={() => refreshRef.current()}
                     className="px-6 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 font-medium transition-colors"
                 >
                     Retry
@@ -359,11 +365,16 @@ const AdminDashboard = () => {
                     <p className="text-gray-500">Overview of your content management system</p>
                 </div>
                 <button
-                    onClick={loadDashboardData}
-                    className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-xl hover:bg-gray-50 font-medium transition-colors flex items-center gap-2"
+                    onClick={() => refreshRef.current()}
+                    disabled={refreshing}
+                    className="px-4 py-2 text-sm bg-white border border-gray-200 rounded-xl hover:bg-gray-50 font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
                 >
-                    <History size={14} />
-                    Refresh
+                    {refreshing ? (
+                        <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin" />
+                    ) : (
+                        <History size={14} />
+                    )}
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
                 </button>
             </div>
 

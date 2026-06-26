@@ -7,8 +7,7 @@ import {
     ChevronDown,
     ChevronRight,
     Eye,
-    EyeOff,
-    X
+    EyeOff
 } from 'lucide-react';
 import {
     getFaqItems,
@@ -19,6 +18,7 @@ import {
 } from '../../services/faqService';
 import { addRevision } from '../../services/revisionService';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import AdminModal from '../../components/admin/AdminModal';
 import Skeleton from '../../components/common/Skeleton';
 import { PermissionGuard, PermissionButton } from '../../components/common/PermissionGuard';
 import { usePermission } from '../../hooks/usePermission';
@@ -262,93 +262,91 @@ const Faq = () => {
             )}
 
             {/* Add/Edit Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl font-heading">
-                                {editingItem ? 'Edit FAQ' : 'Add FAQ'}
-                            </h3>
-                            <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Question</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={form.question}
-                                    onChange={(e) => setForm({ ...form, question: e.target.value })}
-                                    className="input w-full"
-                                    placeholder="e.g. What time is check-in?"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium mb-1.5 text-gray-700">Answer</label>
-                                <textarea
-                                    rows={4}
-                                    required
-                                    value={form.answer}
-                                    onChange={(e) => setForm({ ...form, answer: e.target.value })}
-                                    className="input w-full resize-none"
-                                    placeholder="Full answer text..."
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Category</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={form.category}
-                                        onChange={(e) => setForm({ ...form, category: e.target.value })}
-                                        className="input w-full"
-                                        placeholder="e.g. Booking"
-                                        list="faq-categories"
-                                    />
-                                    <datalist id="faq-categories">
-                                        {[...new Set(items.map(i => i.category))].map(cat => (
-                                            <option key={cat} value={cat} />
-                                        ))}
-                                    </datalist>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1.5 text-gray-700">Sort Order</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        value={form.sort_order}
-                                        onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-                                        className="input w-full"
-                                    />
-                                </div>
-                            </div>
-
-                            <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    checked={form.published}
-                                    onChange={(e) => setForm({ ...form, published: e.target.checked })}
-                                    className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
-                                />
-                                <span className="text-sm font-semibold text-gray-700">Published</span>
-                            </label>
-
-                            <div className="flex space-x-4 pt-2">
-                                <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" disabled={saving} className="btn-primary flex-1">
-                                    {saving ? 'Saving...' : (editingItem ? 'Update' : 'Save')}
-                                </button>
-                            </div>
-                        </form>
+            <AdminModal
+                isOpen={isModalOpen}
+                onClose={() => setModalOpen(false)}
+                title={editingItem ? 'Edit FAQ' : 'Add FAQ'}
+                size="md"
+                footer={
+                    <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3">
+                        <button type="button" onClick={() => setModalOpen(false)} className="btn-secondary w-full sm:w-auto flex-1 sm:flex-none">Cancel</button>
+                        <button type="submit" form="faq-form" disabled={saving} className="btn-primary w-full sm:w-auto flex-1 sm:flex-none">
+                            {saving ? (
+                                <span className="flex items-center justify-center space-x-2">
+                                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Saving...</span>
+                                </span>
+                            ) : (editingItem ? 'Update' : 'Save')}
+                        </button>
                     </div>
-                </div>
-            )}
+                }
+            >
+                <form id="faq-form" onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Question</label>
+                        <input
+                            type="text"
+                            required
+                            value={form.question}
+                            onChange={(e) => setForm({ ...form, question: e.target.value })}
+                            className="input w-full"
+                            placeholder="e.g. What time is check-in?"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Answer</label>
+                        <textarea
+                            rows={4}
+                            required
+                            value={form.answer}
+                            onChange={(e) => setForm({ ...form, answer: e.target.value })}
+                            className="input w-full resize-none"
+                            placeholder="Full answer text..."
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Category</label>
+                            <input
+                                type="text"
+                                required
+                                value={form.category}
+                                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                                className="input w-full"
+                                placeholder="e.g. Booking"
+                                list="faq-categories"
+                            />
+                            <datalist id="faq-categories">
+                                {[...new Set(items.map(i => i.category))].map(cat => (
+                                    <option key={cat} value={cat} />
+                                ))}
+                            </datalist>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold mb-1.5 text-gray-700">Sort Order</label>
+                            <input
+                                type="number"
+                                required
+                                value={form.sort_order}
+                                onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
+                                className="input w-full"
+                            />
+                        </div>
+                    </div>
+
+                    <label className="flex items-center space-x-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={form.published}
+                            onChange={(e) => setForm({ ...form, published: e.target.checked })}
+                            className="w-5 h-5 text-green-500 focus:ring-green-500 border-gray-300 rounded-lg"
+                        />
+                        <span className="text-sm font-semibold text-gray-700">Published</span>
+                    </label>
+                </form>
+            </AdminModal>
 
             <ConfirmDialog
                 isOpen={!!deleteTarget}

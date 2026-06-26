@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Star, Trash2, CheckCircle, XCircle, X, Plus, MessageSquare, Loader2 } from 'lucide-react';
+import { Star, Trash2, CheckCircle, XCircle, Plus, MessageSquare } from 'lucide-react';
 import { getReviews, createReview, updateReview, deleteReview, type Review, type CreateReviewData } from '../../services/reviewService';
 import { SkeletonTableRow } from '../../components/common/Skeleton';
+import AdminModal from '../../components/admin/AdminModal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const ReviewsAdmin = () => {
     const [reviews, setReviews] = useState<Review[]>([]);
@@ -12,6 +14,7 @@ const ReviewsAdmin = () => {
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<CreateReviewData>({ guest_name: '', rating: 5, comment: '' });
     const [loadError, setLoadError] = useState('');
+    const [deleteTarget, setDeleteTarget] = useState<Review | null>(null);
 
     const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
@@ -47,10 +50,15 @@ const ReviewsAdmin = () => {
         if (!error) { load(); showToast(featured ? 'Featured on homepage' : 'Removed from homepage'); }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Delete this review?')) return;
-        const { error } = await deleteReview(id);
+    const handleDelete = async (review: Review) => {
+        setDeleteTarget(review);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget) return;
+        const { error } = await deleteReview(deleteTarget.id);
         if (!error) { load(); showToast('Review deleted'); }
+        setDeleteTarget(null);
     };
 
     const handleCreate = async () => {
@@ -78,7 +86,7 @@ const ReviewsAdmin = () => {
             </div>
 
             {toast && (
-                <div className="mb-4 px-4 py-3 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm">{toast}</div>
+                <div className="fixed top-24 right-4 z-50 max-w-sm px-4 py-3 rounded-lg shadow-lg text-sm bg-green-50 text-green-700 border border-green-200">{toast}</div>
             )}
 
             {loadError && (
@@ -143,7 +151,7 @@ const ReviewsAdmin = () => {
                                         </button>
                                     </td>
                                     <td className="px-4 py-4 text-right">
-                                        <button onClick={() => handleDelete(review.id)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <button onClick={() => handleDelete(review)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                                             <Trash2 size={16} />
                                         </button>
                                     </td>
@@ -154,38 +162,54 @@ const ReviewsAdmin = () => {
                 </div>
             </div>
 
-            {showModal && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="font-bold text-xl font-heading">New Review</h3>
-                            <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Guest Name</label>
-                                <input type="text" value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} className="input w-full" placeholder="Guest name" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Rating</label>
-                                <select value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} className="input w-full">
-                                    {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} Star{n > 1 ? 's' : ''}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1 text-gray-700">Comment</label>
-                                <textarea value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} className="input w-full resize-none" rows={4} placeholder="Review comment" />
-                            </div>
-                            <button onClick={handleCreate} disabled={saving} className="btn-primary w-full flex items-center justify-center space-x-2">
-                                {saving && <Loader2 size={16} className="animate-spin" />}
-                                <span>{saving ? 'Creating...' : 'Create Review'}</span>
-                            </button>
-                        </div>
+            <AdminModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                title="New Review"
+                icon={<Plus size={20} />}
+                size="md"
+                footer={
+                    <button onClick={handleCreate} disabled={saving} className="btn-primary w-full">
+                        {saving ? (
+                            <span className="flex items-center justify-center space-x-2">
+                                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Creating...</span>
+                            </span>
+                        ) : 'Create Review'}
+                    </button>
+                }
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Guest Name</label>
+                        <input type="text" value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} className="input w-full" placeholder="Guest name" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Email</label>
+                        <input type="email" value={form.guest_email || ''} onChange={(e) => setForm({ ...form, guest_email: e.target.value })} className="input w-full" placeholder="guest@email.com" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Rating</label>
+                        <select value={form.rating} onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })} className="input w-full">
+                            {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} Star{n > 1 ? 's' : ''}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold mb-1.5 text-gray-700">Comment</label>
+                        <textarea value={form.comment} onChange={(e) => setForm({ ...form, comment: e.target.value })} className="input w-full resize-none" rows={4} placeholder="Review comment" />
                     </div>
                 </div>
-            )}
+            </AdminModal>
+
+            <ConfirmDialog
+                isOpen={!!deleteTarget}
+                title="Delete Review"
+                message={`Are you sure you want to delete this review by "${deleteTarget?.guest_name}"? This action cannot be undone.`}
+                confirmLabel="Delete"
+                onConfirm={confirmDelete}
+                onCancel={() => setDeleteTarget(null)}
+                destructive
+            />
         </div>
     );
 };
