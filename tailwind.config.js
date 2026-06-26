@@ -54,11 +54,31 @@ export default {
           '0%, 100%': { opacity: '0.3', transform: 'scale(0.8)' },
           '50%': { opacity: '1', transform: 'scale(1)' },
         },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(200%)' },
+        },
+        'upload-bounce': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+        'fade-in-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'progress-bar': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
       },
       animation: {
         'splash-enter': 'splash-enter 0.7s ease-out forwards',
         'splash-breathe': 'splash-breathe 3s ease-in-out 0.7s infinite',
         'dot-pulse': 'dot-pulse 1.4s ease-in-out infinite',
+        shimmer: 'shimmer 2s ease-in-out infinite',
+        'upload-bounce': 'upload-bounce 0.8s ease-in-out infinite',
+        'fade-in-up': 'fade-in-up 0.35s ease-out forwards',
+        'progress-bar': 'progress-bar 1.4s ease-in-out infinite',
       },
     },
   },

@@ -36,6 +36,7 @@ const Rooms = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
     const [pendingImages, setPendingImages] = useState<{ url: string; key: string }[]>([]);
+    const [uploadingFileName, setUploadingFileName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Image management modal
@@ -129,6 +130,7 @@ const Rooms = () => {
 
         setUploading(true);
         setUploadError('');
+        if (files.length === 1) setUploadingFileName(files[0].name);
 
         try {
             for (const file of Array.from(files)) {
@@ -799,16 +801,26 @@ const Rooms = () => {
                                     tabIndex={0}
                                     onClick={() => !uploading && fileInputRef.current?.click()}
                                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && !uploading && fileInputRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
+                                    className={`relative overflow-hidden border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all duration-300 ${
                                         uploading
-                                            ? 'bg-gray-50 border-gray-200'
+                                            ? 'bg-primary/[0.03] border-primary/40'
                                             : 'border-gray-200 hover:border-primary hover:bg-primary/5'
-                                    } ${uploading ? 'cursor-not-allowed' : ''}`}
+                                    }`}
                                 >
                                     {uploading ? (
                                         <div className="flex flex-col items-center">
-                                            <Loader2 size={28} className="animate-spin text-primary mb-2" />
-                                            <span className="text-sm font-medium text-gray-500">Uploading photos...</span>
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                            <div className="relative flex flex-col items-center">
+                                                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
+                                                    <Upload size={20} className="text-primary" />
+                                                </div>
+                                                <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                                </div>
+                                                <span className="text-xs font-medium text-gray-500 mt-2">
+                                                    {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading photos...'}
+                                                </span>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center gap-1">

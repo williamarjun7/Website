@@ -8,7 +8,6 @@ import {
     ToggleRight,
     Utensils,
     Upload,
-    Loader2,
     X,
     Star,
     TrendingUp,
@@ -100,6 +99,7 @@ const Menu = () => {
     // Upload state
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
+    const [uploadingFileName, setUploadingFileName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Menu Pages state
@@ -108,6 +108,7 @@ const Menu = () => {
     const [menuPageModalOpen, setMenuPageModalOpen] = useState(false);
     const [mpUploading, setMpUploading] = useState(false);
     const [mpUploadError, setMpUploadError] = useState('');
+    const [mpUploadingFileName, setMpUploadingFileName] = useState('');
     const [mpImageUrl, setMpImageUrl] = useState('');
     const mpFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -242,6 +243,7 @@ const Menu = () => {
 
         setUploading(true);
         setUploadError('');
+        setUploadingFileName(file.name);
 
         try {
             if (!file.type.startsWith('image/')) {
@@ -283,6 +285,7 @@ const Menu = () => {
 
         setMpUploading(true);
         setMpUploadError('');
+        setMpUploadingFileName(file.name);
 
         try {
             if (!file.type.startsWith('image/')) {
@@ -717,7 +720,7 @@ const Menu = () => {
                                 )}
 
                                 {itemForm.image ? (
-                                    <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 mb-2 group">
+                                    <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 mb-2 group animate-fade-in-up">
                                         <img src={itemForm.image} alt="Preview" className="w-full h-full object-cover" />
                                         <button
                                             type="button"
@@ -730,13 +733,26 @@ const Menu = () => {
                                 ) : (
                                     <div
                                         onClick={() => !uploading && fileInputRef.current?.click()}
-                                        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5'
-                                            }`}
+                                        className={`relative overflow-hidden border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-300 ${
+                                            uploading
+                                                ? 'bg-primary/[0.03] border-primary/40'
+                                                : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                                        }`}
                                     >
                                         {uploading ? (
-                                            <div className="flex flex-col items-center text-gray-500">
-                                                <Loader2 size={24} className="animate-spin mb-2" />
-                                                <span className="text-sm">Uploading...</span>
+                                            <div className="flex flex-col items-center">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                                <div className="relative flex flex-col items-center">
+                                                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2 animate-upload-bounce">
+                                                        <Upload size={20} className="text-primary" />
+                                                    </div>
+                                                    <div className="w-full max-w-[160px] h-1 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                                    </div>
+                                                    <span className="text-xs font-medium text-gray-600 mt-2">
+                                                        {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 20)}${uploadingFileName.length > 20 ? '...' : ''}` : 'Uploading...'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="flex flex-col items-center text-gray-500">
@@ -915,7 +931,7 @@ const Menu = () => {
                             )}
 
                             {mpImageUrl ? (
-                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
+                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
                                     <img src={mpImageUrl} alt="Menu page preview" loading="lazy" className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
@@ -930,12 +946,26 @@ const Menu = () => {
                             ) : (
                                 <div
                                     onClick={() => !mpUploading && mpFileInputRef.current?.click()}
-                                    className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${mpUploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5'}`}
+                                    className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
+                                        mpUploading
+                                            ? 'bg-primary/[0.03] border-primary/40'
+                                            : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                                    }`}
                                 >
                                     {mpUploading ? (
-                                        <div className="flex flex-col items-center text-gray-500">
-                                            <Loader2 size={32} className="animate-spin mb-3 text-primary" />
-                                            <span className="font-medium">Uploading...</span>
+                                        <div className="flex flex-col items-center">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                            <div className="relative flex flex-col items-center">
+                                                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
+                                                    <Upload size={24} className="text-primary" />
+                                                </div>
+                                                <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                    <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-600 mt-3">
+                                                    {mpUploadingFileName ? `Uploading ${mpUploadingFileName.substring(0, 25)}${mpUploadingFileName.length > 25 ? '...' : ''}` : 'Uploading...'}
+                                                </span>
+                                            </div>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col items-center text-gray-500">

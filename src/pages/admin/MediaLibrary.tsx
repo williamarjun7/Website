@@ -7,7 +7,6 @@ import {
     Image as ImageIcon,
     ExternalLink,
     Upload,
-    Loader2,
     X,
     Folder,
     Eye,
@@ -63,6 +62,8 @@ const MediaPage = () => {
     const [uploadError, setUploadError] = useState('');
     const [uploadedUrl, setUploadedUrl] = useState('');
     const [isUploadModalOpen, setUploadModalOpen] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [uploadingFileName, setUploadingFileName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // ── Site Images state ──
@@ -140,6 +141,19 @@ const MediaPage = () => {
         setImagesLoading(false);
     };
 
+    // ── Drag-and-drop handlers ──
+    const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
+    const handleDragEnter = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+    const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const fakeEvent = { target: { files } } as unknown as React.ChangeEvent<HTMLInputElement>;
+            handleFileUpload(fakeEvent);
+        }
+    };
+
     // ── Shared upload handler ──
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -147,6 +161,7 @@ const MediaPage = () => {
 
         setUploading(true);
         setUploadError('');
+        setUploadingFileName(file.name);
 
         try {
             if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
@@ -285,7 +300,7 @@ const MediaPage = () => {
                     )}
 
                     {uploadedUrl ? (
-                        <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group">
+                        <div className="relative aspect-video rounded-xl overflow-hidden border border-gray-200 shadow-inner group animate-fade-in-up">
                             {uploadedUrl.match(/\.(mp4|webm|ogg)$/i) ? (
                                 <video src={uploadedUrl} controls className="w-full h-full object-cover" />
                             ) : (
@@ -304,18 +319,43 @@ const MediaPage = () => {
                     ) : (
                         <div
                             onClick={() => !uploading && fileInputRef.current?.click()}
-                            className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all ${uploading ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-primary hover:bg-primary/5 hover:shadow-inner'}`}
+                            onDragOver={handleDragOver}
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            className={`relative overflow-hidden border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-all duration-300 ${
+                                uploading
+                                    ? 'bg-primary/[0.03] border-primary/40'
+                                    : isDragging
+                                        ? 'border-primary bg-primary/10 scale-[1.02] shadow-lg'
+                                        : 'border-gray-300 hover:border-primary hover:bg-primary/5'
+                            }`}
                         >
                             {uploading ? (
-                                <div className="flex flex-col items-center text-gray-500">
-                                    <Loader2 size={32} className="animate-spin mb-3 text-primary" />
-                                    <span className="font-medium">Uploading to cloud...</span>
+                                <div className="flex flex-col items-center">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent animate-shimmer" />
+                                    <div className="relative flex flex-col items-center">
+                                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3 animate-upload-bounce">
+                                            <Upload size={24} className="text-primary" />
+                                        </div>
+                                        <div className="w-full max-w-[200px] h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div className="h-full w-2/5 bg-gradient-to-r from-primary/40 via-primary to-primary/40 rounded-full animate-progress-bar" />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-600 mt-3">
+                                            {uploadingFileName ? `Uploading ${uploadingFileName.substring(0, 25)}${uploadingFileName.length > 25 ? '...' : ''}` : 'Uploading to cloud...'}
+                                        </span>
+                                        <span className="text-xs text-gray-400 mt-0.5">Compressing & uploading...</span>
+                                    </div>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center text-gray-500">
-                                    <Upload size={36} className="mb-2 text-gray-400" />
-                                    <span className="text-sm font-bold text-gray-700">Click to select file</span>
-                                    <span className="text-xs text-gray-400 mt-2">Images & Videos up to 10MB</span>
+                                <div className={`flex flex-col items-center text-gray-500 transition-all duration-300 ${isDragging ? 'scale-105' : ''}`}>
+                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isDragging ? 'bg-primary/20 text-primary scale-110' : 'bg-gray-100 text-gray-400'}`}>
+                                        <Upload size={24} className={isDragging ? 'animate-upload-bounce' : ''} />
+                                    </div>
+                                    <span className={`text-sm font-bold transition-colors ${isDragging ? 'text-primary' : 'text-gray-700'}`}>
+                                        {isDragging ? 'Drop file here' : 'Click or drag file here'}
+                                    </span>
+                                    <span className="text-xs text-gray-400 mt-1">Images & Videos up to 10MB</span>
                                 </div>
                             )}
                         </div>
