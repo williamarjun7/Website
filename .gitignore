@@ -52,6 +52,9 @@ docs/
 .graphify_chunk_*.txt
 tests/
 
+# Database migrations (DB-managed via Insforge CLI)
+migrations/
+
 # InsForge & AI agent skills
 .agent
 .agents

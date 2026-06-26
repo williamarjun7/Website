@@ -24,7 +24,7 @@ export const logAuditEvent = async (
         const userId = localStorage.getItem('saas_user_id') || '';
         if (!tenantId) return { data: null, error: 'No tenant context' };
         const { data, error } = await insforge.database
-            .from('audit_logs')
+            .from('admin_audit_logs')
             .insert({
                 tenant_id: tenantId,
                 user_id: userId,
@@ -61,7 +61,7 @@ export const getAuditLogs = async (tenantId?: string, limit = 100) => {
         const tid = tenantId || getCurrentTenantId();
         if (!tid) return { data: null, error: 'No tenant context' };
         const { data, error } = await insforge.database
-            .from('audit_logs')
+            .from('admin_audit_logs')
             .select('*')
             .eq('tenant_id', tid)
             .order('created_at', { ascending: false })
@@ -78,7 +78,7 @@ export const getAuditLogsByResource = async (resource: string, resourceId: strin
         const tenantId = getCurrentTenantId();
         if (!tenantId) return { data: null, error: 'No tenant context' };
         const { data, error } = await insforge.database
-            .from('audit_logs')
+            .from('admin_audit_logs')
             .select('*')
             .eq('tenant_id', tenantId)
             .eq('resource', resource)
