@@ -245,7 +245,10 @@ const PaymentRecovery = () => {
         {searchResults && searchQuery.trim() && (
           <div className="mt-4 space-y-3">
             {searchResults.bookings.length === 0 && searchResults.payments.length === 0 && (
-              <p className="text-sm text-gray-400 text-center py-4">No results found</p>
+              <div className="text-center py-8">
+                <Search size={28} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-sm text-gray-400">No results found</p>
+              </div>
             )}
 
             {searchResults.bookings.length > 0 && (
@@ -274,11 +277,11 @@ const PaymentRecovery = () => {
                         {b.booking_status === 'pending_payment' ? (
                           <div className="flex space-x-1 mt-1">
                             <button onClick={() => setConfirmDialog({ booking: b, action: 'confirm' })}
-                              className="p-1 text-green-600 hover:bg-green-50 rounded" title="Force Confirm">
+                              className="p-1 text-green-600 hover:bg-green-50 rounded" aria-label="Force confirm payment">
                               <CheckCircle size={16} />
                             </button>
                             <button onClick={() => setConfirmDialog({ booking: b, action: 'expire' })}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded" title="Force Expire">
+                              className="p-1 text-red-600 hover:bg-red-50 rounded" aria-label="Force expire booking">
                               <XCircle size={16} />
                             </button>
                           </div>
@@ -345,7 +348,7 @@ const PaymentRecovery = () => {
                   <SkeletonTableRow key={i} cols={7} />
                 ))
               ) : stuckBookings.length === 0 ? (
-                <tr><td colSpan={7} className="px-6 py-8 text-center text-gray-500">No stuck payments found.</td></tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-500"><AlertTriangle size={36} className="mx-auto text-gray-300 mb-3" />No stuck payments found.</td></tr>
               ) : (
                 stuckBookings.map((booking) => (
                   <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
@@ -393,14 +396,14 @@ const PaymentRecovery = () => {
                           <button
                             onClick={() => setConfirmDialog({ booking, action: 'confirm' })}
                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Force Confirm Payment"
+                            aria-label="Force confirm payment"
                           >
                             <CheckCircle size={20} />
                           </button>
                           <button
                             onClick={() => setConfirmDialog({ booking, action: 'expire' })}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Force Expire Booking"
+                            aria-label="Force expire booking"
                           >
                             <XCircle size={20} />
                           </button>

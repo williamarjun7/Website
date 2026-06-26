@@ -19,7 +19,8 @@ import {
     History,
     Settings,
     FolderOpen,
-    ChevronDown
+    ChevronDown,
+    ChevronRight
 } from 'lucide-react';
 import { adminLogout } from '../../services/authService';
 import { usePermission } from '../../hooks/usePermission';
@@ -145,6 +146,17 @@ const AdminLayout = () => {
         setTimeout(() => filterGroups(), 0);
     }, [filterGroups]);
 
+    const pageTitle = (() => {
+        if (location.pathname === '/admin/dashboard') return 'Dashboard';
+        for (const group of allGroups) {
+            for (const item of group.items) {
+                if (location.pathname === item.path) return item.name;
+            }
+        }
+        const segment = location.pathname.replace('/admin/', '').replace(/\/.*$/, '');
+        return segment.charAt(0).toUpperCase() + segment.slice(1);
+    })();
+
     return (
         <div className="min-h-screen bg-gray-100 flex">
             {/* Sidebar */}
@@ -264,10 +276,18 @@ const AdminLayout = () => {
                     <button
                         onClick={() => setSidebarOpen(true)}
                         className="text-gray-500 hover:text-primary p-2"
+                        aria-label="Open sidebar menu"
                     >
                         <Menu size={24} />
                     </button>
                     <span className="ml-4 font-heading font-bold text-lg">Highlands Admin</span>
+                </div>
+
+                {/* Breadcrumb */}
+                <div className="hidden md:flex items-center space-x-2 px-8 pt-6 pb-0 text-sm text-gray-500">
+                    <Link to="/admin/dashboard" className="hover:text-primary transition-colors">Dashboard</Link>
+                    <ChevronRight size={14} className="text-gray-300" />
+                    <span className="text-gray-900 font-medium">{pageTitle}</span>
                 </div>
 
                 {/* Page Content */}

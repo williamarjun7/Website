@@ -583,7 +583,7 @@ const ContentEditor = () => {
                                 type="button"
                                 onClick={() => setShowMediaPickerFor(key)}
                                 className="p-2.5 bg-amber-100 text-amber-700 rounded-xl hover:bg-amber-200 transition-colors"
-                                title="Pick from Media Library"
+                                aria-label="Pick from media library"
                             >
                                 <Image size={18} />
                             </button>
@@ -753,7 +753,12 @@ const ContentEditor = () => {
                         </div>
                     ))}
                 </div>
-            ) : null}
+            ) : (
+                <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <FileText size={40} className="mx-auto text-gray-300 mb-3" />
+                    <p className="text-gray-500">Select a page tab above to edit its content.</p>
+                </div>
+            )}
         </div>
     );
 };

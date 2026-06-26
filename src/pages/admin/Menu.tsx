@@ -493,12 +493,14 @@ const Menu = () => {
                                             setCategoryModalOpen(true);
                                         }}
                                         className="p-1 text-gray-500 hover:text-primary"
+                                        aria-label="Edit category"
                                     >
                                         <Edit2 size={18} />
                                     </button>
                                     <button
                                         onClick={() => handleDeleteCategory(category.id)}
                                         className="p-1 text-gray-500 hover:text-red-500"
+                                        aria-label="Delete category"
                                     >
                                         <Trash2 size={18} />
                                     </button>
@@ -532,7 +534,10 @@ const Menu = () => {
                             {/* Items Grid */}
                             <div className="p-6">
                                 {category.items.length === 0 ? (
-                                    <p className="text-center text-gray-500 py-4">No items in this category.</p>
+                                    <div className="text-center py-8">
+                                        <Utensils size={32} className="mx-auto text-gray-300 mb-2" />
+                                        <p className="text-gray-500">No items in this category.</p>
+                                    </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {category.items.map((item) => (
@@ -565,7 +570,7 @@ const Menu = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleToggleAvailability(item.id, item.available)}
-                                                title={item.available ? "Mark as Unavailable" : "Mark as Available"}
+                                                aria-label={item.available ? "Mark as unavailable" : "Mark as available"}
                                             >
                                                 {item.available ? (
                                                     <ToggleRight className="text-green-500" size={24} />
@@ -584,7 +589,7 @@ const Menu = () => {
                                                                 type="button"
                                                                 onClick={() => handleToggleFeatured(item.id, item.is_featured ?? false)}
                                                                 className={`p-1 rounded transition-colors ${item.is_featured ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-amber-500'}`}
-                                                                title={item.is_featured ? "Remove Featured" : "Mark as Featured"}
+                                                                aria-label={item.is_featured ? "Remove featured" : "Mark as featured"}
                                                             >
                                                                 <Star size={16} className={item.is_featured ? 'fill-amber-500' : ''} />
                                                             </button>
@@ -592,7 +597,7 @@ const Menu = () => {
                                                                 type="button"
                                                                 onClick={() => handleToggleMostSold(item.id, item.is_most_sold ?? false)}
                                                                 className={`p-1 rounded transition-colors ${item.is_most_sold ? 'text-green-500 hover:text-green-600' : 'text-gray-400 hover:text-green-500'}`}
-                                                                title={item.is_most_sold ? "Remove Most Sold" : "Mark as Most Sold"}
+                                                                aria-label={item.is_most_sold ? "Remove most sold" : "Mark as most sold"}
                                                             >
                                                                 <TrendingUp size={16} />
                                                             </button>
@@ -616,6 +621,7 @@ const Menu = () => {
                                                                     setItemModalOpen(true);
                                                                 }}
                                                                 className="p-1 text-gray-400 hover:text-primary"
+                                                                aria-label="Edit item"
                                                             >
                                                                 <Edit2 size={16} />
                                                             </button>
@@ -623,6 +629,7 @@ const Menu = () => {
                                                                 type="button"
                                                                 onClick={() => handleDeleteItem(item.id)}
                                                                 className="p-1 text-gray-400 hover:text-red-500"
+                                                                aria-label="Delete item"
                                                             >
                                                                 <Trash2 size={16} />
                                                             </button>
@@ -902,7 +909,7 @@ const Menu = () => {
                                             onClick={() => handleMenuPageMove(index, 'up')}
                                             disabled={index === 0}
                                             className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${index === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-primary'}`}
-                                            title="Move up"
+                                            aria-label="Move menu page up"
                                         >
                                             <ArrowUp size={14} />
                                         </button>
@@ -911,7 +918,7 @@ const Menu = () => {
                                             onClick={() => handleMenuPageMove(index, 'down')}
                                             disabled={index === menuPages.length - 1}
                                             className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${index === menuPages.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-primary'}`}
-                                            title="Move down"
+                                            aria-label="Move menu page down"
                                         >
                                             <ArrowDown size={14} />
                                         </button>
@@ -919,7 +926,7 @@ const Menu = () => {
                                             type="button"
                                             onClick={() => handleMenuPageToggleActive(page.id, page.is_active)}
                                             className={`p-1.5 bg-white rounded-full transition-colors shadow-lg ${page.is_active ? 'text-green-600' : 'text-gray-400'}`}
-                                            title={page.is_active ? 'Hide' : 'Show'}
+                                            aria-label={page.is_active ? 'Hide page' : 'Show page'}
                                         >
                                             {page.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
                                         </button>
@@ -927,7 +934,7 @@ const Menu = () => {
                                             type="button"
                                             onClick={() => handleMenuPageDelete(page.id)}
                                             className="p-1.5 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg"
-                                            title="Delete"
+                                            aria-label="Delete page"
                                         >
                                             <Trash2 size={14} />
                                         </button>

@@ -8,6 +8,7 @@ import {
     Clock,
     Download,
     Calendar,
+    CalendarDays,
     LogOut,
     ChevronLeft,
     ChevronRight,
@@ -373,7 +374,8 @@ const Bookings = () => {
                                     ))
                     ) : filteredBookings.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-8 text-center text-gray-500">
+                                        <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
+                                        <CalendarDays size={36} className="mx-auto text-gray-300 mb-3" />
                                         <p>No bookings found matching your filters.</p>
                                         {(searchTerm || statusFilter !== 'all') && (
                                             <button
@@ -441,7 +443,7 @@ const Bookings = () => {
                                                             onClick={() => handleStatusUpdate(booking.id, 'checked_in')}
                                                             disabled={statusLoading === booking.id}
                                                             className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-green-600 hover:bg-green-50'}`}
-                                                            title="Check In"
+                                                            aria-label="Check in booking"
                                                         >
                                                             <CheckCircle size={18} />
                                                         </button>
@@ -449,7 +451,7 @@ const Bookings = () => {
                                                             onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
                                                             disabled={statusLoading === booking.id}
                                                             className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:bg-red-50'}`}
-                                                            title="Cancel"
+                                                            aria-label="Cancel booking"
                                                         >
                                                             <XCircle size={18} />
                                                         </button>
@@ -460,7 +462,7 @@ const Bookings = () => {
                                                         onClick={() => handleStatusUpdate(booking.id, 'checked_out')}
                                                         disabled={statusLoading === booking.id}
                                                         className={`p-1 rounded ${statusLoading === booking.id ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-50'}`}
-                                                        title="Check Out"
+                                                        aria-label="Check out booking"
                                                     >
                                                         <LogOut size={18} />
                                                     </button>
@@ -468,7 +470,7 @@ const Bookings = () => {
                                                 <button
                                                     onClick={() => setViewingBooking(booking)}
                                                     className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                                    title="View Details"
+                                                    aria-label="View booking details"
                                                 >
                                                     <Eye size={18} />
                                                 </button>
@@ -495,6 +497,7 @@ const Bookings = () => {
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
                             className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                            aria-label="Previous page"
                         >
                             <ChevronLeft size={18} />
                         </button>
@@ -507,6 +510,8 @@ const Bookings = () => {
                                         ? 'bg-primary text-white'
                                         : 'border border-gray-200 hover:bg-gray-50'
                                 }`}
+                                aria-label={`Page ${page}`}
+                                aria-current={page === currentPage ? 'page' : undefined}
                             >
                                 {page}
                             </button>
@@ -515,6 +520,7 @@ const Bookings = () => {
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
                             className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                            aria-label="Next page"
                         >
                             <ChevronRight size={18} />
                         </button>

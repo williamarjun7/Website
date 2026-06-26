@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { ArrowRight, Coffee, MapPin, Users, Star } from 'lucide-react';
+import { ArrowRight, Coffee, MapPin, Users, Star, Image as ImageIcon } from 'lucide-react';
 import { getRooms } from '../services/roomService';
 import { Room } from '../services/roomService';
 import { getEffectivePricePerNight } from '../services/bookingService';
@@ -85,7 +85,7 @@ const Home = () => {
         <div className="min-h-screen">
             <Helmet>
                 <title>{C('home_meta_title', C('site_name', 'Highlands Cafe & Motel Inn') + ' | Home')}</title>
-                <meta name="description" content={C('home_meta_desc', 'Experience a warm, cozy stay. Book comfortable rooms and enjoy great food.')} />
+                <meta name="description" content={C('home_meta_desc', 'Experience a warm, cozy stay at Highlands Cafe & Motel Inn in Surkhet, Nepal. Book comfortable rooms, enjoy great food, and explore the beauty of Karnali.')} />
             </Helmet>
             {/* Hero Section */}
             <section className="relative min-h-screen overflow-hidden">
@@ -263,11 +263,17 @@ const Home = () => {
                             {rooms.map((room) => (
                                 <div key={room.id} className="card">
                                     <div className="aspect-video bg-gray-200 rounded-lg mb-4 overflow-hidden relative">
-                                        <img
-                                            src={room.room_images?.[0]?.url}
-                                            alt={room.name}
-                                            className="w-full h-full object-cover"
-                                        />
+                                        {room.room_images?.[0]?.url ? (
+                                            <img
+                                                src={room.room_images[0].url}
+                                                alt={room.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                <ImageIcon size={48} />
+                                            </div>
+                                        )}
                                         {room.has_ac !== undefined && (
                                             <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-[10px] font-bold shadow-sm backdrop-blur-sm ${room.has_ac ? 'bg-blue-100/90 text-blue-700' : 'bg-gray-100/90 text-gray-600'}`}>
                                                 {room.has_ac ? C('rooms_label_ac', 'AC') : C('rooms_label_nonac', 'Non-AC')}

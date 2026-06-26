@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Navigate, useLocation } from 'react-router-dom';
+import { Outlet, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { isAuthenticated } from '../../services/authService';
 import { usePermission } from '../../hooks/usePermission';
 
@@ -11,15 +11,27 @@ const LoadingSpinner = () => (
 
 const AdminGate = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isAuth, setIsAuth] = useState<boolean | null>(null);
+    const [authTimeout, setAuthTimeout] = useState(false);
     const { refreshPermissions } = usePermission();
 
     useEffect(() => {
         let cancelled = false;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
         const checkAuth = async () => {
+            timeoutId = setTimeout(() => {
+                if (cancelled) return;
+                setAuthTimeout(true);
+                localStorage.removeItem('saas_user_id');
+                localStorage.removeItem('saas_tenant_id');
+                setIsAuth(false);
+            }, 10000);
+
             const auth = await isAuthenticated();
             if (cancelled) return;
+            if (timeoutId) clearTimeout(timeoutId);
             setIsAuth(auth);
             if (auth) {
                 try {
@@ -31,10 +43,27 @@ const AdminGate = () => {
         };
         checkAuth();
 
-        return () => { cancelled = true; };
-    }, [location.pathname, refreshPermissions]);
+        return () => {
+            cancelled = true;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [location.pathname, refreshPermissions, navigate]);
 
     if (isAuth === null) {
+        if (authTimeout) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                    <div className="text-center max-w-md p-8">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span className="text-red-600 text-2xl">!</span>
+                        </div>
+                        <h2 className="text-xl font-bold font-heading text-gray-900 mb-2">Session Expired</h2>
+                        <p className="text-gray-600 mb-6">Your session could not be restored. Please log in again.</p>
+                        <a href="/admin/login" className="btn-primary inline-block">Go to Login</a>
+                    </div>
+                </div>
+            );
+        }
         return <LoadingSpinner />;
     }
 

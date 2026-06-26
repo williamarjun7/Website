@@ -113,7 +113,7 @@ const ReviewsAdmin = () => {
                             {loading ? (
                                 Array.from({ length: 4 }, (_, i) => <SkeletonTableRow key={i} cols={6} />)
                             ) : reviews.length === 0 ? (
-                                <tr><td colSpan={6} className="text-center py-16 text-gray-400">No reviews yet</td></tr>
+                                <tr><td colSpan={6} className="text-center py-16 text-gray-400"><Star size={36} className="mx-auto text-gray-300 mb-3" />No reviews yet</td></tr>
                             ) : reviews.map((review) => (
                                 <tr key={review.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                                     <td className="px-4 py-4">
@@ -151,7 +151,7 @@ const ReviewsAdmin = () => {
                                         </button>
                                     </td>
                                     <td className="px-4 py-4 text-right">
-                                        <button onClick={() => handleDelete(review)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                        <button onClick={() => handleDelete(review)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" aria-label="Delete review">
                                             <Trash2 size={16} />
                                         </button>
                                     </td>

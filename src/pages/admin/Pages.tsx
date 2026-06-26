@@ -235,26 +235,28 @@ const Pages = () => {
                                                             <button
                                                                 onClick={() => handlePublish(page)}
                                                                 className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                                title="Publish"
+                                                                aria-label="Publish page"
                                                             >
                                                                 <Send size={16} />
                                                             </button>
                                                         </PermissionGuard>
                                                     )}
                                                     <PermissionGuard resource="page" action="update">
-                                                        <button
-                                                            onClick={() => openEditModal(page)}
-                                                            className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                                                        >
-                                                            <Edit2 size={16} />
+                                                    <button
+                                                        onClick={() => openEditModal(page)}
+                                                        className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                        aria-label="Edit page"
+                                                    >
+                                                        <Edit2 size={16} />
                                                         </button>
                                                     </PermissionGuard>
                                                     <PermissionGuard resource="page" action="delete">
-                                                        <button
-                                                            onClick={() => setDeleteTarget(page)}
-                                                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                                        >
-                                                            <Trash2 size={16} />
+                                                    <button
+                                                        onClick={() => setDeleteTarget(page)}
+                                                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                        aria-label="Delete page"
+                                                    >
+                                                        <Trash2 size={16} />
                                                         </button>
                                                     </PermissionGuard>
                                                 </div>

@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, type ComponentType } from 'react';
 import { Bold, Italic, Heading, List, Link, Image, AlignLeft, ListOrdered } from 'lucide-react';
 import MediaPicker from './MediaPicker';
-import { sanitizeHtml } from '../../utils/sanitize';
+import DOMPurify from 'dompurify';
 
 interface RichTextEditorProps {
     value: string;
@@ -16,11 +16,16 @@ const ToolbarButton = ({ icon: Icon, onClick, title }: { icon: ComponentType<{ s
         type="button"
         onClick={onClick}
         title={title}
+        aria-label={title}
         className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
     >
         <Icon size={16} />
     </button>
 );
+
+const exec = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+};
 
 const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...', minHeight = 250, label }: RichTextEditorProps) => {
     const editorRef = useRef<HTMLDivElement>(null);
@@ -28,49 +33,50 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
     const [showLinkInput, setShowLinkInput] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
 
-    const exec = useCallback((command: string, value?: string) => {
-        document.execCommand(command, false, value);
+    const handleChange = useCallback(() => {
         if (editorRef.current) {
-            editorRef.current.focus();
             const html = editorRef.current.innerHTML;
             if (html !== value) onChange(html);
         }
-    }, [onChange]);
+    }, [onChange, value]);
 
-    const handleBold = () => exec('bold');
-    const handleItalic = () => exec('italic');
-    const handleHeading = () => exec('formatBlock', 'h3');
-    const handleBulletList = () => exec('insertUnorderedList');
-    const handleOrderedList = () => exec('insertOrderedList');
-    const handleAlignLeft = () => exec('justifyLeft');
+    const execAndUpdate = useCallback((command: string, value?: string) => {
+        exec(command, value);
+        handleChange();
+    }, [handleChange]);
 
-    const handleLink = () => {
+    const handleBold = () => execAndUpdate('bold');
+    const handleItalic = () => execAndUpdate('italic');
+    const handleHeading = () => execAndUpdate('formatBlock', 'h3');
+    const handleBulletList = () => execAndUpdate('insertUnorderedList');
+    const handleOrderedList = () => execAndUpdate('insertOrderedList');
+    const handleAlignLeft = () => execAndUpdate('justifyLeft');
+
+    const handleLink = useCallback(() => {
         if (showLinkInput && linkUrl) {
-            exec('createLink', linkUrl);
+            execAndUpdate('createLink', linkUrl);
             setShowLinkInput(false);
             setLinkUrl('');
         } else {
             setShowLinkInput(true);
         }
-    };
+    }, [showLinkInput, linkUrl, execAndUpdate]);
 
     const handleImageSelect = (url: string) => {
-        exec('insertImage', url);
+        execAndUpdate('insertImage', url);
         setShowMediaPicker(false);
     };
 
     const handleInput = () => {
-        if (editorRef.current) {
-            onChange(editorRef.current.innerHTML);
-        }
+        handleChange();
     };
 
     const handlePaste = (e: React.ClipboardEvent) => {
         e.preventDefault();
         const text = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
-        const sanitized = sanitizeHtml(text);
-        document.execCommand('insertHTML', false, sanitized);
-        handleInput();
+        const sanitized = DOMPurify.sanitize(text);
+        exec('insertHTML', sanitized);
+        handleChange();
     };
 
     return (
@@ -80,7 +86,7 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
                     <span className="text-sm font-semibold text-gray-700">{label}</span>
                 </div>
             )}
-            <div className="flex flex-wrap gap-0.5 px-3 py-2 bg-white border-b border-gray-200">
+            <div className="flex flex-wrap gap-0.5 px-3 py-2 bg-white border-b border-gray-200" role="toolbar" aria-label="Text formatting">
                 <ToolbarButton icon={Bold} onClick={handleBold} title="Bold" />
                 <ToolbarButton icon={Italic} onClick={handleItalic} title="Italic" />
                 <ToolbarButton icon={Heading} onClick={handleHeading} title="Heading" />
@@ -104,8 +110,8 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
                             if (e.key === 'Escape') setShowLinkInput(false);
                         }}
                     />
-                    <button onClick={handleLink} className="btn-primary text-xs px-3 py-1.5">Apply</button>
-                    <button onClick={() => setShowLinkInput(false)} className="text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                    <button onClick={handleLink} className="btn-primary text-xs px-3 py-1.5" aria-label="Apply link">Apply</button>
+                    <button onClick={() => setShowLinkInput(false)} className="text-xs text-gray-500 hover:text-gray-700" aria-label="Cancel link">Cancel</button>
                 </div>
             )}
             <div
@@ -114,10 +120,13 @@ const RichTextEditor = ({ value, onChange, placeholder = 'Write content here...'
                 suppressContentEditableWarning
                 onInput={handleInput}
                 onPaste={handlePaste}
-                dangerouslySetInnerHTML={{ __html: value || '' }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value || '') }}
                 className="px-4 py-3 focus:outline-none prose prose-sm max-w-none text-gray-700 leading-relaxed"
                 style={{ minHeight: `${minHeight}px` }}
                 data-placeholder={placeholder}
+                role="textbox"
+                aria-multiline="true"
+                aria-label={label || 'Rich text editor'}
             />
             {showMediaPicker && (
                 <MediaPicker

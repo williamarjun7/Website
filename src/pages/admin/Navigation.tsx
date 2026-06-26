@@ -5,7 +5,8 @@ import {
     Trash2,
     Edit2,
     Eye,
-    EyeOff
+    EyeOff,
+    Navigation as NavIcon
 } from 'lucide-react';
 import {
     getNavigation,
@@ -186,6 +187,7 @@ const Navigation = () => {
                             ) : items.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-16 text-center text-gray-400">
+                                        <NavIcon size={36} className="mx-auto text-gray-300 mb-3" />
                                         No navigation items yet. Click "Add New" to create one.
                                     </td>
                                 </tr>
@@ -210,7 +212,7 @@ const Navigation = () => {
                                                 <button
                                                     onClick={() => handleToggleVisibility(item)}
                                                     className={`p-1.5 rounded-lg transition-colors ${item.is_visible ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`}
-                                                    title={item.is_visible ? 'Click to hide' : 'Click to show'}
+                                                    aria-label={item.is_visible ? 'Hide nav item' : 'Show nav item'}
                                                 >
                                                     {item.is_visible ? <Eye size={18} /> : <EyeOff size={18} />}
                                                 </button>
@@ -222,6 +224,7 @@ const Navigation = () => {
                                                     <button
                                                         onClick={() => openEditModal(item)}
                                                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                        aria-label="Edit nav item"
                                                     >
                                                         <Edit2 size={16} />
                                                     </button>
@@ -230,6 +233,7 @@ const Navigation = () => {
                                                     <button
                                                         onClick={() => setDeleteTarget(item)}
                                                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                        aria-label="Delete nav item"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>

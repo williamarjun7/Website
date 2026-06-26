@@ -641,7 +641,7 @@ const MediaPage = () => {
                                                 setEditForm({ name: file.name || '', alt_text: file.alt_text || '', folder: file.folder || '' });
                                             }}
                                             className="p-2 bg-white rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-lg"
-                                            title="Edit metadata"
+                                            aria-label="Edit file metadata"
                                         >
                                             <Edit2 size={16} />
                                         </button>
@@ -649,6 +649,7 @@ const MediaPage = () => {
                                             <button
                                                 onClick={() => setDeleteTarget(file)}
                                                 className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg"
+                                                aria-label="Delete file"
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -705,13 +706,13 @@ const MediaPage = () => {
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                                                    <button onClick={() => handleEditImage(img)} className="p-2 bg-white rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-lg" title="Edit details">
+                                                    <button onClick={() => handleEditImage(img)} className="p-2 bg-white rounded-full text-blue-600 hover:bg-blue-50 transition-colors shadow-lg" aria-label="Edit image details">
                                                         <Edit2 size={16} />
                                                     </button>
                                                     <button
                                                         onClick={() => handleToggleActive(img.id, img.is_active)}
                                                         className={`p-2 bg-white rounded-full transition-colors shadow-lg ${img.is_active ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`}
-                                                        title={img.is_active ? 'Click to hide' : 'Click to show'}
+                                                        aria-label={img.is_active ? 'Hide image' : 'Show image'}
                                                     >
                                                         {img.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
                                                     </button>
@@ -720,10 +721,11 @@ const MediaPage = () => {
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="p-2 bg-white rounded-full text-gray-700 hover:text-primary transition-colors shadow-lg"
+                                                        aria-label="Open image in new tab"
                                                     >
                                                         <ExternalLink size={16} />
                                                     </a>
-                                                    <button onClick={() => handleDeleteImage(img)} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg">
+                                                    <button onClick={() => handleDeleteImage(img)} className="p-2 bg-white rounded-full text-red-500 hover:bg-red-50 transition-colors shadow-lg" aria-label="Delete image">
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>

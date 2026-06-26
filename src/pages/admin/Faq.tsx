@@ -7,7 +7,8 @@ import {
     ChevronDown,
     ChevronRight,
     Eye,
-    EyeOff
+    EyeOff,
+    HelpCircle
 } from 'lucide-react';
 import {
     getFaqItems,
@@ -193,6 +194,7 @@ const Faq = () => {
                 </div>
             ) : Object.keys(grouped).length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
+                    <HelpCircle size={40} className="mx-auto text-gray-300 mb-3" />
                     <p className="text-gray-400">No FAQ items yet.</p>
                 </div>
             ) : (
@@ -230,7 +232,7 @@ const Faq = () => {
                                                     <button
                                                         onClick={() => handleTogglePublished(faq)}
                                                         className={`p-1.5 rounded-lg transition-colors ${faq.published ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-100'}`}
-                                                        title={faq.published ? 'Click to hide' : 'Click to show'}
+                                                        aria-label={faq.published ? 'Hide FAQ' : 'Show FAQ'}
                                                     >
                                                         {faq.published ? <Eye size={16} /> : <EyeOff size={16} />}
                                                     </button>
@@ -239,6 +241,7 @@ const Faq = () => {
                                                     <button
                                                         onClick={() => openEditModal(faq)}
                                                         className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                                                        aria-label="Edit FAQ"
                                                     >
                                                         <Edit2 size={16} />
                                                     </button>
@@ -247,6 +250,7 @@ const Faq = () => {
                                                     <button
                                                         onClick={() => setDeleteTarget(faq)}
                                                         className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                                        aria-label="Delete FAQ"
                                                     >
                                                         <Trash2 size={16} />
                                                     </button>

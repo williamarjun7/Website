@@ -9,7 +9,9 @@ import {
     X,
     Loader2,
     ChevronUp,
-    ChevronDown
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import {
     getAllRoomsForAdmin,
@@ -35,10 +37,13 @@ interface SeasonalPriceRule {
     price: number;
 }
 
+const ITEMS_PER_PAGE = 9;
+
 const Rooms = () => {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const [editingRoom, setEditingRoom] = useState<Room | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [seasonalRules, setSeasonalRules] = useState<SeasonalPriceRule[]>([]);
@@ -80,6 +85,12 @@ const Rooms = () => {
     useEffect(() => {
         loadRooms();
     }, []);
+
+    const totalPages = Math.ceil(rooms.length / ITEMS_PER_PAGE);
+    const paginatedRooms = rooms.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     const loadRooms = async () => {
         setLoading(true);
@@ -418,7 +429,7 @@ const Rooms = () => {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {rooms.map((room) => (
+                    {paginatedRooms.map((room) => (
                         <div key={room.id} className="card relative group" tabIndex={0} onFocus={() => {}}>
                             <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-10">
                                 <button
@@ -508,10 +519,54 @@ const Rooms = () => {
                             </div>
                         </div>
                     ))}
-                </div>
-            )}
+                        </div>
+                    )}
 
-            {/* Create/Edit Room Modal */}
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between bg-white px-6 py-4 rounded-xl shadow-sm border border-gray-100 mt-6">
+                            <p className="text-sm text-gray-500">
+                                Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{' '}
+                                {Math.min(currentPage * ITEMS_PER_PAGE, rooms.length)} of{' '}
+                                {rooms.length} rooms
+                            </p>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                                    aria-label="Previous page"
+                                >
+                                    <ChevronLeft size={18} />
+                                </button>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                                            page === currentPage
+                                                ? 'bg-primary text-white'
+                                                : 'border border-gray-200 hover:bg-gray-50'
+                                        }`}
+                                        aria-label={`Page ${page}`}
+                                        aria-current={page === currentPage ? 'page' : undefined}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 rounded-lg border border-gray-200 disabled:opacity-40 hover:bg-gray-50 transition-colors"
+                                    aria-label="Next page"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    )}
+    
+                    {/* Create/Edit Room Modal */}
             <AdminModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
