@@ -20,9 +20,9 @@ export const adminLogin = async (email: string, password: string) => {
         if (error) throw error;
 
         if (data?.user?.id) {
+            localStorage.setItem('saas_user_id', data.user.id);
             const { data: profile } = await getProfileByUserId(data.user.id);
             if (profile) {
-                localStorage.setItem('saas_user_id', data.user.id);
                 localStorage.setItem('saas_tenant_id', profile.tenant_id);
             }
         }
