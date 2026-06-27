@@ -25,7 +25,6 @@ const Gallery = lazy(() => import('./pages/Gallery'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminGate = lazy(() => import('./pages/admin/AdminGate'));
-const AdminSignup = lazy(() => import('./pages/admin/AdminSignup'));
 const AdminVerify = lazy(() => import('./pages/admin/AdminVerify'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const Bookings = lazy(() => import('./pages/admin/Bookings'));
@@ -103,7 +102,6 @@ function App() {
               {/* Admin Routes */}
               <Route path="/admin" element={<Suspense fallback={<LoadingFallback />}><AdminGate /></Suspense>}>
                 <Route path="login" element={<Suspense fallback={<LoadingFallback />}><AdminLogin /></Suspense>} />
-                <Route path="signup" element={<Suspense fallback={<LoadingFallback />}><AdminSignup /></Suspense>} />
                 <Route path="verify" element={<Suspense fallback={<LoadingFallback />}><AdminVerify /></Suspense>} />
                 <Route element={<Suspense fallback={<LoadingFallback />}><AdminLayout /></Suspense>}>
                   <Route index element={<Suspense fallback={<LoadingFallback />}><AdminDashboard /></Suspense>} />

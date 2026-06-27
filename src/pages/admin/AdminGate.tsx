@@ -78,7 +78,7 @@ const AdminGate = () => {
         return <LoadingSpinner />;
     }
 
-    const publicRoutes = ['/admin/login', '/admin/signup', '/admin/verify', '/admin/'];
+    const publicRoutes = ['/admin/login', '/admin/verify', '/admin/'];
     const isPublicRoute = publicRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + '/'));
 
     if (location.pathname === '/admin' || location.pathname === '/admin/') {

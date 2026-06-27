@@ -216,16 +216,7 @@ const AdminLogin = () => {
                             Reset it here
                         </button>
                     </p>
-                    <p className="text-xs text-gray-500">
-                        Don't have an account?{' '}
-                        <button
-                            type="button"
-                            onClick={() => navigate('/admin/signup')}
-                            className="text-primary hover:underline font-medium"
-                        >
-                            Create one
-                        </button>
-                    </p>
+
                 </div>
                 )}
             </div>
