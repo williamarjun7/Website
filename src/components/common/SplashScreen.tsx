@@ -8,6 +8,7 @@ const SplashScreen = ({ onFinish, onExitStart }: { onFinish: () => void; onExitS
   useEffect(() => {
     const skipSplash = typeof window !== 'undefined' && sessionStorage.getItem('ss_visited');
     if (skipSplash) {
+      onExitStart?.();
       setPhase('gone');
       onFinish();
       return;
