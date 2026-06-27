@@ -82,7 +82,7 @@ jobs:
           username: ${{ secrets.STAGING_VPS_USER }}
           key: ${{ secrets.STAGING_VPS_SSH_KEY }}
           source: "dist/"
-          target: ${{ secrets.STAGING_VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
+          target: /var/www/highlands-website/releases/${{ needs.build.outputs.commit_hash }}/
           strip_components: 1
           rm: true
 
@@ -97,7 +97,7 @@ jobs:
           script: |
             set -e
 
-            DEPLOY_DIR="${{ secrets.STAGING_VPS_DEPLOY_PATH }}"
+            DEPLOY_DIR="/var/www/highlands-website"
             RELEASE="$DEPLOY_DIR/releases/${{ needs.build.outputs.commit_hash }}"
             CURRENT_LINK="$DEPLOY_DIR/current"
             PREVIOUS_LINK="$DEPLOY_DIR/previous"
@@ -129,7 +129,7 @@ jobs:
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back staging..."
-              DEPLOY_DIR="${{ secrets.STAGING_VPS_DEPLOY_PATH }}"
+              DEPLOY_DIR="/var/www/highlands-website"
               if [ -L "$DEPLOY_DIR/previous" ]; then
                 ln -sfn "$(readlink -f "$DEPLOY_DIR/previous")" "$DEPLOY_DIR/current"
                 sudo nginx -t && sudo systemctl reload nginx
@@ -175,7 +175,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "dist/"
-          target: ${{ secrets.VPS_DEPLOY_PATH }}/releases/${{ needs.build.outputs.commit_hash }}/
+          target: /var/www/highlands-website/releases/${{ needs.build.outputs.commit_hash }}/
           strip_components: 1
           rm: true
 
@@ -189,7 +189,7 @@ jobs:
           script: |
             set -e
 
-            DEPLOY_DIR="${{ secrets.VPS_DEPLOY_PATH }}"
+            DEPLOY_DIR="/var/www/highlands-website"
             RELEASE="$DEPLOY_DIR/releases/${{ needs.build.outputs.commit_hash }}"
             CURRENT_LINK="$DEPLOY_DIR/current"
             PREVIOUS_LINK="$DEPLOY_DIR/previous"
@@ -220,7 +220,7 @@ jobs:
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back..."
-              DEPLOY_DIR="${{ secrets.VPS_DEPLOY_PATH }}"
+              DEPLOY_DIR="/var/www/highlands-website"
               if [ -L "$DEPLOY_DIR/previous" ]; then
                 ln -sfn "$(readlink -f "$DEPLOY_DIR/previous")" "$DEPLOY_DIR/current"
                 sudo nginx -t && sudo systemctl reload nginx
