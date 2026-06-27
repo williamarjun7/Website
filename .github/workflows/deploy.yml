@@ -175,8 +175,8 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            sudo mkdir -p /var/www/highlands-motel/releases
-            sudo rm -rf /var/www/highlands-motel/releases/${{ needs.build.outputs.commit_hash }}
+            sudo mkdir -p /var/www/highlands-website/releases
+            sudo rm -rf /var/www/highlands-website/releases/${{ needs.build.outputs.commit_hash }}
 
       - name: Deploy via SCP
         uses: appleboy/scp-action@v1.0.0
@@ -186,7 +186,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "dist/"
-          target: /var/www/highlands-motel/releases/${{ needs.build.outputs.commit_hash }}/
+          target: /var/www/highlands-website/releases/${{ needs.build.outputs.commit_hash }}/
           strip_components: 1
           rm: false
 
@@ -200,7 +200,7 @@ jobs:
           script: |
             set -e
 
-            DEPLOY_DIR="/var/www/highlands-motel"
+            DEPLOY_DIR="/var/www/highlands-website"
             RELEASE="$DEPLOY_DIR/releases/${{ needs.build.outputs.commit_hash }}"
             CURRENT_LINK="$DEPLOY_DIR/current"
             PREVIOUS_LINK="$DEPLOY_DIR/previous"
@@ -234,7 +234,7 @@ jobs:
           script: |
             sudo nginx -t && sudo systemctl reload nginx || {
               echo "ERROR: nginx -t failed. Rolling back..."
-              DEPLOY_DIR="/var/www/highlands-motel"
+              DEPLOY_DIR="/var/www/highlands-website"
               if [ -L "$DEPLOY_DIR/previous" ]; then
                 ln -sfn "$(readlink -f "$DEPLOY_DIR/previous")" "$DEPLOY_DIR/current"
                 sudo nginx -t && sudo systemctl reload nginx
