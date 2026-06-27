@@ -213,9 +213,12 @@ jobs:
             sudo chown -R www-data:www-data "$RELEASE"
 
             if [ -L "$CURRENT_LINK" ]; then
-              ln -sfn "$(readlink -f "$CURRENT_LINK")" "$PREVIOUS_LINK"
+              OLD_TARGET="$(readlink -f "$CURRENT_LINK")"
+              rm -f "$CURRENT_LINK"
+              ln -s "$RELEASE" "$PREVIOUS_LINK" 2>/dev/null || true
             fi
-            ln -sfn "$RELEASE" "$CURRENT_LINK"
+            rm -f "$CURRENT_LINK"
+            ln -s "$RELEASE" "$CURRENT_LINK"
 
             ls -dt "$DEPLOY_DIR"/releases/*/ | tail -n +6 | xargs -r sudo rm -rf
 
