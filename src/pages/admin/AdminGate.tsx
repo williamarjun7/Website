@@ -75,14 +75,16 @@ const AdminGate = () => {
             return <Navigate to="/admin/dashboard" replace />;
         }
         if (localStorage.getItem('saas_user_id')) {
-            return <LoadingSpinner />;
+            localStorage.removeItem('saas_user_id');
+            localStorage.removeItem('saas_tenant_id');
         }
         return <Navigate to="/admin/login" replace />;
     }
 
     if (!isAuth && !isPublicRoute) {
         if (localStorage.getItem('saas_user_id')) {
-            return <LoadingSpinner />;
+            localStorage.removeItem('saas_user_id');
+            localStorage.removeItem('saas_tenant_id');
         }
         return <Navigate to="/admin/login" state={{ from: location }} replace />;
     }
