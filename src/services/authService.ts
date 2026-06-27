@@ -1,11 +1,6 @@
 import { insforge, handleInsforgeError } from './insforge';
 import { getProfileByUserId, type AdminProfile, clearPermissionCache } from './rbacService';
 
-let _authenticated = false;
-
-export const setAuthenticated = (value: boolean) => {
-    _authenticated = value;
-};
 
 export interface AdminUser {
     id: string;
@@ -33,7 +28,6 @@ export const adminLogin = async (email: string, password: string) => {
             }
         }
 
-        _authenticated = true;
         return { data, error: null };
     } catch (error) {
         console.error('Admin login failed:', error);
@@ -91,7 +85,6 @@ export const adminLogout = async () => {
         const { error } = await insforge.auth.signOut();
         if (error) throw error;
         clearPermissionCache();
-        _authenticated = false;
         localStorage.removeItem('saas_user_id');
         localStorage.removeItem('saas_tenant_id');
         return { data: true, error: null };
@@ -145,7 +138,6 @@ export const resetPassword = async (email: string) => {
 };
 
 export const isAuthenticated = async (): Promise<boolean> => {
-    if (_authenticated) return true;
     try {
         const { data: sessionData } = await insforge.auth.getCurrentSession();
         if (sessionData?.session?.user) return true;

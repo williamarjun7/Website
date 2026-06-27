@@ -21,6 +21,17 @@ const AdminGate = () => {
         let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
         const checkAuth = async () => {
+            if (location.state?.justLoggedIn) {
+                setIsAuth(true);
+                window.history.replaceState({}, '');
+                try {
+                    await refreshPermissions();
+                } catch {
+                    // Permission refresh failed but user is still authenticated
+                }
+                return;
+            }
+
             timeoutId = setTimeout(() => {
                 if (cancelled) return;
                 setAuthTimeout(true);

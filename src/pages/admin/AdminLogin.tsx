@@ -42,7 +42,7 @@ const AdminLogin = () => {
             }
 
             if (data) {
-                navigate('/admin/dashboard', { replace: true });
+                navigate('/admin/dashboard', { replace: true, state: { justLoggedIn: true } });
             }
         } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : 'Invalid email or password';
