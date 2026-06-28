@@ -21,6 +21,14 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://highlandscafemotelinn.com/cafe/full-menu</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://highlandscafemotelinn.com/payment-result</loc>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://highlandscafemotelinn.com/contact</loc>
     <priority>0.7</priority>
   </url>
